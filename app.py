@@ -600,9 +600,9 @@ else:
         if role == "موجه بلاغات":
             if st.button("📊 رصيد المستودعات"): st.session_state.page = "inventory_status"
             st.divider()
-            st.sidebar.markdown("<p style='text-align:center; font-weight:bold; color:#1daa60; margin:0;'>عمليات الصرف والارجاع ونقل المواد</p>", unsafe_allow_html=True)
+            st.sidebar.markdown("<p style='text-align:center; font-weight:bold; color:#004a99; margin:0;'>عمليات الصرف والارجاع ونقل المواد</p>", unsafe_allow_html=True)
             if st.button("🛒 صرف مواد للمقاول"): st.session_state.page = "stock_out"
-            # عدد طلبات الارتجاع المعلقة
+            # عدد طلبات الارجاع المعلقة
             pending_ret_count = pd.read_sql("SELECT COUNT(*) as cnt FROM return_requests WHERE status='معلق'", conn).iloc[0]['cnt']
             ret_btn_label = f"📤 طلبات الارتجاع" + (f"  🔴 {pending_ret_count}" if pending_ret_count > 0 else "")
             if st.button(ret_btn_label): st.session_state.page = "return_requests_user"
@@ -618,13 +618,13 @@ else:
             if st.button("📑 تعريف مواد جديدة"): st.session_state.page = "item_defs"
             if st.button("⚠️ تنبيهات نقص مواد"): st.session_state.page = "alerts_page"
             st.divider()
-            st.sidebar.markdown("<p style='text-align:center; font-weight:bold; color:#1daa60; margin:0;'>عمليات الصرف والارجاع ونقل المواد</p>", unsafe_allow_html=True)
+            st.sidebar.markdown("<p style='text-align:center; font-weight:bold; color:#004a99; margin:0;'>عمليات الصرف والارجاع ونقل المواد</p>", unsafe_allow_html=True)
             if st.button("📥 إضافة مواد إلى المستودع"): st.session_state.page = "stock_in"
             if st.button("🛒 صرف مواد للمقاول"): st.session_state.page = "stock_out"
             if st.button("🔄 ارجاع المواد"): st.session_state.page = "stock_return"
             if st.button("🚛 نقل مادة من مستودع إلى آخر"): st.session_state.page = "stock_transfer"
             pending_ret_wh = pd.read_sql("SELECT COUNT(*) as cnt FROM return_requests WHERE status='معلق'", conn).iloc[0]['cnt']
-            ret_wh_label = f"📥 طلبات الارتجاع المعلقة" + (f"  🔴 {pending_ret_wh}" if pending_ret_wh > 0 else "")
+            ret_wh_label = f"طلبات الارجاع المعلقة" + (f"  🔴 {pending_ret_wh}" if pending_ret_wh > 0 else "")
             if st.button(ret_wh_label): st.session_state.page = "return_requests_admin"
             st.divider()
             if st.button("🛠️ سجل العمليات التفصيلي"): st.session_state.page = "view_logs"
@@ -638,13 +638,13 @@ else:
             if st.button("📑 تعريف مواد جديدة"): st.session_state.page = "item_defs"
             if st.button("⚠️ تنبيهات نقص مواد"): st.session_state.page = "alerts_page"
             st.divider()
-            st.sidebar.markdown("<p style='text-align:center; font-weight:bold; color:#1daa60; margin:0;'>عمليات الصرف والارجاع ونقل المواد</p>", unsafe_allow_html=True)
+            st.sidebar.markdown("<p style='text-align:center; font-weight:bold; color:#004a99; margin:0;'>عمليات الصرف والارجاع ونقل المواد</p>", unsafe_allow_html=True)
             if st.button("📥 إضافة مواد إلى المستودع"): st.session_state.page = "stock_in"
             if st.button("🛒 صرف مواد للمقاول"): st.session_state.page = "stock_out"
             if st.button("🔄 ارجاع المواد"): st.session_state.page = "stock_return"
             if st.button("🚛 نقل مادة من مستودع إلى آخر"): st.session_state.page = "stock_transfer"
             pending_ret_adm = pd.read_sql("SELECT COUNT(*) as cnt FROM return_requests WHERE status='معلق'", conn).iloc[0]['cnt']
-            ret_adm_label = f"📥 طلبات الارتجاع المعلقة" + (f"  🔴 {pending_ret_adm}" if pending_ret_adm > 0 else "")
+            ret_adm_label = f"طلبات الارجاع المعلقة" + (f"  🔴 {pending_ret_adm}" if pending_ret_adm > 0 else "")
             if st.button(ret_adm_label): st.session_state.page = "return_requests_admin"
             st.divider()
             if st.button("🛠️ سجل العمليات التفصيلي"): st.session_state.page = "view_logs"
@@ -654,7 +654,7 @@ else:
             st.sidebar.markdown("<p style='text-align:center; font-weight:bold; color:#004a99; margin:0;'>⚙️ التحكم بالنظام</p>", unsafe_allow_html=True)
             if st.button("👥 إدارة حسابات الموظفين والطلبات"): st.session_state.page = "manage_staff"
             if st.button("🏢 إدارة المستودعات والمقاولين والفئات"): st.session_state.page = "global_settings"
-            if st.button("💾 إدارة النسخ الاحتياطية"): st.session_state.page = "backup_page"
+            if st.button("💾النسخ الاحتياطية"): st.session_state.page = "backup_page"
 
         st.divider()
         if st.button("🚪 خروج من النظام"):
@@ -729,7 +729,7 @@ else:
         if not df_inventory.empty:
             st.dataframe(df_inventory, use_container_width=True, hide_index=True)
             excel_view = to_excel(df_inventory)
-            st.download_button("📥 تصدير رصيد المخزون الحالي المعروض إلى ملف Excel", excel_view, "جرد_المخزون.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            st.download_button("سحب نسخة من المواد المتوفرة في المستودعات بصيغة Excel", excel_view, "جرد_المخزون.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
         else:
             st.warning("⚠️ لا توجد أي مواد أو أرصدة مخزنية مسجلة تحت شروط البحث المحددة حالياً.")
 
@@ -737,7 +737,7 @@ else:
     # صفحة: تعريف مواد جديدة في كشاف النظام المحدثة (التعريف المتعدد)
     # ---------------------------------------------------------
     elif st.session_state.page == "item_defs":
-        st.markdown("<div class='main-title'>📝 تعريف مواد غير مضافة في النظام</div>", unsafe_allow_html=True)
+        st.markdown("<div class='main-title'> تعريف مواد غير مضافة في النظام</div>", unsafe_allow_html=True)
         if not list_categories:
             st.warning("⚠️ يرجى أولاً تدوين وتثبيت فئة أصناف واحدة على الأقل من لوحة الإعدادات العامة لربط المواد بها.")
         else:
@@ -757,7 +757,7 @@ else:
                     c1, c2, c3, c4 = st.columns([1.5, 2, 2.5, 1.5])
                     item_code_input = c1.text_input(f"كود المادة *", key=f"m_code_{i}").strip()
                     item_name_input = c2.text_input(f"اسم المادة *", key=f"m_name_{i}").strip()
-                    item_desc_input = c3.text_input(f"الوصف الفني التفصيلي", key=f"m_desc_{i}").strip()
+                    item_desc_input = c3.text_input(f"وصف المادة*", key=f"m_desc_{i}").strip()
                     item_cat_input = c4.selectbox(f"الفئة التابعة لها *", list_categories, key=f"m_cat_{i}")
                     
                     if item_code_input and item_name_input:
@@ -797,10 +797,10 @@ else:
                         st.rerun()
  
             st.divider()
-            st.write("##### 📋 كشاف وصنف المواد المعرفة حالياً في المنظومة:")
+            st.write("المواد المعرفة في النظام مسبقاً")
  
             # ── شريط البحث السريع في الجدول ──
-            search_mat = st.text_input("🔍 ابحث بكود أو اسم المادة لتسريع التعديل:", key="search_mat_table").strip()
+            search_mat = st.text_input("🔍 البحث بكود المادة لتعديل بياتها:", key="search_mat_table").strip()
  
             df_current_materials = pd.read_sql(
                 "SELECT item_code, item_name, description, category FROM material_definitions ORDER BY item_code ASC", conn
@@ -815,13 +815,13 @@ else:
             if df_current_materials.empty:
                 st.info("ℹ️ لا توجد مواد أو أصناف معرفة في كشاف النظام تطابق البحث.")
             else:
-                st.caption(f"📦 إجمالي المواد المعروضة: {len(df_current_materials)} صنف — اضغط على أي صنف لتعديله أو حذفه.")
+                st.caption(f" إجمالي المواد المعروضة: {len(df_current_materials)} صنف — اضغط على أي صنف لتعديله أو حذفه.")
  
                 # رأس الجدول
                 hcol1, hcol2, hcol3, hcol4, hcol5 = st.columns([1.2, 2, 2.5, 1.5, 1.2])
                 hcol1.markdown("**كود المادة**")
                 hcol2.markdown("**اسم المادة**")
-                hcol3.markdown("**الوصف الفني**")
+                hcol3.markdown("**وصف المادة**")
                 hcol4.markdown("**الفئة**")
                 hcol5.markdown("**الإجراءات**")
                 st.markdown("<hr style='margin:4px 0 8px 0;'>", unsafe_allow_html=True)
@@ -923,9 +923,8 @@ else:
     # ---------------------------------------------------------
     elif st.session_state.page == "alerts_page":
         st.markdown("<div class='main-title'>⚠️ تقرير المواد التي اقتربت نهايتها من المخزون</div>", unsafe_allow_html=True)
-        st.write("### 📋 استخراج مسودات ومستندات نقص المواد")
         col_filter1, col_filter2 = st.columns([2, 1])
-        status_filter = col_filter1.selectbox("اختر مستوى فرز المواد لإنشاء ملف الطلبيات الميدانية:", ["عرض كافة النواقص (الحرج والتنبيه)", "🔴 نقص حاد وحرج جداً (الأحمر)", "🟡 تخطي حد التنبيه الآمن (الأصفر)"])
+        status_filter = col_filter1.selectbox("اختر مستوى فرز المواد لإنشاء ملف الطلبيات:", ["عرض كافة النواقص (الحرج والتنبيه)", "🔴 نقص حاد وحرج جداً (الأحمر)", "🟡 تخطي حد التنبيه الآمن (الأصفر)"])
         
         df_alert_data = pd.read_sql("""
             SELECT i.item_code as 'كود المادة', m.item_name as 'اسم المادة والصنف', i.category as 'الفئة الأساسية', i.warehouse as 'المستودع المستضيف', SUM(i.qty) as 'الرصيد الحالي بالمخزن', cat.red_limit, cat.yellow_limit
@@ -951,9 +950,9 @@ else:
                 df_to_export = df_alert_data[df_alert_data['وضعية حالة المخزون'] != "🟢 آمن ومستقر"]
                 
             if not df_to_export.empty:
-                st.info(f"📋 إجمالي عدد المواد والأصناف التي تتطلب التدخل وإعادة التعبئة حالياً: {len(df_to_export)} صنف.")
+                st.info(f" إجمالي عدد المواد والأصناف التي تتطلب التدخل وإعادة التعبئة حالياً: {len(df_to_export)} صنف.")
                 excel_data = to_excel(df_to_export[['كود المادة', 'اسم المادة والصنف', 'الفئة الأساسية', 'المستودع المستضيف', 'الرصيد الحالي بالمخزن', 'وضعية حالة المخزون']])
-                st.download_button(label=f"📥 تحميل مسودة مستند طلب المواد المحددة بصيغة Excel ({status_filter})", data=excel_data, file_name=f"مسودة_طلب_مواد_{status_filter}.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                st.download_button(label=f" تحميل مسودة مستند طلب المواد المحددة بصيغة Excel ({status_filter})", data=excel_data, file_name=f"مسودة_طلب_مواد_{status_filter}.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
                 st.dataframe(df_to_export[['كود المادة', 'اسم المادة والصنف', 'الفئة الأساسية', 'المستودع المستضيف', 'الرصيد الحالي بالمخزن', 'وضعية حالة المخزون']], use_container_width=True, hide_index=True)
             else:
                 st.success("✅ جميع أرصدة مستودعات الطوارئ الميدانية آمنة وضمن المستويات المستقرة المطلوبة.")
@@ -964,17 +963,16 @@ else:
     # صفحة: شحن وإدخال المواد للمستودعات
     # ---------------------------------------------------------
     elif st.session_state.page == "stock_in":
-        st.markdown("<div class='main-title'>📥 شحن وتغذية مستودعات الطوارئ الميدانية</div>", unsafe_allow_html=True)
+        st.markdown("<div class='main-title'>تغذية مستودعات الطوارئ</div>", unsafe_allow_html=True)
         if not list_warehouses:
             st.warning("⚠️ يرجى أولاً الذهاب للوحة التحكم العامة وتعريف مستودع ميداني واحد على الأقل.")
         else:
             if "num_in_rows" not in st.session_state: st.session_state.num_in_rows = 3
             col_nr, _ = st.columns([1, 4])
-            new_nr = col_nr.number_input("عدد المواد المراد شحنها:", min_value=1, max_value=20, value=st.session_state.num_in_rows, step=1)
+            new_nr = col_nr.number_input("عدد المواد المراد اضافة كميات لها:", min_value=1, max_value=20, value=st.session_state.num_in_rows, step=1)
             if new_nr != st.session_state.num_in_rows: st.session_state.num_in_rows = new_nr; st.rerun()
             st.write("---")
             with st.form("stock_in_form", clear_on_submit=True):
-                st.write("##### 📝 تعبئة نموذج الشحن الوارد (يمكن شحن أكثر من مادة دفعة واحدة):")
                 in_rows = []
                 for ri in range(st.session_state.num_in_rows):
                     st.markdown(f"**📦 المادة رقم ({ri+1}):**")
@@ -1008,13 +1006,13 @@ else:
     # صفحة: صرف مواد للمقاول (إصلاح محاذاة سلة الصرف)
     # ---------------------------------------------------------
     elif st.session_state.page == "stock_out":
-        st.markdown("<div class='main-title'>🛒 عمليات صرف ومواجهة حالات الطوارئ للمقاولين</div>", unsafe_allow_html=True)
+        st.markdown("<div class='main-title'>صرف مواد طوارئ </div>", unsafe_allow_html=True)
         if not list_warehouses or not list_contractors:
             st.warning("⚠️ يرجى التأكد من تعريف المستودعات والمقاولين المعتمدين في لوحة الإعدادات أولاً.")
         else:
             col_out_h1, col_out_h2 = st.columns([1.5, 2])
-            out_wh = col_out_h1.selectbox("📍 الصرف والسحب من مستودع طوارئ:", list_warehouses)
-            out_contractor = col_out_h2.selectbox("🏗️ المقاول المعتمد المستلم للمواد:", list_contractors)
+            out_wh = col_out_h1.selectbox("📍 مستودع صرف المواد:", list_warehouses)
+            out_contractor = col_out_h2.selectbox("🏗️ المقاول المستلم للمواد:", list_contractors)
 
             st.write("---")
             # إضافة يدوية باستخدام الكود
@@ -1114,17 +1112,17 @@ else:
     # صفحة: ارتجاع فائض المواد من المقاولين
     # ---------------------------------------------------------
     elif st.session_state.page == "stock_return":
-        st.markdown("<div class='main-title'>🔄 ارتجاع وإدخال فائض ومسترجعات المواد الميدانية</div>", unsafe_allow_html=True)
+        st.markdown("<div class='main-title'>🔄 ارجاع مواد للمستودعات</div>", unsafe_allow_html=True)
         if not list_warehouses or not list_contractors:
             st.warning("⚠️ يرجى التأكد من تعريف المستودعات والمقاولين المعتمدين في لوحة الإعدادات أولاً.")
         else:
             col_ret_h1, col_ret_h2 = st.columns([2, 1.5])
-            ret_contractor = col_ret_h1.selectbox("🏗️ المقاول المعتمد المسلّم للمواد:", list_contractors)
-            ret_wh = col_ret_h2.selectbox("📍 إيداع وارتجاع إلى مستودع:", list_warehouses)
+            ret_contractor = col_ret_h1.selectbox("🏗️ المقاول المسلّم للمواد:", list_contractors)
+            ret_wh = col_ret_h2.selectbox("📍 ارجاع المواد إلى مستودع:", list_warehouses)
             st.write("---")
             col_ret1, col_ret2, col_ret3 = st.columns([1.5, 2, 1])
-            ret_code = col_ret1.text_input("كود المادة للارتجاع *", key=f"ret_code_val_{st.session_state.input_ret_code}").strip()
-            ret_qty = col_ret2.number_input("الكمية المرتجعة المودعة *", min_value=1, value=1, step=1, key=f"ret_qty_val_{st.session_state.input_ret_qty}")
+            ret_code = col_ret1.text_input("كود المادة المراد ارجاعها  *", key=f"ret_code_val_{st.session_state.input_ret_code}").strip()
+            ret_qty = col_ret2.number_input("كمية المادة المراد ارجاعها  *", min_value=1, value=1, step=1, key=f"ret_qty_val_{st.session_state.input_ret_qty}")
             if col_ret3.button("➕ إضافة المرتجع للسلة"):
                 if ret_code and ret_qty > 0:
                     mat_chk = pd.read_sql(f"SELECT item_name, category FROM material_definitions WHERE item_code='{ret_code}'", conn)
@@ -1299,7 +1297,7 @@ else:
     # صفحة: مراجعة واعتماد طلبات الارتجاع (مسؤول مستودع / مدير نظام)
     # ---------------------------------------------------------
     elif st.session_state.page == "return_requests_admin":
-        st.markdown("<div class='main-title'>📥 طلبات الارتجاع المعلقة — المراجعة والاعتماد</div>", unsafe_allow_html=True)
+        st.markdown("<div class='main-title'>طلبات الارجاع المعلقة</div>", unsafe_allow_html=True)
         if role not in ("موظف مستودع", "مدير نظام"):
             st.error("❌ هذه الصفحة متاحة لمسؤول المستودع ومدير النظام فقط.")
         else:
@@ -1308,7 +1306,7 @@ else:
             with tab_pending:
                 df_pending = pd.read_sql("SELECT * FROM return_requests WHERE status='معلق' ORDER BY id DESC", conn)
                 if df_pending.empty:
-                    st.success("✅ لا توجد طلبات ارتجاع معلقة حالياً.")
+                    st.success("✅ لا توجد طلبات ارجاع معلقة حالياً.")
                 else:
                     st.info(f"📋 يوجد ({len(df_pending)}) طلب ارتجاع معلق يحتاج مراجعتك.")
                     for _, rr in df_pending.iterrows():
@@ -1432,10 +1430,9 @@ else:
                                     st.session_state[adm_confirm_key] = False; st.rerun()
 
             with tab_all:
-                st.write("### 📋 جميع طلبات الارتجاع")
                 df_all_rr = pd.read_sql("SELECT * FROM return_requests ORDER BY id DESC", conn)
                 if df_all_rr.empty:
-                    st.info("ℹ️ لا توجد أي طلبات ارتجاع في النظام حتى الآن.")
+                    st.info("ℹ️ لا توجد أي طلبات ارجاع في النظام حتى الآن..")
                 else:
                     col_filt1, col_filt2 = st.columns([1,2])
                     filt_status = col_filt1.selectbox("الحالة:", ["الكل","معلق","معتمد","مرفوض"], key="rr_status_filter")
@@ -1460,13 +1457,13 @@ else:
     # صفحة: نقل وتحويل مادة من مستودع لآخر (تحويل لوجستي بيني)
     # ---------------------------------------------------------
     elif st.session_state.page == "stock_transfer":
-        st.markdown("<div class='main-title'>🚛 نقل وتحويل المواد لوجستياً بين مستودعات الطوارئ الميدانية</div>", unsafe_allow_html=True)
+        st.markdown("<div class='main-title'>نقل مواد طوارئ من مستودع الى اخر</div>", unsafe_allow_html=True)
         if not list_warehouses:
             st.warning("⚠️ يرجى أولاً التأكد من تعريف المستودعات في لوحة الإعدادات أولاً.")
         else:
             col_trans_h1, col_trans_h2 = st.columns([1, 1])
-            trans_wh_from = col_trans_h1.selectbox("📍 من المستودع (المصدر المنقول منه):", list_warehouses)
-            trans_wh_to = col_trans_h2.selectbox("📍 إلى المستودع (المستهدف بالتحويل والطلب المستلم):", list_warehouses)
+            trans_wh_from = col_trans_h1.selectbox("📍 من المستودع (المنقول منه):", list_warehouses)
+            trans_wh_to = col_trans_h2.selectbox("📍 إلى المستودع (المنقول اليه):", list_warehouses)
             if trans_wh_from == trans_wh_to:
                 st.error("❌ خطأ: لا يمكن اختيار نفس المستودع كمصدر ومستهدف للنقل اللوجستي البيني!")
             else:
@@ -1614,7 +1611,7 @@ else:
                     _wh_opts = list_warehouses
                     _wh_idx  = _wh_opts.index(st.session_state['ef_wh_from']) if st.session_state['ef_wh_from'] in _wh_opts else 0
                     new_ef_wh = efc1.selectbox(
-                        "📍 المستودع المعني:" if ef_type=="صرف" else "📍 المستودع الذي يستلم المواد:",
+                        "📍 مستودع صرف المواد:" if ef_type=="صرف" else "📍 المستودع الذي يستلم المواد:",
                         _wh_opts, index=_wh_idx, key="ef_wh_sel")
                     if new_ef_wh != st.session_state['ef_wh_from']:
                         st.session_state['ef_wh_from'] = new_ef_wh
@@ -1888,12 +1885,11 @@ else:
     # صفحة: سجل العمليات التفصيلي وأرشيف المستندات الذكي
     # ---------------------------------------------------------
     elif st.session_state.page == "view_logs":
-        st.markdown("<div class='main-title'>🛠️ سجل العمليات التفصيلي وأرشيف فواتير النظام الأوتوماتيكي</div>", unsafe_allow_html=True)
+        st.markdown("<div class='main-title'> سجل العمليات التفصيلي وأرشيف فواتير النظام</div>", unsafe_allow_html=True)
         
-        tab_logs_actions, tab_invoices_archive = st.tabs(["📋 سجل تتبع حركات الموظفين اليومية", "🗂️ مستودع الفواتير والمستندات المؤرشفة"])
+        tab_logs_actions, tab_invoices_archive = st.tabs(["📋 سجل تتبع حركات الموظفين اليومية", "🗂️  ارشيف الفواتير والمستندات "])
         
         with tab_logs_actions:
-            st.write("##### 🔍 البحث والفرز الفوري في سجل تتبع النظام الكلي")
             col_l1, col_l2 = st.columns([2, 1])
             search_log_txt = col_l1.text_input("ابحث بكتابة اسم الموظف، كود المادة، أو نوع العملية:")
             type_log_filter = col_l2.selectbox("تصفية بحسب نوع الحركة:", ["عرض الكل", "شحن وإدخل مخزني", "صرف مواد لمقاول", "ارتجاع فائض مواد", "تحويل ونقل بيني لوجستي", "تعريف صنف جديد"])
@@ -1910,17 +1906,16 @@ else:
             if not df_logs.empty:
                 st.dataframe(df_logs, use_container_width=True, hide_index=True)
                 excel_logs = to_excel(df_logs)
-                st.download_button("📥 تصدير السجل المعروض حالياً إلى ملف Excel مستقل", excel_logs, "سجل_العمليات_المخزنية.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                st.download_button(" تصدير السجل المعروض حالياً إلى ملف Excel ", excel_logs, "سجل_العمليات_المخزنية.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
             else:
                 st.info("ℹ️ لا توجد قيوز أو عمليات مسجلة تطابق محددات البحث والفلاتر الحالية.")
                 
         with tab_invoices_archive:
-            st.write("##### 📄 أرشيف استرجاع وإعادة طباعة المستندات والفواتير الصادرة مسبقاً")
             
             col_arch1, col_arch2, col_arch3, col_arch4 = st.columns([1, 1, 1.2, 1.2])
             filter_arch_type = col_arch1.selectbox("نوع المستند المراد عرضه:", ["الكل", "صرف", "ارتجاع", "تحويل"])
             search_arch_no = col_arch2.text_input("ابحث برقم الفاتورة مباشرة:")
-            search_arch_name = col_arch3.text_input("ابحث باسم المقاول أو الموظف منشئ الحركة:")
+            search_arch_name = col_arch3.text_input("ابحث باسم المقاول أو الموظف منشئ الفاتورة:")
             search_arch_date = col_arch4.date_input("تصفية بحسب تاريخ إصدار الفاتورة:", value=None)
             
             arch_query = "SELECT id, invoice_type, invoice_no, warehouse_from, warehouse_to, contractor, employee, timestamp, html_content FROM archived_invoices WHERE 1=1"
@@ -1970,12 +1965,12 @@ else:
 
         # ── ثوابت التسلسل الهرمي ──
         POSITION_HIERARCHY = [
-            {"key": "مدير المشروع",      "icon": "👑", "color": "#004a99", "bg": "#e8f0fb"},
-            {"key": "نائب مدير المشروع", "icon": "🥇", "color": "#1565c0", "bg": "#e3f2fd"},
-            {"key": "مستلم بلاغات",      "icon": "📡", "color": "#00695c", "bg": "#e0f2f1"},
-            {"key": "أمين مستودع",       "icon": "🏪", "color": "#6a1b9a", "bg": "#f3e5f5"},
-            {"key": "مسؤول فرق طوارئ",   "icon": "🚨", "color": "#c62828", "bg": "#ffebee"},
-            {"key": "أخرى",              "icon": "📋", "color": "#555",    "bg": "#f5f5f5"},
+            {"key": "مدير المشروع",      "icon": "", "color": "#004a99", "bg": "#e8f0fb"},
+            {"key": "نائب مدير المشروع", "icon": "", "color": "#1565c0", "bg": "#e3f2fd"},
+            {"key": "مستلم بلاغات",      "icon": "", "color": "#00695c", "bg": "#e0f2f1"},
+            {"key": "أمين مستودع",       "icon": "", "color": "#6a1b9a", "bg": "#f3e5f5"},
+            {"key": "مسؤول فرق طوارئ",   "icon": "", "color": "#c62828", "bg": "#ffebee"},
+            {"key": "أخرى",              "icon": "", "color": "#555",    "bg": "#f5f5f5"},
         ]
         POSITION_KEYS = [p["key"] for p in POSITION_HIERARCHY]
 
@@ -2144,7 +2139,6 @@ else:
         # ══════════════════════════════════════
         if role == "مدير نظام":
             st.divider()
-            st.markdown("### ⚙️ إدارة أرقام التواصل")
 
             adm_tab1, adm_tab2, adm_tab3 = st.tabs([
                 "➕ إضافة / تعديل أرقام المقاولين والمستودعات",
@@ -2346,7 +2340,7 @@ else:
     # صفحة: لوحة إدارة حسابات الموظفين والتحكم بالصلاحيات العليا
     # ---------------------------------------------------------
     elif st.session_state.page == "manage_staff":
-        st.markdown("<div class='main-title'>👥 إدارة حسابات الموظفين والتحكم بالصلاحيات العليا</div>", unsafe_allow_html=True)
+        st.markdown("<div class='main-title'> إدارة حسابات الموظفين والتحكم بالصلاحيات </div>", unsafe_allow_html=True)
 
         if u['role'] != "مدير نظام":
             st.error("❌ هذه الصفحة متاحة لمدير النظام فقط.")
@@ -2593,7 +2587,7 @@ else:
         if u['role'] != "مدير نظام":
             st.error("❌ هذه الصفحة متاحة لمدير النظام فقط.")
         else:
-            st.markdown("<div class='main-title'>💾 إدارة النسخ الاحتياطية للنظام</div>", unsafe_allow_html=True)
+            st.markdown("<div class='main-title'> إدارة النسخ الاحتياطية للنظام</div>", unsafe_allow_html=True)
 
             # ── التحقق من كلمة المرور ──
             if not st.session_state.get('backup_auth'):
@@ -2684,7 +2678,7 @@ else:
     # صفحة: الثوابت العامة والإعدادات التشغيلية
     # ---------------------------------------------------------
     elif st.session_state.page == "global_settings":
-        st.markdown("<div class='main-title'>🏢 إدارة المستودعات والمقاولين والفئات</div>", unsafe_allow_html=True)
+        st.markdown("<div class='main-title'> إدارة المستودعات والمقاولين والفئات</div>", unsafe_allow_html=True)
 
         if u['role'] != "مدير نظام":
             st.error("❌ هذه الصفحة متاحة لمدير النظام فقط.")
