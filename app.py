@@ -1931,7 +1931,7 @@ else:
             trans_wh_from = col_trans_h1.selectbox("📍 من المستودع (المنقول منه):", list_warehouses)
             trans_wh_to = col_trans_h2.selectbox("📍 إلى المستودع (المنقول إليه ):", list_warehouses)
             if trans_wh_from == trans_wh_to:
-                st.error("❌ خطأ: لا يمكن اختيار نفس المستودع كمصدر ومستهدف للنقل اللوجستي البيني!")
+                st.error("❌ خطأ: لا يمكن اختيار نفس المستودع !")
             else:
                 st.write("---")
                 col_trans1, col_trans2, col_trans3 = st.columns([1.5, 2, 1])
