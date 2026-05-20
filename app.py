@@ -183,6 +183,25 @@ def init_database():
                     timestamp TEXT,
                     approved_by TEXT,
                     approved_at TEXT)''')
+    # إضافة الأعمدة الناقصة لقواعد البيانات القديمة (توافق مع الإصدارات السابقة)
+    for _col, _type in [
+        ("request_no",  "TEXT DEFAULT ''"),
+        ("warehouse",   "TEXT DEFAULT ''"),
+        ("contractor",  "TEXT DEFAULT ''"),
+        ("items_json",  "TEXT DEFAULT '[]'"),
+        ("requester",   "TEXT DEFAULT ''"),
+        ("status",      "TEXT DEFAULT 'معلق'"),
+        ("notes",       "TEXT DEFAULT ''"),
+        ("invoice_html","TEXT DEFAULT ''"),
+        ("timestamp",   "TEXT DEFAULT ''"),
+        ("approved_by", "TEXT DEFAULT ''"),
+        ("approved_at", "TEXT DEFAULT ''"),
+    ]:
+        try:
+            c.execute(f"ALTER TABLE return_requests ADD COLUMN {_col} {_type}")
+            conn.commit()
+        except Exception:
+            pass
 
     # جدول أرقام التواصل مع المقاولين والمستودعات
     c.execute('''CREATE TABLE IF NOT EXISTS contact_numbers (
@@ -206,7 +225,14 @@ def init_database():
                     name TEXT,
                     department TEXT,
                     phone TEXT,
-                    notes TEXT)''')
+                    notes TEXT,
+                    sort_order INTEGER DEFAULT 0)''')
+    # إضافة عمود الترتيب لقواعد البيانات القديمة
+    try:
+        c.execute("ALTER TABLE managers_directory ADD COLUMN sort_order INTEGER DEFAULT 0")
+        conn.commit()
+    except Exception:
+        pass
 
     # إضافة عمود المنصب لجدول المستخدمين إن لم يكن موجوداً
     try:
@@ -252,7 +278,8 @@ except Exception:
 
 def render_invoice_html(title, items_list, warehouse, contractor, employee, custom_inv_no=None, extra_info=None):
     inv_no = custom_inv_no if custom_inv_no else now_mecca().strftime("%d%H%M")
-    dt_str = now_mecca().strftime("%Y-%m-%d %H:%M")
+    # إظهار التاريخ فقط بدون الوقت
+    dt_str = now_mecca().strftime("%Y-%m-%d")
     rows = ""
     for item in items_list:
         rows += (
@@ -283,14 +310,14 @@ def render_invoice_html(title, items_list, warehouse, contractor, employee, cust
         <hr style="border:2px solid #004a99;margin-bottom:12px;">
         <div style="display:flex;justify-content:space-between;font-size:14px;color:#333;margin-bottom:12px;">
             <div><b>رقم الفاتورة:</b> <span style="color:red;font-weight:bold;font-size:16px;">{inv_no}</span></div>
-            <div><b>التاريخ والوقت:</b> {dt_str}</div>
+            <div><b>التاريخ:</b> {dt_str}</div>
             <div><b>المسؤول:</b> {employee}</div>
         </div>
         <h3 style="text-align:center;background:#004a99;color:white;padding:12px;border-radius:8px;font-size:19px;margin-bottom:18px;">{title}</h3>
         <div style="background:#f9f9f9;padding:12px 15px;border-radius:8px;margin-bottom:18px;border:1px solid #eee;font-size:14px;">
             <table style="width:100%;border:none;">
                 <tr>
-                    <td><b>المستودع المعني:</b> {warehouse if warehouse else 'N/A'}</td>
+                    <td><b>مستودع الصرف:</b> {warehouse if warehouse else 'N/A'}</td>
                     <td><b>المقاول / الجهة المستلمة:</b> {contractor if contractor else 'N/A'}</td>
                 </tr>
                 {extra_row}
@@ -305,7 +332,7 @@ def render_invoice_html(title, items_list, warehouse, contractor, employee, cust
             <tbody>{rows}</tbody>
         </table>
         <div style="margin-top:60px;display:flex;justify-content:space-between;text-align:center;font-size:15px;">
-            <div style="width:45%;"><p><b>توقيع مسؤول المستودع</b></p><br><br><p>_______________________</p></div>
+            <div style="width:45%;"><p><b>توقيع أمين المستودع</b></p><br><br><p>_______________________</p></div>
             <div style="width:45%;"><p><b>توقيع المقاول / المستلم للمواد</b></p><br><br><p>_______________________</p></div>
         </div>
         <div style="text-align:center;margin-top:40px;" class="no-print">
@@ -315,11 +342,126 @@ def render_invoice_html(title, items_list, warehouse, contractor, employee, cust
     return html
 
 def render_return_invoice_html(title, items_list, warehouse, contractor, employee, custom_inv_no=None):
-    return render_invoice_html(title, items_list, warehouse, contractor, employee, custom_inv_no)
+    """فاتورة الارجاع — مستودع مستلم + مقاول مسلم"""
+    inv_no = custom_inv_no if custom_inv_no else now_mecca().strftime("%d%H%M")
+    dt_str = now_mecca().strftime("%Y-%m-%d")
+    rows = ""
+    for item in items_list:
+        rows += (
+            "<tr>"
+            f"<td style='border:1px solid #ddd;padding:10px;text-align:center;font-weight:bold;'>{item['code']}</td>"
+            f"<td style='border:1px solid #ddd;padding:10px;text-align:right;'>{item['name']}</td>"
+            f"<td style='border:1px solid #ddd;padding:10px;text-align:center;color:#004a99;font-weight:bold;font-size:16px;'>{item['qty']}</td>"
+            "</tr>"
+        )
+    html = f"""
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap');
+    @media print {{
+        @page {{ size: auto; margin: 0mm; }}
+        body {{ margin: 0mm; padding: 10mm; background: white; }}
+        .no-print {{ display: none !important; }}
+    }}
+    </style>
+    <div dir="rtl" style="font-family:'Tajawal',Arial,sans-serif;padding:30px;border:3px solid #004a99;border-radius:15px;background:#fff;max-width:900px;margin:auto;">
+        <div style="text-align:center;margin-bottom:15px;">
+            <img src="{LOGO_DATA_URI}" width="160" style="border-radius:10px;display:block;margin:0 auto 8px auto;">
+            <div style="font-size:22px;font-weight:900;color:#004a99;">السعودية للطاقة</div>
+            <div style="font-size:13px;color:#1daa60;font-weight:bold;">نظام إدارة مواد الطوارئ — دائرة شرق منطقة جازان</div>
+        </div>
+        <hr style="border:2px solid #004a99;margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;font-size:14px;color:#333;margin-bottom:12px;">
+            <div><b>رقم الفاتورة:</b> <span style="color:red;font-weight:bold;font-size:16px;">{inv_no}</span></div>
+            <div><b>التاريخ:</b> {dt_str}</div>
+            <div><b>المسؤول:</b> {employee}</div>
+        </div>
+        <h3 style="text-align:center;background:#004a99;color:white;padding:12px;border-radius:8px;font-size:19px;margin-bottom:18px;">{title}</h3>
+        <div style="background:#f9f9f9;padding:12px 15px;border-radius:8px;margin-bottom:18px;border:1px solid #eee;font-size:14px;">
+            <table style="width:100%;border:none;">
+                <tr>
+                    <td><b>المستودع المستلم:</b> {warehouse if warehouse else 'N/A'}</td>
+                    <td><b>المقاول المسلم للمادة:</b> {contractor if contractor else 'N/A'}</td>
+                </tr>
+            </table>
+        </div>
+        <table style="width:100%;border-collapse:collapse;font-size:15px;">
+            <thead><tr style="background:#004a99;color:white;">
+                <th style="border:1px solid #004a99;padding:12px;width:25%;">كود المادة</th>
+                <th style="border:1px solid #004a99;padding:12px;width:55%;text-align:right;">وصف وصنف المادة</th>
+                <th style="border:1px solid #004a99;padding:12px;width:20%;">الكمية</th>
+            </tr></thead>
+            <tbody>{rows}</tbody>
+        </table>
+        <div style="margin-top:60px;display:flex;justify-content:space-between;text-align:center;font-size:15px;">
+            <div style="width:45%;"><p><b>توقيع أمين مستودع المستلم</b></p><br><br><p>_______________________</p></div>
+            <div style="width:45%;"><p><b>المقاول المسلم للمادة</b></p><br><br><p>_______________________</p></div>
+        </div>
+        <div style="text-align:center;margin-top:40px;" class="no-print">
+            <button onclick="window.print()" style="padding:12px 35px;background:#f9a825;color:white;border:none;border-radius:6px;font-size:16px;font-weight:bold;cursor:pointer;">🖨️ اضغط هنا لطباعة الفاتورة</button>
+        </div>
+    </div>"""
+    return html
 
 def render_transfer_invoice_html(title, items_list, wh_from, wh_to, employee, custom_inv_no=None):
-    return render_invoice_html(title, items_list, wh_from, "", employee, custom_inv_no,
-                                extra_info=("المستودع المستلم:", wh_to if wh_to else "N/A"))
+    """فاتورة نقل المواد بين المستودعات — بدون مقاول"""
+    inv_no = custom_inv_no if custom_inv_no else now_mecca().strftime("%d%H%M")
+    dt_str = now_mecca().strftime("%Y-%m-%d")
+    rows = ""
+    for item in items_list:
+        rows += (
+            "<tr>"
+            f"<td style='border:1px solid #ddd;padding:10px;text-align:center;font-weight:bold;'>{item['code']}</td>"
+            f"<td style='border:1px solid #ddd;padding:10px;text-align:right;'>{item['name']}</td>"
+            f"<td style='border:1px solid #ddd;padding:10px;text-align:center;color:#004a99;font-weight:bold;font-size:16px;'>{item['qty']}</td>"
+            "</tr>"
+        )
+    html = f"""
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap');
+    @media print {{
+        @page {{ size: auto; margin: 0mm; }}
+        body {{ margin: 0mm; padding: 10mm; background: white; }}
+        .no-print {{ display: none !important; }}
+    }}
+    </style>
+    <div dir="rtl" style="font-family:'Tajawal',Arial,sans-serif;padding:30px;border:3px solid #004a99;border-radius:15px;background:#fff;max-width:900px;margin:auto;">
+        <div style="text-align:center;margin-bottom:15px;">
+            <img src="{LOGO_DATA_URI}" width="160" style="border-radius:10px;display:block;margin:0 auto 8px auto;">
+            <div style="font-size:22px;font-weight:900;color:#004a99;">السعودية للطاقة</div>
+            <div style="font-size:13px;color:#1daa60;font-weight:bold;">نظام إدارة مواد الطوارئ — دائرة شرق منطقة جازان</div>
+        </div>
+        <hr style="border:2px solid #004a99;margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;font-size:14px;color:#333;margin-bottom:12px;">
+            <div><b>رقم الفاتورة:</b> <span style="color:red;font-weight:bold;font-size:16px;">{inv_no}</span></div>
+            <div><b>التاريخ:</b> {dt_str}</div>
+            <div><b>المسؤول:</b> {employee}</div>
+        </div>
+        <h3 style="text-align:center;background:#004a99;color:white;padding:12px;border-radius:8px;font-size:19px;margin-bottom:18px;">{title}</h3>
+        <div style="background:#f9f9f9;padding:12px 15px;border-radius:8px;margin-bottom:18px;border:1px solid #eee;font-size:14px;">
+            <table style="width:100%;border:none;">
+                <tr>
+                    <td><b>المستودع المنقولة منه المواد:</b> {wh_from if wh_from else 'N/A'}</td>
+                    <td><b>المستودع المستلم للمواد:</b> {wh_to if wh_to else 'N/A'}</td>
+                </tr>
+            </table>
+        </div>
+        <table style="width:100%;border-collapse:collapse;font-size:15px;">
+            <thead><tr style="background:#004a99;color:white;">
+                <th style="border:1px solid #004a99;padding:12px;width:25%;">كود المادة</th>
+                <th style="border:1px solid #004a99;padding:12px;width:55%;text-align:right;">وصف وصنف المادة</th>
+                <th style="border:1px solid #004a99;padding:12px;width:20%;">الكمية</th>
+            </tr></thead>
+            <tbody>{rows}</tbody>
+        </table>
+        <div style="margin-top:60px;display:flex;justify-content:space-between;text-align:center;font-size:15px;">
+            <div style="width:45%;"><p><b>توقيع أمين مستودع المنقولة منه المواد</b></p><br><br><p>_______________________</p></div>
+            <div style="width:45%;"><p><b>توقيع أمين المستودع المستلم للمواد</b></p><br><br><p>_______________________</p></div>
+        </div>
+        <div style="text-align:center;margin-top:40px;" class="no-print">
+            <button onclick="window.print()" style="padding:12px 35px;background:#f9a825;color:white;border:none;border-radius:6px;font-size:16px;font-weight:bold;cursor:pointer;">🖨️ اضغط هنا لطباعة الفاتورة</button>
+        </div>
+    </div>"""
+    return html
 
 # =========================================================
 # 5. الوظائف البرمجية المساعدة (التسجيل والتصدير)
@@ -481,6 +623,59 @@ st.markdown("""
     .btn-success>div>button:hover { background-color: #1b5e20 !important; }
     @media print { .no-print { display: none !important; } }
     .warn-box { background:#fff3cd; border:2px solid #f9a825; border-radius:10px; padding:16px 20px; margin:12px 0; direction:rtl; font-size:15px; }
+    /* ── iOS-style notification badge for return requests button ── */
+    div[data-badge]::after {
+        content: attr(data-badge);
+        position: absolute;
+        top: -6px;
+        left: -6px;
+        background: #d32f2f;
+        color: white;
+        border-radius: 50%;
+        min-width: 20px;
+        height: 20px;
+        font-size: 11px;
+        font-weight: 900;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 4px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+        z-index: 999;
+        pointer-events: none;
+        border: 2px solid white;
+    }
+    div[data-badge] {
+        position: relative;
+        display: inline-block;
+        width: 100%;
+    }
+    .ret-btn-wrap {
+        position: relative;
+        display: block;
+        width: 100%;
+    }
+    .ret-btn-wrap .ret-badge {
+        position: absolute;
+        top: 2px;
+        left: 4px;
+        background: #d32f2f;
+        color: white;
+        border-radius: 50%;
+        min-width: 20px;
+        height: 20px;
+        font-size: 11px;
+        font-weight: 900;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 3px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.35);
+        z-index: 999;
+        pointer-events: none;
+        border: 2px solid white;
+        line-height: 1;
+    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -635,6 +830,7 @@ if 'ef_confirm' not in st.session_state: st.session_state['ef_confirm'] = False
 if 'backup_auth' not in st.session_state: st.session_state['backup_auth'] = False
 if 'staff_auth' not in st.session_state: st.session_state['staff_auth'] = False
 if 'settings_auth' not in st.session_state: st.session_state['settings_auth'] = False
+if 'admin_pwd_auth' not in st.session_state: st.session_state['admin_pwd_auth'] = False
 if 'prev_page' not in st.session_state: st.session_state.prev_page = ""
 if 'display_mode' not in st.session_state: st.session_state['display_mode'] = "desktop"
 # متغيرات طلبات الارجاع
@@ -646,6 +842,13 @@ if 'input_retreq_qty' not in st.session_state: st.session_state.input_retreq_qty
 if 'ef_contractor' not in st.session_state: st.session_state['ef_contractor'] = None
 if 'ef_wh_from' not in st.session_state: st.session_state['ef_wh_from'] = None
 if 'ef_wh_to' not in st.session_state: st.session_state['ef_wh_to'] = None
+if 'stock_in_pending' not in st.session_state: st.session_state['stock_in_pending'] = None
+if 'stock_in_confirm' not in st.session_state: st.session_state['stock_in_confirm'] = False
+# متغيرات لتخزين رقم الفاتورة الأخيرة المنشأة للتوجيه
+if 'last_created_inv_no' not in st.session_state: st.session_state['last_created_inv_no'] = None
+if 'last_created_inv_type' not in st.session_state: st.session_state['last_created_inv_type'] = None
+if 'last_ret_req_no' not in st.session_state: st.session_state['last_ret_req_no'] = None
+if 'my_inv_show_latest' not in st.session_state: st.session_state['my_inv_show_latest'] = False
 
 # شعار السعودية للطاقة مضمّن مباشرة في الكود
 LOGO_DATA_URI = "data:image/png;base64,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"
@@ -677,7 +880,7 @@ if not st.session_state.auth:
         with st.form("login_form"):
             login_user = st.text_input("رقم الجوال الخاص بالموظف")
             login_pass = st.text_input("كلمة المرور", type="password")
-            login_btn = st.form_submit_button("تسجيل الدخول إلى النظام", use_container_width=True)
+            login_btn = st.form_submit_button("تسجيل الدخول", use_container_width=True)
         if login_btn:
             res = pd.read_sql(f"SELECT * FROM users WHERE username='{login_user}' AND password='{login_pass}'", conn)
             if not res.empty:
@@ -730,7 +933,7 @@ else:
             <b style='font-size:15px;'>نظام إدارة مواد الطوارئ</b><br>
             <span style='color:#1daa60; font-size:13px; font-weight:bold;'>دائرة شرق منطقة جازان</span><br>
             <hr style="margin:12px 0; border:1px solid #004a99;">
-            <span style='font-size:13px; color:#555;'>👤 الموظف: <b>{u['full_name']}</b></span><br>
+            <span style='font-size:13px; color:#555;'>الموظف:<b>{u['full_name']}</b></span><br>
             <span style='font-size:12px; background:#e1f5fe; color:#0288d1; padding:2px 8px; border-radius:10px;'>{u['role']}</span>
         </div>
         """, unsafe_allow_html=True)
@@ -772,12 +975,15 @@ else:
         if role == "موجه بلاغات":
             if st.button("📊 رصيد المستودعات"): st.session_state.page = "inventory_status"
             st.divider()
-            st.sidebar.markdown("<p style='text-align:center; font-weight:bold; color:#1daa60; margin:0;'>عمليات الصرف والارجاع ونقل المواد</p>", unsafe_allow_html=True)
+            st.sidebar.markdown("<p style='text-align:center; font-weight:bold; color:#004a99; margin:0;'>عمليات الصرف والارجاع ونقل المواد</p>", unsafe_allow_html=True)
             if st.button("🛒 صرف مواد للمقاول"): st.session_state.page = "stock_out"
             # عدد طلبات الارجاع المعلقة
-            pending_ret_count = pd.read_sql("SELECT COUNT(*) as cnt FROM return_requests WHERE status='معلق'", conn).iloc[0]['cnt']
-            ret_btn_label = f"📤 طلبات الارجاع" + (f"  🔴 {pending_ret_count}" if pending_ret_count > 0 else "")
-            if st.button(ret_btn_label): st.session_state.page = "return_requests_user"
+            pending_ret_count = int(pd.read_sql("SELECT COUNT(*) as cnt FROM return_requests WHERE status='معلق'", conn).iloc[0]['cnt'])
+            if pending_ret_count > 0:
+                st.markdown(
+                    f"<div class='ret-btn-wrap'><span class='ret-badge'>{pending_ret_count}</span></div>",
+                    unsafe_allow_html=True)
+            if st.button("📤 طلبات الارجاع", key="ret_btn_user"): st.session_state.page = "return_requests_user"
             st.divider()
             if st.button("✏️ تعديل فاتورة سابقة"): st.session_state.page = "edit_invoice"
             if st.button("🗂️ أرشيف فواتيري"): st.session_state.page = "my_invoices"
@@ -785,51 +991,62 @@ else:
             if st.button("📞 أرقام التواصل"): st.session_state.page = "contacts_page"
 
         # ── موظف مستودع: كل شيء إلا التحكم بالنظام ──
-        elif role == "موظف مستودع":
+        elif role in ("موظف مستودع", "أمين مستودع"):
             if st.button("📊 رصيد المستودعات"): st.session_state.page = "inventory_status"
             if st.button("📑 تعريف مواد جديدة"): st.session_state.page = "item_defs"
             if st.button("⚠️ تنبيهات نقص مواد"): st.session_state.page = "alerts_page"
             st.divider()
-            st.sidebar.markdown("<p style='text-align:center; font-weight:bold; color:#1daa60; margin:0;'>عمليات الصرف والارجاع ونقل المواد</p>", unsafe_allow_html=True)
+            st.sidebar.markdown("<p style='text-align:center; font-weight:bold; color:#004a99; margin:0;'>عمليات الصرف والارجاع ونقل المواد</p>", unsafe_allow_html=True)
             if st.button("📥 إضافة مواد إلى المستودع"): st.session_state.page = "stock_in"
             if st.button("🛒 صرف مواد للمقاول"): st.session_state.page = "stock_out"
             if st.button("🔄 ارجاع المواد"): st.session_state.page = "stock_return"
             if st.button("🚛 نقل مادة من مستودع إلى آخر"): st.session_state.page = "stock_transfer"
-            pending_ret_wh = pd.read_sql("SELECT COUNT(*) as cnt FROM return_requests WHERE status='معلق'", conn).iloc[0]['cnt']
-            ret_wh_label = f"📥 طلبات الارجاع المعلقة" + (f"  🔴 {pending_ret_wh}" if pending_ret_wh > 0 else "")
-            if st.button(ret_wh_label): st.session_state.page = "return_requests_admin"
+            pending_ret_wh = int(pd.read_sql("SELECT COUNT(*) as cnt FROM return_requests WHERE status='معلق'", conn).iloc[0]['cnt'])
+            if pending_ret_wh > 0:
+                st.markdown(
+                    f"<div class='ret-btn-wrap'><span class='ret-badge'>{pending_ret_wh}</span></div>",
+                    unsafe_allow_html=True)
+            if st.button("📥 طلبات الارجاع المعلقة", key="ret_btn_wh"): st.session_state.page = "return_requests_admin"
             st.divider()
             if st.button("🛠️ سجل العمليات التفصيلي"): st.session_state.page = "view_logs"
             if st.button("✏️ تعديل فاتورة سابقة"): st.session_state.page = "edit_invoice"
+            if st.button("🗂️ أرشيف فواتير"): st.session_state.page = "my_invoices"
             st.divider()
             if st.button("📞 أرقام التواصل"): st.session_state.page = "contacts_page"
 
         # ── مدير النظام: صلاحيات كاملة ──
         else:
+            # أي دور غير معروف يحصل على صلاحيات موظف مستودع كحد أقصى
+            _is_admin = (role == "مدير نظام")
             if st.button("📊 رصيد المستودعات"): st.session_state.page = "inventory_status"
             if st.button("📑 تعريف مواد جديدة"): st.session_state.page = "item_defs"
             if st.button("⚠️ تنبيهات نقص مواد"): st.session_state.page = "alerts_page"
             st.divider()
-            st.sidebar.markdown("<p style='text-align:center; font-weight:bold; color:#1daa60; margin:0;'>عمليات الصرف والارجاع ونقل المواد</p>", unsafe_allow_html=True)
+            st.sidebar.markdown("<p style='text-align:center; font-weight:bold; color:#004a99; margin:0;'>عمليات الصرف والارجاع ونقل المواد</p>", unsafe_allow_html=True)
             if st.button("📥 إضافة مواد إلى المستودع"): st.session_state.page = "stock_in"
             if st.button("🛒 صرف مواد للمقاول"): st.session_state.page = "stock_out"
             if st.button("🔄 ارجاع المواد"): st.session_state.page = "stock_return"
             if st.button("🚛 نقل مادة من مستودع إلى آخر"): st.session_state.page = "stock_transfer"
-            pending_ret_adm = pd.read_sql("SELECT COUNT(*) as cnt FROM return_requests WHERE status='معلق'", conn).iloc[0]['cnt']
-            ret_adm_label = f"📥 طلبات الارجاع المعلقة" + (f"  🔴 {pending_ret_adm}" if pending_ret_adm > 0 else "")
-            if st.button(ret_adm_label): st.session_state.page = "return_requests_admin"
+            pending_ret_adm = int(pd.read_sql("SELECT COUNT(*) as cnt FROM return_requests WHERE status='معلق'", conn).iloc[0]['cnt'])
+            if pending_ret_adm > 0:
+                st.markdown(
+                    f"<div class='ret-btn-wrap'><span class='ret-badge'>{pending_ret_adm}</span></div>",
+                    unsafe_allow_html=True)
+            if st.button("📥 طلبات الارجاع المعلقة", key="ret_btn_adm"): st.session_state.page = "return_requests_admin"
             st.divider()
             if st.button("🛠️ سجل العمليات التفصيلي"): st.session_state.page = "view_logs"
             if st.button("✏️ تعديل فاتورة سابقة"): st.session_state.page = "edit_invoice"
+            if st.button("🗂️ أرشيف فواتير"): st.session_state.page = "my_invoices"
             if st.button("📞 أرقام التواصل"): st.session_state.page = "contacts_page"
-            st.divider()
-            st.sidebar.markdown("<p style='text-align:center; font-weight:bold; color:#004a99; margin:0;'>⚙️ التحكم بالنظام</p>", unsafe_allow_html=True)
-            if st.button("👥 إدارة حسابات الموظفين والطلبات"): st.session_state.page = "manage_staff"
-            if st.button("🏢 إدارة المستودعات والمقاولين والفئات"): st.session_state.page = "global_settings"
-            if st.button("💾 إدارة النسخ الاحتياطية"): st.session_state.page = "backup_page"
+            if _is_admin:
+                st.divider()
+                st.sidebar.markdown("<p style='text-align:center; font-weight:bold; color:#004a99; margin:0;'>⚙️ التحكم بالنظام</p>", unsafe_allow_html=True)
+                if st.button("👥 إدارة حسابات الموظفين والطلبات"): st.session_state.page = "manage_staff"
+                if st.button("🏢 إدارة المستودعات والمقاولين والفئات"): st.session_state.page = "global_settings"
+                if st.button("💾 إدارة النسخ الاحتياطية"): st.session_state.page = "backup_page"
 
         st.divider()
-        if st.button("🚪 خروج من النظام"):
+        if st.button("🚪 تسجيل الخروج "):
             st.session_state.auth = False
             st.session_state.user_info = None
             # مسح localStorage و query params عند الخروج
@@ -974,7 +1191,7 @@ else:
                         st.rerun()
  
             st.divider()
-            st.write("##### 📋 كشاف وصنف المواد المعرفة حالياً في المنظومة:")
+            st.write("*المواد المعرفة مسبقا*")
  
             # ── شريط البحث السريع في الجدول ──
             search_mat = st.text_input("🔍 ابحث بكود أو اسم المادة لتسريع التعديل:", key="search_mat_table").strip()
@@ -990,7 +1207,7 @@ else:
                 ]
  
             if df_current_materials.empty:
-                st.info("ℹ️ لا توجد مواد أو أصناف معرفة في كشاف النظام تطابق البحث.")
+                st.info("ℹ️ لا توجد مواد أو أصناف معرفة في النظام تطابق البحث..")
             else:
                 st.caption(f"📦 إجمالي المواد المعروضة: {len(df_current_materials)} صنف — اضغط على أي صنف لتعديله أو حذفه.")
  
@@ -1100,9 +1317,8 @@ else:
     # ---------------------------------------------------------
     elif st.session_state.page == "alerts_page":
         st.markdown("<div class='main-title'>⚠️ تقرير المواد التي اقتربت نهايتها من المخزون</div>", unsafe_allow_html=True)
-        st.write("### 📋 استخراج مسودات ومستندات نقص المواد")
         col_filter1, col_filter2 = st.columns([2, 1])
-        status_filter = col_filter1.selectbox("اختر مستوى فرز المواد لإنشاء ملف الطلبيات الميدانية:", ["عرض كافة النواقص (الحرج والتنبيه)", "🔴 نقص حاد وحرج جداً (الأحمر)", "🟡 تخطي حد التنبيه الآمن (الأصفر)"])
+        status_filter = col_filter1.selectbox("اختر مستوى فرز المواد لإنشاء ملف بالمواد الحرجة :", ["عرض كافة النواقص (الحرج والتنبيه)", "🔴 نقص حاد وحرج جداً (الأحمر)", "🟡 تخطي حد التنبيه الآمن (الأصفر)"])
         
         df_alert_data = pd.read_sql("""
             SELECT i.item_code as 'كود المادة', m.item_name as 'اسم المادة والصنف', i.category as 'الفئة الأساسية', i.warehouse as 'المستودع المستضيف', SUM(i.qty) as 'الرصيد الحالي بالمخزن', cat.red_limit, cat.yellow_limit
@@ -1141,17 +1357,16 @@ else:
     # صفحة: شحن وإدخال المواد للمستودعات
     # ---------------------------------------------------------
     elif st.session_state.page == "stock_in":
-        st.markdown("<div class='main-title'>📥 شحن وتغذية مستودعات الطوارئ الميدانية</div>", unsafe_allow_html=True)
+        st.markdown("<div class='main-title'>تغذية مستودعات الطوارئ </div>", unsafe_allow_html=True)
         if not list_warehouses:
             st.warning("⚠️ يرجى أولاً الذهاب للوحة التحكم العامة وتعريف مستودع ميداني واحد على الأقل.")
         else:
             if "num_in_rows" not in st.session_state: st.session_state.num_in_rows = 3
             col_nr, _ = st.columns([1, 4])
-            new_nr = col_nr.number_input("عدد المواد المراد شحنها:", min_value=1, max_value=20, value=st.session_state.num_in_rows, step=1)
+            new_nr = col_nr.number_input("عدد المواد المراد تغذيتها:", min_value=1, max_value=20, value=st.session_state.num_in_rows, step=1)
             if new_nr != st.session_state.num_in_rows: st.session_state.num_in_rows = new_nr; st.rerun()
             st.write("---")
             with st.form("stock_in_form", clear_on_submit=True):
-                st.write("##### 📝 تعبئة نموذج الشحن الوارد (يمكن شحن أكثر من مادة دفعة واحدة):")
                 in_rows = []
                 for ri in range(st.session_state.num_in_rows):
                     st.markdown(f"**📦 المادة رقم ({ri+1}):**")
@@ -1161,26 +1376,59 @@ else:
                     r_qty  = r3.number_input("الكمية *", min_value=1, value=10, step=1, key=f"in_qty_{ri}")
                     if r_code: in_rows.append({'code':r_code,'wh':r_wh,'qty':r_qty})
                 st.write("---")
-                if st.form_submit_button("💾 اعتماد وتثبيت كافة الكميات الواردة بالمخزن"):
+                if st.form_submit_button("💾 اعتماد وتغذية كافة الكميات الواردة بالمخزن"):
                     if not in_rows:
                         st.error("⚠️ يرجى كتابة كود المادة لصف واحد على الأقل.")
                     else:
-                        ok_count = 0; err_list = []
+                        # التحقق المسبق من الأكواد وبناء قائمة للتأكيد
+                        valid_rows = []; err_list = []
                         for row_in in in_rows:
                             mat_res = pd.read_sql(f"SELECT item_name, category FROM material_definitions WHERE item_code='{row_in['code']}'", conn)
                             if mat_res.empty:
                                 err_list.append(row_in['code'])
                             else:
-                                item_name = mat_res.iloc[0]['item_name']; item_cat = mat_res.iloc[0]['category']
-                                c.execute("INSERT INTO inventory (item_code, qty, warehouse, contractor, category) VALUES (?,?,?,?,?)",
-                                          (row_in['code'], row_in['qty'], row_in['wh'], "", item_cat))
-                                save_log("شحن وإدخل مخزني", row_in['code'], row_in['qty'],
-                                         f"شحن كمية ({row_in['qty']}) من صنف [{item_name}] إلى المستودع [{row_in['wh']}]", u['full_name'])
-                                ok_count += 1
-                        conn.commit()
-                        if ok_count: st.success(f"✅ تم بنجاح شحن ({ok_count}) صنف للمستودعات!")
-                        if err_list: st.error(f"❌ الأكواد غير معرّفة: {', '.join(err_list)}")
-                        if ok_count: st.session_state.num_in_rows = 3; st.rerun()
+                                valid_rows.append({'code': row_in['code'], 'name': mat_res.iloc[0]['item_name'],
+                                                   'wh': row_in['wh'], 'qty': row_in['qty'],
+                                                   'cat': mat_res.iloc[0]['category']})
+                        if err_list:
+                            st.error(f"❌ الأكواد غير معرّفة: {', '.join(err_list)}")
+                        if valid_rows:
+                            st.session_state['stock_in_pending'] = valid_rows
+                            st.session_state['stock_in_confirm'] = False
+                            st.rerun()
+
+        # خارج الفورم: تأكيد التغذية
+        if st.session_state.get('stock_in_pending'):
+            pending_rows = st.session_state['stock_in_pending']
+            st.write("---")
+            st.markdown("<div style='background:#fff3cd;border:2px solid #f9a825;border-radius:10px;padding:16px;direction:rtl;'>"
+                        "<b>⚠️ هل أنت متأكد أنك تريد إضافة المواد التالية إلى المستودع؟</b></div>",
+                        unsafe_allow_html=True)
+            for rv in pending_rows:
+                st.markdown(
+                    f"<div style='background:#f0f7ff;border-right:4px solid #004a99;padding:8px 14px;margin:6px 0;border-radius:6px;direction:rtl;'>"
+                    f"🏢 <b>المستودع:</b> {rv['wh']} &nbsp;|&nbsp; "
+                    f"📦 <b>اسم المادة:</b> {rv['name']} &nbsp;|&nbsp; "
+                    f"🔖 <b>الكود:</b> {rv['code']} &nbsp;|&nbsp; "
+                    f"🔢 <b>الكمية:</b> {rv['qty']}</div>",
+                    unsafe_allow_html=True)
+            col_siy, col_sin = st.columns([1, 1])
+            if col_siy.button("✅ نعم، تأكيد الإضافة للمستودع"):
+                ok_count = 0
+                for rv in pending_rows:
+                    c.execute("INSERT INTO inventory (item_code, qty, warehouse, contractor, category) VALUES (?,?,?,?,?)",
+                              (rv['code'], rv['qty'], rv['wh'], "", rv['cat']))
+                    save_log("تغذية مستودع", rv['code'], rv['qty'],
+                             f"شحن كمية ({rv['qty']}) من صنف [{rv['name']}] إلى المستودع [{rv['wh']}]", u['full_name'])
+                    ok_count += 1
+                conn.commit()
+                st.session_state['stock_in_pending'] = None
+                st.session_state.num_in_rows = 3
+                st.success(f"✅ تم بنجاح شحن ({ok_count}) صنف للمستودعات!")
+                st.rerun()
+            if col_sin.button("❌ إلغاء"):
+                st.session_state['stock_in_pending'] = None
+                st.rerun()
     # ---------------------------------------------------------
     # صفحة: صرف مواد للمقاول (إصلاح محاذاة سلة الصرف)
     # ---------------------------------------------------------
@@ -1190,8 +1438,8 @@ else:
             st.warning("⚠️ يرجى التأكد من تعريف المستودعات والمقاولين المعتمدين في لوحة الإعدادات أولاً.")
         else:
             col_out_h1, col_out_h2 = st.columns([1.5, 2])
-            out_wh = col_out_h1.selectbox("📍 الصرف والسحب من مستودع طوارئ:", list_warehouses)
-            out_contractor = col_out_h2.selectbox("🏗️ المقاول المعتمد المستلم للمواد:", list_contractors)
+            out_wh = col_out_h1.selectbox("📍 مستودع الصرف :", list_warehouses)
+            out_contractor = col_out_h2.selectbox("🏗️ المقاول المستلم للمواد:", list_contractors)
 
             st.write("---")
             # إضافة يدوية باستخدام الكود
@@ -1247,7 +1495,7 @@ else:
                         st.session_state.review_out = False
                         st.session_state.confirm_out = False
                     else:
-                        st.write("### 📄 المعاينة الحية المباشرة للفاتورة الصادرة:")
+                        st.write("### 📄  معاينة الفاتورة الصادره قبل الطباعة و الأعتماد :")
                         inv_no_preview = now_mecca().strftime("%d%H%M")
                         html_invoice = render_invoice_html("فاتورة صرف مواد طوارئ", st.session_state.cart, out_wh, out_contractor, u['full_name'], inv_no_preview)
                         components.html(html_invoice, height=480, scrolling=True)
@@ -1276,32 +1524,45 @@ else:
                                     archive_invoice("صرف", inv_no_preview, out_wh, "", out_contractor, u['full_name'], json.dumps(st.session_state.cart), html_invoice)
                                     conn.commit()
                                     st.session_state.last_inv_html = html_invoice
+                                    st.session_state.last_created_inv_no = inv_no_preview
+                                    st.session_state.last_created_inv_type = "صرف"
                                     st.session_state.cart = []; st.session_state.review_out = False; st.session_state.confirm_out = False
-                                    st.success(f"🎉 تم بنجاح خصم الرصيد وأرشفة مستند الصرف رقم ({inv_no_preview}) بنجاح كلي!"); st.rerun()
+                                    st.success(f"🎉 تم إنشاء فاتورة صرف مواد طوارئ بنجاح! رقم الفاتورة: ({inv_no_preview})"); st.rerun()
                             if col_no.button("❌ لا، إلغاء"):
                                 st.session_state.confirm_out = False; st.rerun()
 
-            if st.session_state.last_inv_html and not st.session_state.cart:
+            if st.session_state.last_created_inv_no and st.session_state.last_created_inv_type == "صرف" and not st.session_state.cart:
                 st.divider()
-                ch1, ch2 = st.columns([4,1])
-                ch1.write("### 🖨️ آخر فاتورة صرف تم إنشاؤها بنجاح (جاهزة للطباعة الفورية):")
-                if ch2.button("✖️ إخفاء", key="hide_out_inv"): st.session_state.last_inv_html = None; st.rerun()
-                components.html(st.session_state.last_inv_html, height=520, scrolling=True)
+                st.markdown(f"""
+                <div style='background:#e8f5e9;border:2px solid #1daa60;border-radius:12px;padding:18px;text-align:center;direction:rtl;'>
+                    ✅ <b>تم إنشاء فاتورة صرف مواد طوارئ بنجاح</b><br>
+                    رقم الفاتورة: <span style='color:red;font-weight:900;font-size:18px;'>{st.session_state.last_created_inv_no}</span>
+                </div>""", unsafe_allow_html=True)
+                col_prev_btn, col_close_btn = st.columns([2, 1])
+                if col_prev_btn.button("👁️ معاينة الفاتورة والطباعة", key="preview_out_inv", use_container_width=True):
+                    st.session_state.page = "my_invoices"
+                    st.session_state.last_created_inv_no = None
+                    st.session_state.last_created_inv_type = None
+                    st.rerun()
+                if col_close_btn.button("✖️ إغفال", key="dismiss_out_inv"):
+                    st.session_state.last_created_inv_no = None
+                    st.session_state.last_created_inv_type = None
+                    st.rerun()
     # ---------------------------------------------------------
     # صفحة: ارجاع فائض المواد من المقاولين
     # ---------------------------------------------------------
     elif st.session_state.page == "stock_return":
-        st.markdown("<div class='main-title'>🔄 ارجاع وإدخال فائض ومسترجعات المواد الميدانية</div>", unsafe_allow_html=True)
+        st.markdown("<div class='main-title'>ارجاع مواد الى المستودعات</div>", unsafe_allow_html=True)
         if not list_warehouses or not list_contractors:
             st.warning("⚠️ يرجى التأكد من تعريف المستودعات والمقاولين المعتمدين في لوحة الإعدادات أولاً.")
         else:
             col_ret_h1, col_ret_h2 = st.columns([2, 1.5])
-            ret_contractor = col_ret_h1.selectbox("🏗️ المقاول المعتمد المسلّم للمواد:", list_contractors)
+            ret_contractor = col_ret_h1.selectbox(" المقاول الذي سوف يعيد المواد الى المستودع :", list_contractors)
             ret_wh = col_ret_h2.selectbox("📍 إيداع وارجاع إلى مستودع:", list_warehouses)
             st.write("---")
             col_ret1, col_ret2, col_ret3 = st.columns([1.5, 2, 1])
-            ret_code = col_ret1.text_input("كود المادة للارجاع *", key=f"ret_code_val_{st.session_state.input_ret_code}").strip()
-            ret_qty = col_ret2.number_input("الكمية المرتجعة المودعة *", min_value=1, value=1, step=1, key=f"ret_qty_val_{st.session_state.input_ret_qty}")
+            ret_code = col_ret1.text_input("كود المادة المراد ارجاعها *", key=f"ret_code_val_{st.session_state.input_ret_code}").strip()
+            ret_qty = col_ret2.number_input("الكمية*", min_value=1, value=1, step=1, key=f"ret_qty_val_{st.session_state.input_ret_qty}")
             if col_ret3.button("➕ إضافة المرتجع للسلة"):
                 if ret_code and ret_qty > 0:
                     mat_chk = pd.read_sql(f"SELECT item_name, category FROM material_definitions WHERE item_code='{ret_code}'", conn)
@@ -1325,9 +1586,9 @@ else:
                 st.markdown("</div>", unsafe_allow_html=True)
                 if st.session_state.review_return:
                     st.write("---")
-                    st.write("### 📄 المعاينة الحية المباشرة لفاتورة الارجاع الإيداعية:")
+                    st.write("### 📄 معاينة فاتورة الأرجاع الصادره قبل الطباعة و الأعتماد :")
                     ret_inv_no_preview = now_mecca().strftime("%d%H%M")
-                    html_ret_invoice = render_return_invoice_html("فاتورة ارجاع مواد طوارئ", st.session_state.return_cart, ret_wh, ret_contractor, u['full_name'], ret_inv_no_preview)
+                    html_ret_invoice = render_return_invoice_html("فاتورة إرجاع مواد طوارئ", st.session_state.return_cart, ret_wh, ret_contractor, u['full_name'], ret_inv_no_preview)
                     components.html(html_ret_invoice, height=480, scrolling=True)
                     if not st.session_state.confirm_return:
                         st.markdown("<div class='btn-success'>", unsafe_allow_html=True)
@@ -1344,21 +1605,34 @@ else:
                             for item in st.session_state.return_cart:
                                 c.execute("INSERT INTO inventory (item_code, qty, warehouse, contractor, category) VALUES (?,?,?,?,?)",
                                           (item['code'], item['qty'], ret_wh, ret_contractor, item['cat']))
-                                save_log("ارجاع فائض مواد", item['code'], item['qty'], f"ارجاع وإيداع من المقاول [{ret_contractor}] في مستودع [{ret_wh}] برقم قيد {ret_inv_no_preview}", u['full_name'])
+                                save_log("ارجاع مواد", item['code'], item['qty'], f"ارجاع وإيداع من المقاول [{ret_contractor}] في مستودع [{ret_wh}] برقم قيد {ret_inv_no_preview}", u['full_name'])
                             archive_invoice("ارجاع", ret_inv_no_preview, ret_wh, "", ret_contractor, u['full_name'], json.dumps(st.session_state.return_cart), html_ret_invoice)
                             conn.commit()
                             st.session_state.last_ret_inv_html = html_ret_invoice
+                            st.session_state.last_created_inv_no = ret_inv_no_preview
+                            st.session_state.last_created_inv_type = "ارجاع"
                             st.session_state.return_cart = []; st.session_state.review_return = False; st.session_state.confirm_return = False
-                            st.success(f"🎉 تم بنجاح قيد وإضافة الرصيد المرتجع وأرشفة المستند رقم ({ret_inv_no_preview}) بنجاح كلي!"); st.rerun()
+                            st.success(f"🎉 تم إنشاء فاتورة ارجاع مواد طوارئ بنجاح! رقم الفاتورة: ({ret_inv_no_preview})"); st.rerun()
                         if col_no.button("❌ لا، إلغاء"):
                             st.session_state.confirm_return = False; st.rerun()
 
-            if st.session_state.last_ret_inv_html and not st.session_state.return_cart:
+            if st.session_state.last_created_inv_no and st.session_state.last_created_inv_type == "ارجاع" and not st.session_state.return_cart:
                 st.divider()
-                rh1, rh2 = st.columns([4,1])
-                rh1.write("### 🖨️ آخر فاتورة ارجاع تم إنشاؤها بنجاح (جاهزة للطباعة الفورية):")
-                if rh2.button("✖️ إخفاء", key="hide_ret_inv"): st.session_state.last_ret_inv_html = None; st.rerun()
-                components.html(st.session_state.last_ret_inv_html, height=520, scrolling=True)
+                st.markdown(f"""
+                <div style='background:#e8f5e9;border:2px solid #1daa60;border-radius:12px;padding:18px;text-align:center;direction:rtl;'>
+                    ✅ <b>تم إنشاء فاتورة ارجاع مواد طوارئ بنجاح</b><br>
+                    رقم الفاتورة: <span style='color:red;font-weight:900;font-size:18px;'>{st.session_state.last_created_inv_no}</span>
+                </div>""", unsafe_allow_html=True)
+                col_prev_btn_r, col_close_btn_r = st.columns([2, 1])
+                if col_prev_btn_r.button("👁️ معاينة الفاتورة والطباعة", key="preview_ret_inv", use_container_width=True):
+                    st.session_state.page = "my_invoices"
+                    st.session_state.last_created_inv_no = None
+                    st.session_state.last_created_inv_type = None
+                    st.rerun()
+                if col_close_btn_r.button("✖️ إغفال", key="dismiss_ret_inv"):
+                    st.session_state.last_created_inv_no = None
+                    st.session_state.last_created_inv_type = None
+                    st.rerun()
     # ---------------------------------------------------------
     # صفحة: تقديم طلب ارجاع (موجه البلاغات)
     # ---------------------------------------------------------
@@ -1447,9 +1721,21 @@ else:
                                      f"تقديم طلب ارجاع رقم [{req_no_preview}] للمستودع [{rr_wh}] من المقاول [{rr_contractor}]",
                                      u['full_name'])
                             st.session_state.ret_req_cart = []; st.session_state.ret_req_review = False
-                            st.success(f"✅ تم إرسال طلب الارجاع رقم ({req_no_preview}) بنجاح وهو الآن بانتظار الاعتماد!"); st.rerun()
+                            st.session_state['last_ret_req_no'] = req_no_preview
+                            st.rerun()
                         if col_cancel.button("❌ إلغاء"):
                             st.session_state.ret_req_review = False; st.rerun()
+
+                if st.session_state.get('last_ret_req_no') and not st.session_state.ret_req_cart:
+                    st.markdown(
+                        f"<div style='background:#e8f5e9;border:2px solid #1daa60;border-radius:12px;padding:18px;text-align:center;direction:rtl;margin-top:16px;'>"
+                        f"✅ <b>تم إرسال طلب الارجاع بنجاح — بانتظار الاعتماد</b><br>"
+                        f"رقم الطلب: <span style='color:red;font-weight:900;font-size:18px;'>{st.session_state['last_ret_req_no']}</span><br>"
+                        f"<small>لن تُضاف المواد إلى المستودع إلا بعد اعتماد مسؤول المستودع أو مدير النظام.</small>"
+                        "</div>",
+                        unsafe_allow_html=True)
+                    if st.button("✖️ إغلاق الإشعار", key="close_ret_req_notif"):
+                        st.session_state['last_ret_req_no'] = None; st.rerun()
 
             with tab_my_req:
                 st.write(f"### 📋 طلبات الارجاع المقدمة من: {u['full_name']}")
@@ -1477,7 +1763,7 @@ else:
     # ---------------------------------------------------------
     elif st.session_state.page == "return_requests_admin":
         st.markdown("<div class='main-title'>📥 طلبات الارجاع المعلقة — المراجعة والاعتماد</div>", unsafe_allow_html=True)
-        if role not in ("موظف مستودع", "مدير نظام"):
+        if role == "موجه بلاغات":
             st.error("❌ هذه الصفحة متاحة لمسؤول المستودع ومدير النظام فقط.")
         else:
             tab_pending, tab_all = st.tabs(["⏳ الطلبات المعلقة", "📋 جميع الطلبات"])
@@ -1637,20 +1923,20 @@ else:
     # صفحة: نقل وتحويل مادة من مستودع لآخر (تحويل لوجستي بيني)
     # ---------------------------------------------------------
     elif st.session_state.page == "stock_transfer":
-        st.markdown("<div class='main-title'>🚛 نقل وتحويل المواد لوجستياً بين مستودعات الطوارئ الميدانية</div>", unsafe_allow_html=True)
+        st.markdown("<div class='main-title'>نقل وتحويل المواد من مستودع الى اخر </div>", unsafe_allow_html=True)
         if not list_warehouses:
             st.warning("⚠️ يرجى أولاً التأكد من تعريف المستودعات في لوحة الإعدادات أولاً.")
         else:
             col_trans_h1, col_trans_h2 = st.columns([1, 1])
-            trans_wh_from = col_trans_h1.selectbox("📍 من المستودع (المصدر المنقول منه):", list_warehouses)
-            trans_wh_to = col_trans_h2.selectbox("📍 إلى المستودع (المستهدف بالتحويل والطلب المستلم):", list_warehouses)
+            trans_wh_from = col_trans_h1.selectbox("📍 من المستودع (المنقول منه):", list_warehouses)
+            trans_wh_to = col_trans_h2.selectbox("📍 إلى المستودع (المنقول إليه ):", list_warehouses)
             if trans_wh_from == trans_wh_to:
                 st.error("❌ خطأ: لا يمكن اختيار نفس المستودع كمصدر ومستهدف للنقل اللوجستي البيني!")
             else:
                 st.write("---")
                 col_trans1, col_trans2, col_trans3 = st.columns([1.5, 2, 1])
                 trans_code = col_trans1.text_input("كود المادة المراد نقلها *", key=f"trans_code_val_{st.session_state.input_trans_code}").strip()
-                trans_qty = col_trans2.number_input("الكمية المنقولة المحولة *", min_value=1, value=1, step=1, key=f"trans_qty_val_{st.session_state.input_trans_qty}")
+                trans_qty = col_trans2.number_input("الكمية *", min_value=1, value=1, step=1, key=f"trans_qty_val_{st.session_state.input_trans_qty}")
                 if col_trans3.button("➕ إضافة مادة للتحويل"):
                     if trans_code and trans_qty > 0:
                         mat_chk = pd.read_sql(f"SELECT item_name, category FROM material_definitions WHERE item_code='{trans_code}'", conn)
@@ -1699,9 +1985,9 @@ else:
                             st.session_state.review_transfer = False
                             st.session_state.confirm_transfer = False
                         else:
-                            st.write("### 📄 المعاينة الحية المباشرة لفاتورة النقل اللوجستي البيني:")
+                            st.write("### 📄 معاينة فاتورة نقل المواد الصادره قبل الطباعة و الأعتماد :")
                             trans_inv_no_preview = now_mecca().strftime("%d%H%M")
-                            html_trans_invoice = render_transfer_invoice_html("فاتورة نقل مواد من مستودع إلى آخر", st.session_state.transfer_cart, trans_wh_from, trans_wh_to, u['full_name'], trans_inv_no_preview)
+                            html_trans_invoice = render_transfer_invoice_html("فاتورة نقل مواد طوارئ من مستودع إلى آخر", st.session_state.transfer_cart, trans_wh_from, trans_wh_to, u['full_name'], trans_inv_no_preview)
                             components.html(html_trans_invoice, height=480, scrolling=True)
                             if not st.session_state.confirm_transfer:
                                 st.markdown("<div class='btn-success'>", unsafe_allow_html=True)
@@ -1725,21 +2011,34 @@ else:
                                                       (item['code'], -item['qty'], trans_wh_from, "", item['cat']))
                                             c.execute("INSERT INTO inventory (item_code, qty, warehouse, contractor, category) VALUES (?,?,?,?,?)",
                                                       (item['code'], item['qty'], trans_wh_to, "", item['cat']))
-                                            save_log("تحويل ونقل بيني لوجستي", item['code'], item['qty'], f"نقل وتحويل من مستودع [{trans_wh_from}] إلى مستودع [{trans_wh_to}] برقم قيد {trans_inv_no_preview}", u['full_name'])
+                                            save_log("نقل مواد الى مستودع اخر", item['code'], item['qty'], f"نقل وتحويل من مستودع [{trans_wh_from}] إلى مستودع [{trans_wh_to}] برقم قيد {trans_inv_no_preview}", u['full_name'])
                                         archive_invoice("تحويل", trans_inv_no_preview, trans_wh_from, trans_wh_to, "", u['full_name'], json.dumps(st.session_state.transfer_cart), html_trans_invoice)
                                         conn.commit()
                                         st.session_state.last_trans_inv_html = html_trans_invoice
+                                        st.session_state.last_created_inv_no = trans_inv_no_preview
+                                        st.session_state.last_created_inv_type = "تحويل"
                                         st.session_state.transfer_cart = []; st.session_state.review_transfer = False; st.session_state.confirm_transfer = False
-                                        st.success(f"🎉 تم بنجاح قيد وخصم وإيداع الأرصدة التبادلية وأرشفة المستند رقم ({trans_inv_no_preview}) بنجاح كلي!"); st.rerun()
+                                        st.success(f"🎉 تم إنشاء فاتورة نقل مواد طوارئ من مستودع إلى آخر بنجاح! رقم الفاتورة: ({trans_inv_no_preview})"); st.rerun()
                                 if col_no.button("❌ لا، إلغاء"):
                                     st.session_state.confirm_transfer = False; st.rerun()
 
-                if st.session_state.last_trans_inv_html and not st.session_state.transfer_cart:
+                if st.session_state.last_created_inv_no and st.session_state.last_created_inv_type == "تحويل" and not st.session_state.transfer_cart:
                     st.divider()
-                    th1, th2 = st.columns([4,1])
-                    th1.write("### 🖨️ آخر فاتورة نقل لوجستي تم إنشاؤها بنجاح (جاهزة للطباعة الفورية):")
-                    if th2.button("✖️ إخفاء", key="hide_trans_inv"): st.session_state.last_trans_inv_html = None; st.rerun()
-                    components.html(st.session_state.last_trans_inv_html, height=520, scrolling=True)
+                    st.markdown(f"""
+                    <div style='background:#e8f5e9;border:2px solid #1daa60;border-radius:12px;padding:18px;text-align:center;direction:rtl;'>
+                        ✅ <b>تم إنشاء فاتورة نقل مواد طوارئ من مستودع إلى آخر بنجاح</b><br>
+                        رقم الفاتورة: <span style='color:red;font-weight:900;font-size:18px;'>{st.session_state.last_created_inv_no}</span>
+                    </div>""", unsafe_allow_html=True)
+                    col_prev_btn_t, col_close_btn_t = st.columns([2, 1])
+                    if col_prev_btn_t.button("👁️ معاينة الفاتورة والطباعة", key="preview_trans_inv", use_container_width=True):
+                        st.session_state.page = "my_invoices"
+                        st.session_state.last_created_inv_no = None
+                        st.session_state.last_created_inv_type = None
+                        st.rerun()
+                    if col_close_btn_t.button("✖️ إغفال", key="dismiss_trans_inv"):
+                        st.session_state.last_created_inv_no = None
+                        st.session_state.last_created_inv_type = None
+                        st.rerun()
     # ---------------------------------------------------------
     # صفحة: تعديل فاتورة سابقة
     # ---------------------------------------------------------
@@ -1791,7 +2090,7 @@ else:
                     _wh_opts = list_warehouses
                     _wh_idx  = _wh_opts.index(st.session_state['ef_wh_from']) if st.session_state['ef_wh_from'] in _wh_opts else 0
                     new_ef_wh = efc1.selectbox(
-                        "📍 المستودع المعني:" if ef_type=="صرف" else "📍 المستودع الذي يستلم المواد:",
+                        "📍 مستودع الصرف:" if ef_type=="صرف" else "📍 المستودع الذي يستلم المواد:",
                         _wh_opts, index=_wh_idx, key="ef_wh_sel")
                     if new_ef_wh != st.session_state['ef_wh_from']:
                         st.session_state['ef_wh_from'] = new_ef_wh
@@ -1952,7 +2251,12 @@ else:
                 if not st.session_state.get('ef_confirm'):
                     st.markdown("<div class='btn-success'>", unsafe_allow_html=True)
                     if st.button("💾 تأكيد التعديل وتصدير الفاتورة المعدّلة"):
-                        st.session_state['ef_confirm'] = True; st.rerun()
+                        # التحقق من وجود تعديلات فعلية قبل الإصدار
+                        has_changes = bool(changes)
+                        if not has_changes:
+                            st.warning("⚠️ لا يوجد تعديلات على الفاتورة. لم يتم إصدار فاتورة معدّلة.")
+                        else:
+                            st.session_state['ef_confirm'] = True; st.rerun()
                     st.markdown("</div>", unsafe_allow_html=True)
                 else:
                     ch_txt = "<br>".join([f"• {ch}" for ch in changes]) if changes else "• لا توجد تغييرات"
@@ -2030,25 +2334,117 @@ else:
             if efh2.button("✖️ إخفاء", key="close_ef"): st.session_state['ef_result_html'] = None; st.rerun()
             components.html(st.session_state['ef_result_html'], height=540, scrolling=True)
     # ---------------------------------------------------------
-    # صفحة: أرشيف فواتيري (خاص بموجه البلاغات)
+    # صفحة: أرشيف فواتيري
     # ---------------------------------------------------------
     elif st.session_state.page == "my_invoices":
         st.markdown("<div class='main-title'>🗂️ أرشيف فواتيري</div>", unsafe_allow_html=True)
-        st.info(f"📋 يعرض هذه الصفحة الفواتير التي قام بإصدارها: **{u['full_name']}**")
+        st.info(f"📋 الفواتير التي قام بإصدارها: **{u['full_name']}**")
+
+        # ── جلب آخر فاتورة لكل نوع من DB ──
+        _inv_types = [("صرف", "#e65100", "🛒"), ("ارجاع", "#2e7d32", "🔄"), ("تحويل", "#1a237e", "🚛")]
+        _latest_by_type = {}
+        for _t, _c, _ic in _inv_types:
+            _df_t = pd.read_sql(
+                f"SELECT * FROM archived_invoices WHERE employee='{u['full_name']}'"
+                f" AND invoice_type='{_t}' ORDER BY id DESC LIMIT 1", conn)
+            if not _df_t.empty:
+                _latest_by_type[_t] = (_df_t.iloc[0], _c, _ic)
+
+        # ═══════════════════════════════════════════════════════
+        # القسم الأول: آخر فاتورة تم إنشاؤها (حسب النوع)
+        # ═══════════════════════════════════════════════════════
+        if _latest_by_type:
+            st.markdown("""
+            <div style='display:flex;align-items:center;gap:10px;margin:12px 0 16px 0;direction:rtl;'>
+                <div style='flex:1;height:3px;background:linear-gradient(to left,#004a99,transparent);border-radius:2px;'></div>
+                <span style='background:#004a99;color:white;border-radius:20px;padding:6px 20px;
+                             font-size:14px;font-weight:900;white-space:nowrap;letter-spacing:0.5px;
+                             box-shadow:0 2px 8px rgba(0,74,153,0.3);'>🆕 آخر فاتورة تم إنشاؤها</span>
+                <div style='flex:1;height:3px;background:linear-gradient(to right,#004a99,transparent);border-radius:2px;'></div>
+            </div>""", unsafe_allow_html=True)
+
+            # أزرار التبديل بين الأنواع
+            _avail_types = list(_latest_by_type.keys())
+            if 'latest_inv_type_sel' not in st.session_state or st.session_state['latest_inv_type_sel'] not in _avail_types:
+                st.session_state['latest_inv_type_sel'] = _avail_types[0]
+
+            _type_cols = st.columns(len(_avail_types))
+            for _ci, _t in enumerate(_avail_types):
+                _row, _clr, _ico = _latest_by_type[_t]
+                _is_sel = st.session_state['latest_inv_type_sel'] == _t
+                _btn_style = f"background:{_clr};" if _is_sel else ""
+                if _type_cols[_ci].button(
+                    f"{_ico} {_t}",
+                    key=f"latest_type_btn_{_t}",
+                    use_container_width=True,
+                    type="primary" if _is_sel else "secondary"
+                ):
+                    st.session_state['latest_inv_type_sel'] = _t
+                    st.rerun()
+
+            # عرض آخر فاتورة للنوع المختار
+            _sel_type = st.session_state['latest_inv_type_sel']
+            if _sel_type in _latest_by_type:
+                _lr, _inv_color, _inv_icon = _latest_by_type[_sel_type]
+                _latest_id = int(_lr['id'])
+
+                st.markdown(
+                    f"<div style='background:#f9f9f9;border:2px solid {_inv_color};border-radius:10px;"
+                    f"padding:12px 18px;margin:10px 0 12px 0;direction:rtl;'>"
+                    f"{_inv_icon} <b>فاتورة <span style='color:{_inv_color};'>{_lr['invoice_type']}</span></b>"
+                    f" — رقم: <span style='color:red;font-weight:900;font-size:17px;'>{_lr['invoice_no']}</span>"
+                    f" &nbsp;|&nbsp; 📅 {str(_lr['timestamp'])[:10]}"
+                    f"{f' &nbsp;|&nbsp; 📍 {_lr["warehouse_from"]}' if _lr['warehouse_from'] else ''}"
+                    f"{f' &nbsp;|&nbsp; 🏗️ {_lr["contractor"]}' if _lr['contractor'] else ''}"
+                    f"</div>",
+                    unsafe_allow_html=True)
+
+                _show_key = f"show_latest_inv_{_latest_id}"
+                if _show_key not in st.session_state:
+                    st.session_state[_show_key] = True
+
+                if st.session_state[_show_key]:
+                    components.html(_lr['html_content'], height=520, scrolling=True)
+                    if st.button("🔒 إغلاق الفاتورة", key=f"close_latest_{_sel_type}", use_container_width=True):
+                        st.session_state[_show_key] = False
+                        st.rerun()
+                else:
+                    if st.button(f"👁️ عرض آخر فاتورة {_sel_type}", key=f"open_latest_{_sel_type}", use_container_width=True):
+                        st.session_state[_show_key] = True
+                        st.rerun()
+
+        # ═══════════════════════════════════════════════════════
+        # القسم الثاني: جميع الفواتير السابقة
+        # ═══════════════════════════════════════════════════════
+        st.markdown("""
+        <div style='display:flex;align-items:center;gap:10px;margin:22px 0 16px 0;direction:rtl;'>
+            <div style='flex:1;height:3px;background:linear-gradient(to left,#555,transparent);border-radius:2px;'></div>
+            <span style='background:#555;color:white;border-radius:20px;padding:6px 20px;
+                         font-size:14px;font-weight:900;white-space:nowrap;letter-spacing:0.5px;
+                         box-shadow:0 2px 6px rgba(0,0,0,0.2);'>📋 جميع الفواتير السابقة</span>
+            <div style='flex:1;height:3px;background:linear-gradient(to right,#555,transparent);border-radius:2px;'></div>
+        </div>""", unsafe_allow_html=True)
+
         col_mf1, col_mf2, col_mf3 = st.columns([1, 1, 1.2])
-        mf_type = col_mf1.selectbox("نوع الفاتورة:", ["الكل", "صرف", "ارجاع"], key="mf_type")
+        mf_type = col_mf1.selectbox("نوع الفاتورة:", ["الكل", "صرف", "ارجاع", "تحويل"], key="mf_type")
         mf_no   = col_mf2.text_input("رقم الفاتورة (اختياري):", key="mf_no").strip()
         mf_date = col_mf3.date_input("تصفية بالتاريخ (اختياري):", value=None, key="mf_date")
+
         mf_query = f"SELECT * FROM archived_invoices WHERE employee='{u['full_name']}'"
+        # استبعاد آخر فاتورة لكل نوع من القائمة السابقة
+        _excl_ids = [int(_latest_by_type[_t][0]['id']) for _t in _latest_by_type]
+        if _excl_ids:
+            mf_query += f" AND id NOT IN ({','.join(str(i) for i in _excl_ids)})"
         if mf_type != "الكل": mf_query += f" AND invoice_type='{mf_type}'"
         if mf_no:             mf_query += f" AND invoice_no LIKE '%{mf_no}%'"
         if mf_date:           mf_query += f" AND timestamp LIKE '{mf_date.strftime('%Y-%m-%d')}%'"
         mf_query += " ORDER BY id DESC"
         df_mf = pd.read_sql(mf_query, conn)
+
         if df_mf.empty:
-            st.warning("⚠️ لا توجد فواتير تطابق معايير البحث.")
+            st.info("ℹ️ لا توجد فواتير سابقة أخرى.")
         else:
-            st.success(f"✅ تم العثور على ({len(df_mf)}) فاتورة.")
+            st.caption(f"📦 إجمالي: {len(df_mf)} فاتورة")
             for _, mrow in df_mf.iterrows():
                 st.markdown(f"""<div class='report-box'>
                     📄 <b>مستند {mrow['invoice_type']} رسمي برقم (<span style='color:red;'>{mrow['invoice_no']}</span>)</b><br>
@@ -2060,7 +2456,6 @@ else:
                 if st.session_state.view_archived_html.get(mrow['invoice_no'], False):
                     components.html(mrow['html_content'], height=520, scrolling=True)
                 st.markdown("<hr style='margin:4px 0;'>", unsafe_allow_html=True)
-
     # ---------------------------------------------------------
     # صفحة: سجل العمليات التفصيلي وأرشيف المستندات الذكي
     # ---------------------------------------------------------
@@ -2076,7 +2471,7 @@ else:
         except Exception: pass
 
         # ── التحقق من الصلاحية ──
-        can_manage = role in ("مدير نظام", "موظف مستودع")
+        can_manage = role != "موجه بلاغات"
         if not can_manage:
             st.error("❌ هذه الصفحة متاحة لمدير النظام ومسؤول المستودع فقط.")
             st.stop()
@@ -2095,9 +2490,9 @@ else:
 
             fl1, fl2, fl3, fl4 = st.columns([2, 1.5, 1.2, 1.2])
             search_log_txt   = fl1.text_input("🔎 بحث بالاسم أو الكود أو التفاصيل:", key="log_search")
-            type_log_filter  = fl2.selectbox("نوع الحركة:", ["عرض الكل", "شحن وإدخل مخزني",
-                                              "صرف مواد لمقاول", "ارجاع فائض مواد",
-                                              "تحويل ونقل بيني لوجستي", "تعريف صنف جديد"], key="log_type")
+            type_log_filter  = fl2.selectbox("نوع الحركة:", ["عرض الكل", "تغذية مستودع",
+                                              "صرف مواد لمقاول", "ارجاع مواد",
+                                              "نقل مواد الى مستودع اخر ", "تعريف صنف جديد"], key="log_type")
             log_date_from    = fl3.date_input("من تاريخ:", value=None, key="log_date_from")
             log_date_to      = fl4.date_input("إلى تاريخ:", value=None, key="log_date_to")
 
@@ -2384,12 +2779,12 @@ else:
 
         # ── ثوابت التسلسل الهرمي ──
         POSITION_HIERARCHY = [
-            {"key": "مدير المشروع",      "icon": "👑", "color": "#004a99", "bg": "#e8f0fb"},
-            {"key": "نائب مدير المشروع", "icon": "🥇", "color": "#1565c0", "bg": "#e3f2fd"},
-            {"key": "مستلم بلاغات",      "icon": "📡", "color": "#00695c", "bg": "#e0f2f1"},
-            {"key": "أمين مستودع",       "icon": "🏪", "color": "#6a1b9a", "bg": "#f3e5f5"},
-            {"key": "مسؤول فرق طوارئ",   "icon": "🚨", "color": "#c62828", "bg": "#ffebee"},
-            {"key": "أخرى",              "icon": "📋", "color": "#555",    "bg": "#f5f5f5"},
+            {"key": "مدير المشروع",      "icon": "", "color": "#004a99", "bg": "#e8f0fb"},
+            {"key": "نائب مدير المشروع", "icon": "", "color": "#1565c0", "bg": "#e3f2fd"},
+            {"key": "مستلم بلاغات",      "icon": "", "color": "#00695c", "bg": "#e0f2f1"},
+            {"key": "أمين مستودع",       "icon": "", "color": "#6a1b9a", "bg": "#f3e5f5"},
+            {"key": "مسؤول فرق طوارئ",   "icon": "", "color": "#c62828", "bg": "#ffebee"},
+            {"key": "أخرى",              "icon": "", "color": "#555",    "bg": "#f5f5f5"},
         ]
         POSITION_KEYS = [p["key"] for p in POSITION_HIERARCHY]
 
@@ -2401,7 +2796,7 @@ else:
         ct_warehouses  = pd.read_sql("SELECT name FROM settings_warehouses  ORDER BY name", conn)['name'].tolist()
         ct_contractors = pd.read_sql("SELECT name FROM settings_contractors ORDER BY name", conn)['name'].tolist()
         df_contacts    = pd.read_sql("SELECT * FROM contact_numbers ORDER BY entity_type, entity_name, position, name", conn)
-        df_managers    = pd.read_sql("SELECT * FROM managers_directory ORDER BY department, name", conn)
+        df_managers    = pd.read_sql("SELECT * FROM managers_directory ORDER BY sort_order ASC, id ASC", conn)
 
         # دالة مساعدة لعرض أشخاص جهة واحدة بتسلسل هرمي
         def render_entity_contacts(df_grp, allowed_positions, etype_color, etype_bg):
@@ -2678,23 +3073,46 @@ else:
 
                 st.divider()
                 st.write("#### 📋 المدراء المسجلون")
-                df_mgr_adm = pd.read_sql("SELECT * FROM managers_directory ORDER BY department, name", conn)
+                df_mgr_adm = pd.read_sql("SELECT * FROM managers_directory ORDER BY sort_order ASC, id ASC", conn)
                 if df_mgr_adm.empty:
                     st.info("ℹ️ لا يوجد مدراء مسجلون.")
                 else:
-                    for _, mr in df_mgr_adm.iterrows():
+                    st.caption("🔼🔽 استخدم الأزرار لتغيير ترتيب ظهور المدير في القائمة")
+                    for idx_mr, (_, mr) in enumerate(df_mgr_adm.iterrows()):
                         mr_id = int(mr['id'])
                         mr_ek = f"mr_edit_{mr_id}"; mr_ck = f"mr_conf_{mr_id}"
                         if mr_ek not in st.session_state: st.session_state[mr_ek] = False
                         if mr_ck not in st.session_state: st.session_state[mr_ck] = False
 
-                        mc1,mc2,mc3,mc4,mc5 = st.columns([0.4,2.2,1.8,0.6,0.6])
+                        mc1,mc2,mc3,mc4,mc5,mc6,mc7 = st.columns([0.3,2.2,1.8,0.4,0.4,0.5,0.5])
                         mc1.markdown("🌟", unsafe_allow_html=True)
                         mc2.write(f"**{mr['name']}** — {mr['department']}")
                         mc3.write(f"📞 {mr['phone']}")
+                        # أزرار الترتيب
+                        # ── تحديث sort_order لكل صف بقيمة index الحالي (لضمان التسلسل) ──
+                        if idx_mr > 0:
+                            if mc4.button("🔼", key=f"mr_up_{mr_id}", help="تحريك لأعلى"):
+                                prev_mr = df_mgr_adm.iloc[idx_mr - 1]
+                                # إعادة تعيين sort_order لكل الصفوف أولاً لضمان التسلسل
+                                for _ri, _rr in df_mgr_adm.iterrows():
+                                    c.execute("UPDATE managers_directory SET sort_order=? WHERE id=?",
+                                              (df_mgr_adm.index.get_loc(_ri), int(_rr['id'])))
+                                # تبديل الصفين
+                                c.execute("UPDATE managers_directory SET sort_order=? WHERE id=?", (idx_mr, int(prev_mr['id'])))
+                                c.execute("UPDATE managers_directory SET sort_order=? WHERE id=?", (idx_mr - 1, mr_id))
+                                conn.commit(); st.rerun()
+                        if idx_mr < len(df_mgr_adm) - 1:
+                            if mc5.button("🔽", key=f"mr_dn_{mr_id}", help="تحريك لأسفل"):
+                                next_mr = df_mgr_adm.iloc[idx_mr + 1]
+                                for _ri, _rr in df_mgr_adm.iterrows():
+                                    c.execute("UPDATE managers_directory SET sort_order=? WHERE id=?",
+                                              (df_mgr_adm.index.get_loc(_ri), int(_rr['id'])))
+                                c.execute("UPDATE managers_directory SET sort_order=? WHERE id=?", (idx_mr, int(next_mr['id'])))
+                                c.execute("UPDATE managers_directory SET sort_order=? WHERE id=?", (idx_mr + 1, mr_id))
+                                conn.commit(); st.rerun()
                         if not st.session_state[mr_ek]:
-                            if mc4.button("✏️", key=f"mr_e_{mr_id}"): st.session_state[mr_ek]=True; st.rerun()
-                            if mc5.button("🗑️", key=f"mr_d_{mr_id}"): st.session_state[mr_ck]=True; st.rerun()
+                            if mc6.button("✏️", key=f"mr_e_{mr_id}"): st.session_state[mr_ek]=True; st.rerun()
+                            if mc7.button("🗑️", key=f"mr_d_{mr_id}"): st.session_state[mr_ck]=True; st.rerun()
                         else:
                             with st.form(f"edit_mgr_{mr_id}"):
                                 em1,em2 = st.columns([2,2])
@@ -2782,11 +3200,12 @@ else:
             if col_ms_logout.button("🔒 قفل الصفحة", key="lock_staff"):
                 st.session_state['staff_auth'] = False; st.rerun()
 
-            tab_requests_view, tab_add_new_emp, tab_change_pwd, tab_mobile_access = st.tabs([
+            tab_requests_view, tab_add_new_emp, tab_change_pwd, tab_mobile_access, tab_admin_pwd = st.tabs([
                 "📥 طلبات تصفير وتعديل كلمات المرور الواردة",
                 "➕ إضافة وتعيين حساب موظف ميداني جديد",
                 "🔑 تغيير كلمة مرور أي مستخدم",
-                "📱 صلاحية تشغيل النظام من الجوال"
+                "📱 صلاحية تشغيل النظام من الجوال",
+                "🔐 تغيير كلمة مرور مدير النظام"
             ])
         
             with tab_requests_view:
@@ -3003,6 +3422,57 @@ else:
 
                         st.markdown("<hr style='margin:3px 0;'>", unsafe_allow_html=True)
 
+            with tab_admin_pwd:
+                st.write("##### 🔐 تغيير كلمة مرور مدير النظام")
+                st.markdown("""
+                <div style='background:#fff3cd;border:2px solid #f9a825;border-radius:10px;padding:14px 18px;margin-bottom:18px;direction:rtl;font-size:14px;'>
+                    🔐 <b>هذه العملية محمية بكلمة مرور إضافية خاصة.</b><br>
+                    <small>كلمة المرور الإضافية مختلفة عن كلمة مرور الدخول للنظام.</small>
+                </div>""", unsafe_allow_html=True)
+
+                if not st.session_state.get('admin_pwd_auth'):
+                    with st.form("admin_pwd_auth_form"):
+                        ap_pass = st.text_input("🔑 أدخل كلمة المرور الإضافية للمتابعة:", type="password")
+                        if st.form_submit_button("🔓 تحقق ودخول", use_container_width=True):
+                            if ap_pass == "Saeed1102193511":
+                                st.session_state['admin_pwd_auth'] = True
+                                st.rerun()
+                            else:
+                                st.error("❌ كلمة المرور الإضافية غير صحيحة!")
+                else:
+                    col_ap_lock2 = st.columns([4, 1])
+                    if col_ap_lock2[1].button("🔒 قفل", key="lock_admin_pwd2"):
+                        st.session_state['admin_pwd_auth'] = False; st.rerun()
+                    st.success("✅ تم التحقق. يمكنك الآن تغيير كلمة مرور مدير النظام.")
+                    admin_users = pd.read_sql("SELECT username, full_name FROM users WHERE role='مدير نظام'", conn)
+                    if admin_users.empty:
+                        st.warning("⚠️ لا يوجد حسابات مدير نظام مسجلة.")
+                    else:
+                        with st.form("change_admin_pwd_form2", clear_on_submit=True):
+                            if len(admin_users) > 1:
+                                sel_admin2 = st.selectbox("اختر حساب مدير النظام:",
+                                    options=admin_users['username'].tolist(),
+                                    format_func=lambda x: admin_users[admin_users['username']==x]['full_name'].values[0] + f" ({x})")
+                            else:
+                                sel_admin2 = admin_users.iloc[0]['username']
+                                st.info(f"الحساب: **{admin_users.iloc[0]['full_name']}** ({sel_admin2})")
+                            cap1, cap2 = st.columns([1, 1])
+                            new_admin_pwd2  = cap1.text_input("كلمة المرور الجديدة *", type="password")
+                            conf_admin_pwd2 = cap2.text_input("تأكيد كلمة المرور *", type="password")
+                            if st.form_submit_button("💾 تغيير كلمة مرور مدير النظام", use_container_width=True):
+                                if not new_admin_pwd2:
+                                    st.error("⚠️ يرجى إدخال كلمة المرور الجديدة.")
+                                elif new_admin_pwd2 != conf_admin_pwd2:
+                                    st.error("❌ كلمة المرور وتأكيدها غير متطابقين!")
+                                else:
+                                    c.execute("UPDATE users SET password=? WHERE username=?", (new_admin_pwd2, sel_admin2))
+                                    save_log("تغيير كلمة مرور مدير النظام", sel_admin2, 0,
+                                             f"تم تغيير كلمة مرور مدير النظام بكلمة المرور الإضافية الخاصة", u['full_name'])
+                                    conn.commit()
+                                    st.success("✅ تم تغيير كلمة مرور مدير النظام بنجاح!")
+                                    st.session_state['admin_pwd_auth'] = False
+                                    st.rerun()
+
     # ---------------------------------------------------------
     # صفحة: إدارة النسخ الاحتياطية (مدير النظام فقط)
     # ---------------------------------------------------------
@@ -3096,6 +3566,65 @@ else:
                 st.divider()
                 if st.button("🚪 تسجيل الخروج من صفحة النسخ الاحتياطية", key="logout_backup"):
                     st.session_state['backup_auth'] = False; st.rerun()
+
+    # ---------------------------------------------------------
+    # صفحة: تغيير كلمة مرور مدير النظام (محمية بكلمة مرور خاصة)
+    # ---------------------------------------------------------
+    elif st.session_state.page == "change_admin_pwd":
+        st.markdown("<div class='main-title'>🔑 تغيير كلمة مرور مدير النظام</div>", unsafe_allow_html=True)
+
+        if u['role'] != "مدير نظام":
+            st.error("❌ هذه الصفحة متاحة لمدير النظام فقط.")
+        elif not st.session_state.get('admin_pwd_auth'):
+            st.markdown("""
+            <div style='background:#fff3cd;border:2px solid #f9a825;border-radius:10px;padding:20px;text-align:center;margin-bottom:20px;'>
+                🔐 <b>هذه الصفحة محمية بكلمة مرور إضافية خاصة</b><br>
+                <small>أدخل كلمة المرور الإضافية للوصول إلى تغيير كلمة مرور مدير النظام</small>
+            </div>""", unsafe_allow_html=True)
+            _, col_ap, _ = st.columns([1, 1.5, 1])
+            with col_ap:
+                with st.form("admin_pwd_auth_form"):
+                    ap_pass = st.text_input("كلمة المرور الإضافية:", type="password")
+                    if st.form_submit_button("🔓 دخول", use_container_width=True):
+                        if ap_pass == "Saeed1102193511":
+                            st.session_state['admin_pwd_auth'] = True
+                            st.rerun()
+                        else:
+                            st.error("❌ كلمة المرور غير صحيحة!")
+        else:
+            _, col_ap_lock = st.columns([4, 1])
+            if col_ap_lock.button("🔒 قفل الصفحة", key="lock_admin_pwd"):
+                st.session_state['admin_pwd_auth'] = False; st.rerun()
+
+            st.info("🔑 من هنا يمكنك تغيير كلمة مرور حساب مدير النظام الخاص بك.")
+            admin_users = pd.read_sql("SELECT username, full_name FROM users WHERE role='مدير نظام'", conn)
+            if admin_users.empty:
+                st.warning("⚠️ لا يوجد حسابات مدير نظام مسجلة.")
+            else:
+                with st.form("change_admin_pwd_form", clear_on_submit=True):
+                    if len(admin_users) > 1:
+                        sel_admin = st.selectbox("اختر حساب مدير النظام:",
+                            options=admin_users['username'].tolist(),
+                            format_func=lambda x: admin_users[admin_users['username']==x]['full_name'].values[0] + f" ({x})")
+                    else:
+                        sel_admin = admin_users.iloc[0]['username']
+                        st.info(f"الحساب: **{admin_users.iloc[0]['full_name']}** ({sel_admin})")
+                    cap1, cap2 = st.columns([1, 1])
+                    new_admin_pwd  = cap1.text_input("كلمة المرور الجديدة *", type="password")
+                    conf_admin_pwd = cap2.text_input("تأكيد كلمة المرور الجديدة *", type="password")
+                    if st.form_submit_button("💾 تغيير كلمة المرور", use_container_width=True):
+                        if not new_admin_pwd:
+                            st.error("⚠️ يرجى إدخال كلمة المرور الجديدة.")
+                        elif new_admin_pwd != conf_admin_pwd:
+                            st.error("❌ كلمة المرور وتأكيدها غير متطابقين!")
+                        else:
+                            c.execute("UPDATE users SET password=? WHERE username=?", (new_admin_pwd, sel_admin))
+                            save_log("تغيير كلمة مرور مدير النظام", sel_admin, 0,
+                                     f"تم تغيير كلمة مرور مدير النظام بكلمة المرور الإضافية", u['full_name'])
+                            conn.commit()
+                            st.success("✅ تم تغيير كلمة مرور مدير النظام بنجاح!")
+                            st.session_state['admin_pwd_auth'] = False
+                            st.rerun()
 
     # ---------------------------------------------------------
     # صفحة: الثوابت العامة والإعدادات التشغيلية
