@@ -126,6 +126,45 @@ def init_database():
         conn.commit()
     except Exception:
         pass
+
+    # جدول طلبات إلغاء الفواتير (من موجه البلاغات — يحتاج اعتماد)
+    c.execute('''CREATE TABLE IF NOT EXISTS cancel_invoice_requests (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    request_no TEXT,
+                    invoice_no TEXT,
+                    invoice_type TEXT,
+                    warehouse_return TEXT,
+                    contractor TEXT,
+                    items_json TEXT,
+                    cancel_reason TEXT,
+                    requester TEXT,
+                    status TEXT DEFAULT "معلق",
+                    invoice_html TEXT,
+                    timestamp TEXT,
+                    approved_by TEXT,
+                    approved_at TEXT)''')
+    # إضافة الأعمدة الناقصة لقواعد البيانات القديمة
+    for _ccol, _ctype in [
+        ("request_no",      "TEXT DEFAULT ''"),
+        ("invoice_no",      "TEXT DEFAULT ''"),
+        ("invoice_type",    "TEXT DEFAULT ''"),
+        ("warehouse_return","TEXT DEFAULT ''"),
+        ("contractor",      "TEXT DEFAULT ''"),
+        ("items_json",      "TEXT DEFAULT '[]'"),
+        ("cancel_reason",   "TEXT DEFAULT ''"),
+        ("boq",             "TEXT DEFAULT ''"),
+        ("requester",       "TEXT DEFAULT ''"),
+        ("status",          "TEXT DEFAULT 'معلق'"),
+        ("invoice_html",    "TEXT DEFAULT ''"),
+        ("timestamp",       "TEXT DEFAULT ''"),
+        ("approved_by",     "TEXT DEFAULT ''"),
+        ("approved_at",     "TEXT DEFAULT ''"),
+    ]:
+        try:
+            c.execute(f"ALTER TABLE cancel_invoice_requests ADD COLUMN {_ccol} {_ctype}")
+            conn.commit()
+        except Exception:
+            pass
     
     # جدول سجل العمليات التفصيلي لضمان الشفافية والأمان
     c.execute('''CREATE TABLE IF NOT EXISTS action_logs (
@@ -156,7 +195,14 @@ def init_database():
                     employee TEXT,
                     items_json TEXT,
                     html_content TEXT,
+                    boq TEXT DEFAULT "",
                     timestamp TEXT)''')
+    # إضافة عمود BOQ لقواعد البيانات القديمة
+    try:
+        c.execute("ALTER TABLE archived_invoices ADD COLUMN boq TEXT DEFAULT ''")
+        conn.commit()
+    except Exception:
+        pass
     
     # جدول النسخ الاحتياطية
     c.execute('''CREATE TABLE IF NOT EXISTS backups (
@@ -179,6 +225,7 @@ def init_database():
                     requester TEXT,
                     status TEXT DEFAULT "معلق",
                     notes TEXT,
+                    return_reason TEXT DEFAULT "",
                     invoice_html TEXT,
                     timestamp TEXT,
                     approved_by TEXT,
@@ -192,6 +239,8 @@ def init_database():
         ("requester",   "TEXT DEFAULT ''"),
         ("status",      "TEXT DEFAULT 'معلق'"),
         ("notes",       "TEXT DEFAULT ''"),
+        ("return_reason","TEXT DEFAULT ''"),
+        ("boq",         "TEXT DEFAULT ''"),
         ("invoice_html","TEXT DEFAULT ''"),
         ("timestamp",   "TEXT DEFAULT ''"),
         ("approved_by", "TEXT DEFAULT ''"),
@@ -276,9 +325,8 @@ except Exception:
 # 2. وظيفة بناء وتوليد فاتورة الصرف (HTML) بدون هوامش بالطباعة
 # =========================================================
 
-def render_invoice_html(title, items_list, warehouse, contractor, employee, custom_inv_no=None, extra_info=None):
+def render_invoice_html(title, items_list, warehouse, contractor, employee, custom_inv_no=None, extra_info=None, boq=""):
     inv_no = custom_inv_no if custom_inv_no else now_mecca().strftime("%d%H%M")
-    # إظهار التاريخ فقط بدون الوقت
     dt_str = now_mecca().strftime("%Y-%m-%d")
     rows = ""
     for item in items_list:
@@ -292,6 +340,7 @@ def render_invoice_html(title, items_list, warehouse, contractor, employee, cust
     extra_row = ""
     if extra_info:
         extra_row = f"<tr><td colspan='2'><b>{extra_info[0]}</b> {extra_info[1]}</td></tr>"
+    boq_line = f"<div style='font-size:13px;color:#e65100;font-weight:bold;margin-top:4px;'>BOQ الحالة: {boq}</div>" if boq else ""
     html = f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap');
@@ -309,7 +358,10 @@ def render_invoice_html(title, items_list, warehouse, contractor, employee, cust
         </div>
         <hr style="border:2px solid #004a99;margin-bottom:12px;">
         <div style="display:flex;justify-content:space-between;font-size:14px;color:#333;margin-bottom:12px;">
-            <div><b>رقم الفاتورة:</b> <span style="color:red;font-weight:bold;font-size:16px;">{inv_no}</span></div>
+            <div>
+                <b>رقم الفاتورة:</b> <span style="color:red;font-weight:bold;font-size:16px;">{inv_no}</span>
+                {boq_line}
+            </div>
             <div><b>التاريخ:</b> {dt_str}</div>
             <div><b>المسؤول:</b> {employee}</div>
         </div>
@@ -341,7 +393,7 @@ def render_invoice_html(title, items_list, warehouse, contractor, employee, cust
     </div>"""
     return html
 
-def render_return_invoice_html(title, items_list, warehouse, contractor, employee, custom_inv_no=None):
+def render_return_invoice_html(title, items_list, warehouse, contractor, employee, custom_inv_no=None, boq=""):
     """فاتورة الارجاع — مستودع مستلم + مقاول مسلم"""
     inv_no = custom_inv_no if custom_inv_no else now_mecca().strftime("%d%H%M")
     dt_str = now_mecca().strftime("%Y-%m-%d")
@@ -354,6 +406,7 @@ def render_return_invoice_html(title, items_list, warehouse, contractor, employe
             f"<td style='border:1px solid #ddd;padding:10px;text-align:center;color:#004a99;font-weight:bold;font-size:16px;'>{item['qty']}</td>"
             "</tr>"
         )
+    boq_line = f"<div style='font-size:13px;color:#e65100;font-weight:bold;margin-top:4px;'>BOQ الحالة: {boq}</div>" if boq else ""
     html = f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap');
@@ -371,7 +424,10 @@ def render_return_invoice_html(title, items_list, warehouse, contractor, employe
         </div>
         <hr style="border:2px solid #004a99;margin-bottom:12px;">
         <div style="display:flex;justify-content:space-between;font-size:14px;color:#333;margin-bottom:12px;">
-            <div><b>رقم الفاتورة:</b> <span style="color:red;font-weight:bold;font-size:16px;">{inv_no}</span></div>
+            <div>
+                <b>رقم الفاتورة:</b> <span style="color:red;font-weight:bold;font-size:16px;">{inv_no}</span>
+                {boq_line}
+            </div>
             <div><b>التاريخ:</b> {dt_str}</div>
             <div><b>المسؤول:</b> {employee}</div>
         </div>
@@ -589,10 +645,10 @@ def save_log(log_type, item_code, qty, details, user_name):
                  VALUES (?,?,?,?,?,?,?)""", (log_type, item_code, qty, details, user_name, timestamp, log_date))
     conn.commit()
 
-def archive_invoice(invoice_type, invoice_no, wh_from, wh_to, contractor, employee, items_json, html_content):
+def archive_invoice(invoice_type, invoice_no, wh_from, wh_to, contractor, employee, items_json, html_content, boq=""):
     timestamp = now_mecca().strftime("%Y-%m-%d %H:%M:%S")
-    c.execute("""INSERT INTO archived_invoices (invoice_type, invoice_no, warehouse_from, warehouse_to, contractor, employee, items_json, html_content, timestamp)
-                 VALUES (?,?,?,?,?,?,?,?,?)""", (invoice_type, invoice_no, wh_from, wh_to, contractor, employee, items_json, html_content, timestamp))
+    c.execute("""INSERT INTO archived_invoices (invoice_type, invoice_no, warehouse_from, warehouse_to, contractor, employee, items_json, html_content, boq, timestamp)
+                 VALUES (?,?,?,?,?,?,?,?,?,?)""", (invoice_type, invoice_no, wh_from, wh_to, contractor, employee, items_json, html_content, boq, timestamp))
     conn.commit()
 
 def to_excel(df):
@@ -623,63 +679,160 @@ st.markdown("""
     .btn-success>div>button:hover { background-color: #1b5e20 !important; }
     @media print { .no-print { display: none !important; } }
     .warn-box { background:#fff3cd; border:2px solid #f9a825; border-radius:10px; padding:16px 20px; margin:12px 0; direction:rtl; font-size:15px; }
-    /* ── iOS-style notification badge for return requests button ── */
     div[data-badge]::after {
-        content: attr(data-badge);
-        position: absolute;
-        top: -6px;
-        left: -6px;
-        background: #d32f2f;
-        color: white;
-        border-radius: 50%;
-        min-width: 20px;
-        height: 20px;
-        font-size: 11px;
-        font-weight: 900;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0 4px;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.3);
-        z-index: 999;
-        pointer-events: none;
-        border: 2px solid white;
+        content: attr(data-badge); position: absolute; top: -6px; left: -6px;
+        background: #d32f2f; color: white; border-radius: 50%; min-width: 20px; height: 20px;
+        font-size: 11px; font-weight: 900; display: flex; align-items: center; justify-content: center;
+        padding: 0 4px; box-shadow: 0 1px 4px rgba(0,0,0,0.3); z-index: 999; pointer-events: none; border: 2px solid white;
     }
-    div[data-badge] {
-        position: relative;
-        display: inline-block;
-        width: 100%;
-    }
-    .ret-btn-wrap {
-        position: relative;
-        display: block;
-        width: 100%;
-    }
+    div[data-badge] { position: relative; display: inline-block; width: 100%; }
+    .ret-btn-wrap { position: relative; display: block; width: 100%; }
     .ret-btn-wrap .ret-badge {
-        position: absolute;
-        top: 2px;
-        left: 4px;
-        background: #d32f2f;
-        color: white;
-        border-radius: 50%;
-        min-width: 20px;
-        height: 20px;
-        font-size: 11px;
-        font-weight: 900;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0 3px;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.35);
-        z-index: 999;
-        pointer-events: none;
-        border: 2px solid white;
-        line-height: 1;
+        position: absolute; top: 2px; left: 4px; background: #d32f2f; color: white;
+        border-radius: 50%; min-width: 20px; height: 20px; font-size: 11px; font-weight: 900;
+        display: flex; align-items: center; justify-content: center; padding: 0 3px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.35); z-index: 999; pointer-events: none;
+        border: 2px solid white; line-height: 1;
     }
     </style>
     """, unsafe_allow_html=True)
 
-# تطبيق CSS النسخة المحمولة إذا كان المستخدم اختار الجوال
+# ── إصلاح مشكلة الشريط الجانبي لا يختفي بالكامل عند الإغلاق ──
+st.markdown("""
+<style>
+/* عند إغلاق الشريط الجانبي: المحتوى يمتد لكامل العرض بدون فراغ */
+[data-testid="stSidebar"][aria-expanded="false"] {
+    width: 0px !important;
+    min-width: 0px !important;
+    overflow: hidden !important;
+    visibility: hidden !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+/* المحتوى الرئيسي يأخذ كامل العرض عند إغلاق السايدبار */
+[data-testid="stSidebar"][aria-expanded="false"] ~ [data-testid="stAppViewContainer"] > section[data-testid="stMain"],
+section[data-testid="stMain"] {
+    transition: margin-right 0.3s ease, width 0.3s ease;
+}
+/* إزالة الهامش الأيمن المتبقي عند إغلاق السايدبار */
+@media (min-width: 768px) {
+    [data-testid="stSidebar"][aria-expanded="false"] {
+        width: 0rem !important;
+        min-width: 0rem !important;
+    }
+    [data-testid="stSidebar"][aria-expanded="false"] + div {
+        margin-right: 0 !important;
+    }
+}
+/* زر فتح/إغلاق السايدبار - تحسين ظهوره */
+[data-testid="collapsedControl"] {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    z-index: 999999 !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# ══════════════════════════════════════════════════════════════
+# حجب الجوال — CSS media query + شاشة حجب مضمونة
+# ══════════════════════════════════════════════════════════════
+_current_user  = st.session_state.get('user_info')
+_has_mobile_access = (
+    _current_user and (
+        _current_user.get('role') == "مدير نظام" or
+        int(_current_user.get('mobile_access', 0)) == 1
+    )
+) if st.session_state.get('auth', False) else True
+
+# إذا لم يكن للمستخدم صلاحية الجوال، نُخفي كل شيء على الشاشات الصغيرة
+# ونعرض شاشة الحجب بدلاً منه
+if not _has_mobile_access:
+    st.markdown(f"""
+<style>
+/* ── على الجوال: إخفاء كل شيء ── */
+@media (max-width: 768px) {{
+    #root > div,
+    [data-testid="stAppViewContainer"],
+    [data-testid="stSidebar"],
+    [data-testid="stHeader"],
+    [data-testid="stToolbar"],
+    section[data-testid="stMain"],
+    .main, .block-container,
+    header, footer {{
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }}
+    /* إظهار شاشة الحجب فقط */
+    #mobile-block-screen {{
+        display: flex !important;
+    }}
+}}
+/* ── على الحاسب: إخفاء شاشة الحجب ── */
+@media (min-width: 769px) {{
+    #mobile-block-screen {{
+        display: none !important;
+    }}
+}}
+</style>
+<div id="mobile-block-screen" dir="rtl" style="
+    display: none;
+    position: fixed; inset: 0; z-index: 2147483647;
+    background: linear-gradient(160deg, #001a4d 0%, #003a8c 60%, #000d26 100%);
+    flex-direction: column;
+    align-items: center; justify-content: center;
+    font-family: 'Tajawal', Arial, sans-serif;
+    text-align: center; padding: 24px;
+    box-sizing: border-box;
+">
+    <img src="{LOGO_DATA_URI}" width="110"
+         style="border-radius:14px; margin-bottom:20px;
+                box-shadow:0 6px 20px rgba(0,0,0,0.5);">
+    <div style="font-size:22px; font-weight:900; color:#ffffff; margin-bottom:6px;">
+        السعودية للطاقة
+    </div>
+    <div style="font-size:12px; color:#7baad4; margin-bottom:28px;">
+        نظام إدارة مواد الطوارئ — دائرة شرق منطقة جازان
+    </div>
+    <div style="
+        background: rgba(255,255,255,0.07);
+        border: 1.5px solid rgba(255,80,80,0.45);
+        border-radius: 18px; padding: 26px 22px;
+        max-width: 320px; width: 100%;
+    ">
+        <div style="font-size:48px; margin-bottom:10px;">🚫</div>
+        <div style="font-size:18px; font-weight:900; color:#ff7070; margin-bottom:10px;">
+            غير مصرح بالوصول
+        </div>
+        <div style="font-size:14px; color:#c0d8f5; line-height:1.9; margin-bottom:18px;">
+            هذا النظام <b style="color:#fff;">غير متاح على الجوال</b><br>
+            لحسابك الحالي.<br>
+            تواصل مع <b style="color:#7dd3fc;">مدير النظام</b><br>
+            للحصول على الصلاحية.
+        </div>
+        <div style="font-size:12px; color:#4a7aaa; border-top:1px solid rgba(255,255,255,0.1);
+                    padding-top:12px;">
+            استخدم الحاسب للوصول إلى النظام
+        </div>
+    </div>
+    <div style="margin-top:24px; font-size:11px; color:#3a6090;">
+        جميع الحقوق محفوظة © 2026
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+# التحقق من صلاحية الجوال: إعادة ضبط الوضع للحاسب إذا لم يكن للمستخدم صلاحية
+if st.session_state.get('auth', False) and st.session_state.get('display_mode') == "mobile":
+    _u_check = st.session_state.get('user_info')
+    _has_mobile_perm = (_u_check and (
+        _u_check.get('role') == "مدير نظام" or
+        int(_u_check.get('mobile_access', 0)) == 1
+    ))
+    if not _has_mobile_perm:
+        st.session_state['display_mode'] = "desktop"
+
 if st.session_state.get('display_mode') == "mobile":
     st.markdown("""
     <style>
@@ -849,6 +1002,12 @@ if 'last_created_inv_no' not in st.session_state: st.session_state['last_created
 if 'last_created_inv_type' not in st.session_state: st.session_state['last_created_inv_type'] = None
 if 'last_ret_req_no' not in st.session_state: st.session_state['last_ret_req_no'] = None
 if 'my_inv_show_latest' not in st.session_state: st.session_state['my_inv_show_latest'] = False
+# متغيرات طلبات الغاء الفاتورة
+if 'cancel_inv_no' not in st.session_state: st.session_state['cancel_inv_no'] = ""
+if 'cancel_inv_type' not in st.session_state: st.session_state['cancel_inv_type'] = "صرف"
+if 'cancel_inv_data' not in st.session_state: st.session_state['cancel_inv_data'] = None
+if 'cancel_inv_confirm' not in st.session_state: st.session_state['cancel_inv_confirm'] = False
+if 'last_cancel_req_no' not in st.session_state: st.session_state['last_cancel_req_no'] = None
 
 # شعار السعودية للطاقة مضمّن مباشرة في الكود
 LOGO_DATA_URI = "data:image/png;base64,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"
@@ -893,7 +1052,6 @@ if not st.session_state.auth:
                     'mobile_access': int(row['mobile_access']) if 'mobile_access' in row.index else 0,
                     'position':     str(row['position']) if 'position' in row.index else '',
                 }
-                # ── حفظ المستخدم في query param + localStorage ──
                 st.query_params["_u"] = login_user
                 st.markdown(f"""<script>
                     localStorage.setItem('awaji_user', '{login_user}');
@@ -984,6 +1142,13 @@ else:
                     f"<div class='ret-btn-wrap'><span class='ret-badge'>{pending_ret_count}</span></div>",
                     unsafe_allow_html=True)
             if st.button("📤 طلبات الارجاع", key="ret_btn_user"): st.session_state.page = "return_requests_user"
+            # طلبات الغاء الفواتير
+            pending_cancel_count_user = int(pd.read_sql("SELECT COUNT(*) as cnt FROM cancel_invoice_requests WHERE status='معلق'", conn).iloc[0]['cnt'])
+            if pending_cancel_count_user > 0:
+                st.markdown(
+                    f"<div class='ret-btn-wrap'><span class='ret-badge'>{pending_cancel_count_user}</span></div>",
+                    unsafe_allow_html=True)
+            if st.button("🚫 طلب إلغاء فاتورة", key="cancel_inv_btn_user"): st.session_state.page = "cancel_invoice_user"
             st.divider()
             if st.button("✏️ تعديل فاتورة سابقة"): st.session_state.page = "edit_invoice"
             if st.button("🗂️ أرشيف فواتيري"): st.session_state.page = "my_invoices"
@@ -1007,6 +1172,13 @@ else:
                     f"<div class='ret-btn-wrap'><span class='ret-badge'>{pending_ret_wh}</span></div>",
                     unsafe_allow_html=True)
             if st.button("📥 طلبات الارجاع المعلقة", key="ret_btn_wh"): st.session_state.page = "return_requests_admin"
+            # طلبات الغاء الفواتير المعلقة
+            pending_cancel_wh = int(pd.read_sql("SELECT COUNT(*) as cnt FROM cancel_invoice_requests WHERE status='معلق'", conn).iloc[0]['cnt'])
+            if pending_cancel_wh > 0:
+                st.markdown(
+                    f"<div class='ret-btn-wrap'><span class='ret-badge'>{pending_cancel_wh}</span></div>",
+                    unsafe_allow_html=True)
+            if st.button("🚫 طلبات إلغاء الفواتير", key="cancel_inv_btn_wh"): st.session_state.page = "cancel_invoice_admin"
             st.divider()
             if st.button("🛠️ سجل العمليات التفصيلي"): st.session_state.page = "view_logs"
             if st.button("✏️ تعديل فاتورة سابقة"): st.session_state.page = "edit_invoice"
@@ -1033,6 +1205,13 @@ else:
                     f"<div class='ret-btn-wrap'><span class='ret-badge'>{pending_ret_adm}</span></div>",
                     unsafe_allow_html=True)
             if st.button("📥 طلبات الارجاع المعلقة", key="ret_btn_adm"): st.session_state.page = "return_requests_admin"
+            # طلبات الغاء الفواتير المعلقة
+            pending_cancel_adm = int(pd.read_sql("SELECT COUNT(*) as cnt FROM cancel_invoice_requests WHERE status='معلق'", conn).iloc[0]['cnt'])
+            if pending_cancel_adm > 0:
+                st.markdown(
+                    f"<div class='ret-btn-wrap'><span class='ret-badge'>{pending_cancel_adm}</span></div>",
+                    unsafe_allow_html=True)
+            if st.button("🚫 طلبات إلغاء الفواتير", key="cancel_inv_btn_adm"): st.session_state.page = "cancel_invoice_admin"
             st.divider()
             if st.button("🛠️ سجل العمليات التفصيلي"): st.session_state.page = "view_logs"
             if st.button("✏️ تعديل فاتورة سابقة"): st.session_state.page = "edit_invoice"
@@ -1441,6 +1620,15 @@ else:
             out_wh = col_out_h1.selectbox("📍 مستودع الصرف :", list_warehouses)
             out_contractor = col_out_h2.selectbox("🏗️ المقاول المستلم للمواد:", list_contractors)
 
+            # ── خانة BOQ الإجبارية ──
+            out_boq = st.text_input(
+                "📋 BOQ الحالة * (إجباري)",
+                placeholder="أدخل رقم أو وصف BOQ الحالة...",
+                key="out_boq_val"
+            ).strip()
+            if not out_boq:
+                st.warning("⚠️ يرجى إدخال BOQ الحالة لإمكانية المتابعة وإصدار الفاتورة.")
+
             st.write("---")
             # إضافة يدوية باستخدام الكود
             col_out1, col_out2, col_out3 = st.columns([1.5, 2, 1])
@@ -1481,7 +1669,10 @@ else:
                 else:
                     st.markdown("<div class='btn-success'>", unsafe_allow_html=True)
                     if c_btn2.button("🔍 مراجعة ومعاينة مستند الصرف الرسمي قبل الاعتماد"):
-                        st.session_state.review_out = True; st.session_state.confirm_out = False
+                        if not out_boq:
+                            st.error("❌ يرجى إدخال BOQ الحالة أولاً — هذا الحقل إجباري!")
+                        else:
+                            st.session_state.review_out = True; st.session_state.confirm_out = False
                     st.markdown("</div>", unsafe_allow_html=True)
                 if st.session_state.review_out:
                     st.write("---")
@@ -1497,7 +1688,7 @@ else:
                     else:
                         st.write("### 📄  معاينة الفاتورة الصادره قبل الطباعة و الأعتماد :")
                         inv_no_preview = now_mecca().strftime("%d%H%M")
-                        html_invoice = render_invoice_html("فاتورة صرف مواد طوارئ", st.session_state.cart, out_wh, out_contractor, u['full_name'], inv_no_preview)
+                        html_invoice = render_invoice_html("فاتورة صرف مواد طوارئ", st.session_state.cart, out_wh, out_contractor, u['full_name'], inv_no_preview, boq=out_boq)
                         components.html(html_invoice, height=480, scrolling=True)
                         if not st.session_state.confirm_out:
                             st.markdown("<div class='btn-success'>", unsafe_allow_html=True)
@@ -1521,7 +1712,7 @@ else:
                                         c.execute("INSERT INTO inventory (item_code, qty, warehouse, contractor, category) VALUES (?,?,?,?,?)",
                                                   (item['code'], -item['qty'], out_wh, out_contractor, item['cat']))
                                         save_log("صرف مواد لمقاول", item['code'], item['qty'], f"صرف للمقاول [{out_contractor}] من مستودع [{out_wh}] برقم قيد {inv_no_preview}", u['full_name'])
-                                    archive_invoice("صرف", inv_no_preview, out_wh, "", out_contractor, u['full_name'], json.dumps(st.session_state.cart), html_invoice)
+                                    archive_invoice("صرف", inv_no_preview, out_wh, "", out_contractor, u['full_name'], json.dumps(st.session_state.cart), html_invoice, out_boq)
                                     conn.commit()
                                     st.session_state.last_inv_html = html_invoice
                                     st.session_state.last_created_inv_no = inv_no_preview
@@ -1559,6 +1750,16 @@ else:
             col_ret_h1, col_ret_h2 = st.columns([2, 1.5])
             ret_contractor = col_ret_h1.selectbox(" المقاول الذي سوف يعيد المواد الى المستودع :", list_contractors)
             ret_wh = col_ret_h2.selectbox("📍 إيداع وارجاع إلى مستودع:", list_warehouses)
+
+            # ── خانة BOQ الإجبارية ──
+            ret_boq = st.text_input(
+                "📋 BOQ الحالة * (إجباري)",
+                placeholder="أدخل رقم أو وصف BOQ الحالة...",
+                key="ret_boq_val"
+            ).strip()
+            if not ret_boq:
+                st.warning("⚠️ يرجى إدخال BOQ الحالة لإمكانية المتابعة وإصدار الفاتورة.")
+
             st.write("---")
             col_ret1, col_ret2, col_ret3 = st.columns([1.5, 2, 1])
             ret_code = col_ret1.text_input("كود المادة المراد ارجاعها *", key=f"ret_code_val_{st.session_state.input_ret_code}").strip()
@@ -1582,13 +1783,16 @@ else:
                     st.session_state.return_cart = []; st.session_state.review_return = False; st.session_state.confirm_return = False; st.rerun()
                 st.markdown("<div class='btn-success'>", unsafe_allow_html=True)
                 if c_r_btn2.button("🔍 مراجعة ومعاينة مستند الارجاع الرسمي قبل الاعتماد"):
-                    st.session_state.review_return = True; st.session_state.confirm_return = False
+                    if not ret_boq:
+                        st.error("❌ يرجى إدخال BOQ الحالة أولاً — هذا الحقل إجباري!")
+                    else:
+                        st.session_state.review_return = True; st.session_state.confirm_return = False
                 st.markdown("</div>", unsafe_allow_html=True)
                 if st.session_state.review_return:
                     st.write("---")
                     st.write("### 📄 معاينة فاتورة الأرجاع الصادره قبل الطباعة و الأعتماد :")
                     ret_inv_no_preview = now_mecca().strftime("%d%H%M")
-                    html_ret_invoice = render_return_invoice_html("فاتورة إرجاع مواد طوارئ", st.session_state.return_cart, ret_wh, ret_contractor, u['full_name'], ret_inv_no_preview)
+                    html_ret_invoice = render_return_invoice_html("فاتورة إرجاع مواد طوارئ", st.session_state.return_cart, ret_wh, ret_contractor, u['full_name'], ret_inv_no_preview, boq=ret_boq)
                     components.html(html_ret_invoice, height=480, scrolling=True)
                     if not st.session_state.confirm_return:
                         st.markdown("<div class='btn-success'>", unsafe_allow_html=True)
@@ -1606,7 +1810,7 @@ else:
                                 c.execute("INSERT INTO inventory (item_code, qty, warehouse, contractor, category) VALUES (?,?,?,?,?)",
                                           (item['code'], item['qty'], ret_wh, ret_contractor, item['cat']))
                                 save_log("ارجاع مواد", item['code'], item['qty'], f"ارجاع وإيداع من المقاول [{ret_contractor}] في مستودع [{ret_wh}] برقم قيد {ret_inv_no_preview}", u['full_name'])
-                            archive_invoice("ارجاع", ret_inv_no_preview, ret_wh, "", ret_contractor, u['full_name'], json.dumps(st.session_state.return_cart), html_ret_invoice)
+                            archive_invoice("ارجاع", ret_inv_no_preview, ret_wh, "", ret_contractor, u['full_name'], json.dumps(st.session_state.return_cart), html_ret_invoice, ret_boq)
                             conn.commit()
                             st.session_state.last_ret_inv_html = html_ret_invoice
                             st.session_state.last_created_inv_no = ret_inv_no_preview
@@ -1689,14 +1893,35 @@ else:
                     if rb1.button("🗑️ إلغاء وتفريغ القائمة"):
                         st.session_state.ret_req_cart = []; st.session_state.ret_req_review = False; st.rerun()
 
+                    # ── خانة سبب الارجاع الإجبارية ──
+                    ret_reason_input = st.text_area(
+                        "📝 سبب الارجاع * (إجباري)",
+                        placeholder="يرجى كتابة سبب إرجاع المواد بوضوح...",
+                        key="ret_reason_txt",
+                        height=80
+                    )
+                    # ── خانة BOQ الإجبارية ──
+                    ret_req_boq = st.text_input(
+                        "📋 BOQ الحالة * (إجباري)",
+                        placeholder="أدخل رقم أو وصف BOQ الحالة...",
+                        key="ret_req_boq_val"
+                    ).strip()
+
                     st.markdown("<div class='btn-success'>", unsafe_allow_html=True)
                     if rb2.button("🔍 معاينة وإرسال الطلب"):
-                        st.session_state.ret_req_review = True
+                        if not ret_reason_input.strip():
+                            st.error("❌ يرجى كتابة سبب الارجاع قبل المتابعة — هذا الحقل إجباري!")
+                        elif not ret_req_boq:
+                            st.error("❌ يرجى إدخال BOQ الحالة — هذا الحقل إجباري!")
+                        else:
+                            st.session_state.ret_req_review = True
                     st.markdown("</div>", unsafe_allow_html=True)
 
                     if st.session_state.ret_req_review:
                         st.write("---")
                         req_no_preview = "RR" + now_mecca().strftime("%d%H%M")
+                        # استرجاع سبب الارجاع من session
+                        _ret_reason = st.session_state.get('ret_reason_txt', '')
                         html_rr = render_return_invoice_html("فاتورة ارجاع مواد طوارئ — بانتظار الاعتماد",
                                                               st.session_state.ret_req_cart, rr_wh, rr_contractor,
                                                               u['full_name'], req_no_preview)
@@ -1706,19 +1931,22 @@ else:
                         st.markdown(f"""<div class='warn-box'>⚠️ <b>سيتم رفع طلب الارجاع التالي للاعتماد:</b><br>
                         المستودع: <b>{rr_wh}</b> | المقاول: <b>{rr_contractor}</b><br>
                         {items_txt_rr}<br>
+                        <b>سبب الارجاع:</b> {_ret_reason}<br>
                         <small>لن تُضاف المواد إلى المستودع إلا بعد اعتماد مسؤول المستودع أو مدير النظام.</small>
                         </div>""", unsafe_allow_html=True)
                         col_send, col_cancel = st.columns([1,1])
                         if col_send.button("🚀 إرسال الطلب للاعتماد"):
                             ts = now_mecca().strftime("%Y-%m-%d %H:%M:%S")
-                            c.execute("""INSERT INTO return_requests (request_no, warehouse, contractor, items_json, requester, status, invoice_html, timestamp)
-                                         VALUES (?,?,?,?,?,?,?,?)""",
+                            c.execute("""INSERT INTO return_requests (request_no, warehouse, contractor, items_json, requester, status, return_reason, boq, invoice_html, timestamp)
+                                         VALUES (?,?,?,?,?,?,?,?,?,?)""",
                                       (req_no_preview, rr_wh, rr_contractor,
                                        json.dumps(st.session_state.ret_req_cart),
-                                       u['full_name'], "معلق", html_rr, ts))
+                                       u['full_name'], "معلق", _ret_reason,
+                                       st.session_state.get('ret_req_boq_val', ''),
+                                       html_rr, ts))
                             conn.commit()
                             save_log("طلب ارجاع جديد", "—", 0,
-                                     f"تقديم طلب ارجاع رقم [{req_no_preview}] للمستودع [{rr_wh}] من المقاول [{rr_contractor}]",
+                                     f"تقديم طلب ارجاع رقم [{req_no_preview}] للمستودع [{rr_wh}] من المقاول [{rr_contractor}] — السبب: {_ret_reason}",
                                      u['full_name'])
                             st.session_state.ret_req_cart = []; st.session_state.ret_req_review = False
                             st.session_state['last_ret_req_no'] = req_no_preview
@@ -1781,6 +2009,7 @@ else:
                             <div style='background:#e3f2fd;border:1px solid #1976d2;border-radius:8px;padding:12px;margin-bottom:10px;'>
                                 📍 <b>المستودع:</b> {rr['warehouse']} | 🏗️ <b>المقاول:</b> {rr['contractor']}<br>
                                 👤 <b>مقدّم الطلب:</b> {rr['requester']}
+                                {f"<br>📝 <b>سبب الارجاع:</b> {rr['return_reason']}" if rr.get('return_reason') else ""}
                             </div>""", unsafe_allow_html=True)
 
                             # عرض المواد مع إمكانية التعديل
@@ -1911,6 +2140,7 @@ else:
                             📄 <b>طلب رقم (<span style='color:red;'>{rr['request_no']}</span>)</b>
                             <span style='background:{sc};color:white;border-radius:8px;padding:2px 10px;'>{rr['status']}</span><br>
                             👤 {rr['requester']} | 📅 {rr['timestamp']} | 📍 {rr['warehouse']} | 🏗️ {rr['contractor']}
+                            {f"<br>📝 <b>سبب الارجاع:</b> {rr['return_reason']}" if rr.get('return_reason') else ""}
                             {f"<br>✅ اعتمده: <b>{rr['approved_by']}</b> في {rr['approved_at']}" if rr['approved_by'] else ""}
                         </div>""", unsafe_allow_html=True)
                         if st.button(f"👁️ عرض {rr['request_no']}", key=f"allrr_{rr['id']}"):
@@ -1931,7 +2161,7 @@ else:
             trans_wh_from = col_trans_h1.selectbox("📍 من المستودع (المنقول منه):", list_warehouses)
             trans_wh_to = col_trans_h2.selectbox("📍 إلى المستودع (المنقول إليه ):", list_warehouses)
             if trans_wh_from == trans_wh_to:
-                st.error("❌ خطأ: لا يمكن اختيار نفس المستودع !")
+                st.error("❌ خطأ: لا يمكن اختيار نفس المستودع كمصدر ومستهدف للنقل اللوجستي البيني!")
             else:
                 st.write("---")
                 col_trans1, col_trans2, col_trans3 = st.columns([1.5, 2, 1])
@@ -2476,10 +2706,12 @@ else:
             st.error("❌ هذه الصفحة متاحة لمدير النظام ومسؤول المستودع فقط.")
             st.stop()
 
-        tab_logs_actions, tab_material_track, tab_invoices_archive = st.tabs([
+        tab_logs_actions, tab_material_track, tab_invoices_archive, tab_cancel_invoices_mgr, tab_cancelled_invoices = st.tabs([
             "📋 سجل تتبع حركات الموظفين",
             "🔍 تتبع مسار المادة",
-            "🗂️ أرشيف الفواتير والمستندات"
+            "🗂️ أرشيف الفواتير والمستندات",
+            "🚫 إلغاء الفواتير",
+            "📑 سجل الفواتير الملغية"
         ])
 
         # ══════════════════════════════════════════════════════
@@ -2705,25 +2937,42 @@ else:
             except Exception:
                 pass
 
-            col_arch1, col_arch2, col_arch3, col_arch4 = st.columns([1, 1, 1.2, 1.2])
-            filter_arch_type = col_arch1.selectbox("نوع المستند المراد عرضه:", ["الكل", "صرف", "ارجاع", "تحويل"], key="arch_type")
-            search_arch_no   = col_arch2.text_input("ابحث برقم الفاتورة مباشرة:", key="arch_no")
-            search_arch_name = col_arch3.text_input("ابحث باسم المقاول أو الموظف منشئ الحركة:", key="arch_name")
-            search_arch_date = col_arch4.date_input("تصفية بحسب تاريخ إصدار الفاتورة:", value=None, key="arch_date")
+            # ── فلاتر البحث المتقدمة ──
+            _arch_col1, _arch_col2, _arch_col3 = st.columns([1, 1, 1])
+            _arch_col4, _arch_col5, _arch_col6, _arch_col7 = st.columns([1, 1, 1, 1])
+
+            filter_arch_type    = _arch_col1.selectbox("نوع المستند:", ["الكل", "صرف", "ارجاع", "تحويل"], key="arch_type")
+            search_arch_no      = _arch_col2.text_input("ابحث برقم الفاتورة:", key="arch_no")
+            search_arch_boq     = _arch_col3.text_input("🔍 ابحث برقم BOQ:", key="arch_boq").strip()
+            search_arch_date    = _arch_col4.date_input("من تاريخ:", value=None, key="arch_date")
+            search_arch_date_to = _arch_col5.date_input("إلى تاريخ:", value=None, key="arch_date_to")
+
+            # فلتر المقاول (لإظهار فواتير مقاول محدد)
+            _contractors_arch = ["الكل"] + list_contractors
+            filter_arch_contractor = _arch_col6.selectbox("🏗️ اختر مقاول:", _contractors_arch, key="arch_contractor")
+            # فلتر نوع إصدار الفاتورة
+            filter_arch_source = _arch_col7.selectbox("📦 نوع العرض:", ["الكل", "فواتير صرف المستودع", "فواتير تسليم المقاولين"], key="arch_source")
 
             # ── استعلام بدون html_content لتحسين الأداء ──
             arch_query = """SELECT id, invoice_type, invoice_no, warehouse_from,
-                            warehouse_to, contractor, employee, timestamp
+                            warehouse_to, contractor, employee, boq, timestamp
                             FROM archived_invoices WHERE 1=1"""
             if filter_arch_type != "الكل":
                 arch_query += f" AND invoice_type='{filter_arch_type}'"
             if search_arch_no.strip():
                 arch_query += f" AND invoice_no LIKE '%{search_arch_no.strip()}%'"
+            if search_arch_boq:
+                arch_query += f" AND boq LIKE '%{search_arch_boq}%'"
             if search_arch_date is not None:
-                arch_query += f" AND timestamp LIKE '{search_arch_date.strftime('%Y-%m-%d')}%'"
-            if search_arch_name.strip():
-                n = search_arch_name.strip()
-                arch_query += f" AND (contractor LIKE '%{n}%' OR employee LIKE '%{n}%')"
+                arch_query += f" AND timestamp >= '{search_arch_date.strftime('%Y-%m-%d')}'"
+            if search_arch_date_to is not None:
+                arch_query += f" AND timestamp <= '{search_arch_date_to.strftime('%Y-%m-%d')} 23:59:59'"
+            if filter_arch_contractor != "الكل":
+                arch_query += f" AND contractor LIKE '%{filter_arch_contractor}%'"
+            if filter_arch_source == "فواتير صرف المستودع":
+                arch_query += " AND invoice_type IN ('صرف', 'تحويل')"
+            elif filter_arch_source == "فواتير تسليم المقاولين":
+                arch_query += " AND invoice_type = 'ارجاع'"
             arch_query += " ORDER BY id DESC"
 
             df_archived = pd.read_sql(arch_query, conn)
@@ -2750,11 +2999,95 @@ else:
                     st.markdown(f"""
                     <div class='report-box'>
                         📄 <b>مستند {row['invoice_type']} رسمي برقم ( <span style='color:red;'>{row['invoice_no']}</span> )</b> | 📝 المسؤول عن الحركة: <b>{row['employee']}</b><br>
-                        📅 تاريخ القيد والأرشفة الفعلي: {row['timestamp']} | 📍 المستودع المصدر: {row['warehouse_from'] if row['warehouse_from'] else 'N/A'} {f" ➡️ المستودع المستلم: {row['warehouse_to']}" if row['warehouse_to'] else ''} {f" | 🏗️ المقاول المستلم: {row['contractor']}" if row['contractor'] else ''}
+                        📅 تاريخ القيد والأرشفة الفعلي: {row['timestamp']} | 📍 المستودع المصدر: {row['warehouse_from'] if row['warehouse_from'] else 'N/A'} {f" ➡️ المستودع المستلم: {row['warehouse_to']}" if row['warehouse_to'] else ''} {f" | 🏗️ المقاول المستلم: {row['contractor']}" if row['contractor'] else ''}<br>
+                        {f"📋 <b>BOQ الحالة:</b> <span style='color:#e65100;font-weight:bold;'>{row['boq']}</span>" if row.get('boq') else ''}
                     </div>""", unsafe_allow_html=True)
 
                     if st.button(f"👁️ عرض ومعاينة وطباعة الفاتورة رقم {row['invoice_no']}", key=f"btn_arch_{inv_id}"):
                         st.session_state[arch_view_key] = not st.session_state[arch_view_key]
+
+                    # ── إلغاء الفاتورة مباشرة (مدير النظام / مسؤول المستودع) ──
+                    if role in ("مدير نظام", "أمين مستودع", "موظف مستودع"):
+                        direct_cancel_key = f"direct_cancel_{inv_id}"
+                        direct_cancel_form_key = f"direct_cancel_form_{inv_id}"
+                        if direct_cancel_key not in st.session_state: st.session_state[direct_cancel_key] = False
+                        if st.session_state[direct_cancel_key]:
+                            with st.container():
+                                st.markdown(f"<div style='background:#fff3cd;border:2px solid #d32f2f;border-radius:10px;padding:14px;direction:rtl;margin:6px 0;'>", unsafe_allow_html=True)
+                                st.markdown(f"**🚫 إلغاء الفاتورة رقم {row['invoice_no']}**")
+                                dc_wh_opts = list_warehouses
+                                dc_wh_default = row.get('warehouse_from','')
+                                dc_wh_idx = dc_wh_opts.index(dc_wh_default) if dc_wh_default in dc_wh_opts else 0
+                                dc_wh = st.selectbox("📍 المستودع الذي ستُرجع إليه المواد *",
+                                                      dc_wh_opts, index=dc_wh_idx, key=f"dc_wh_{inv_id}")
+                                dc_reason = st.text_area("📝 سبب الإلغاء * (إجباري)",
+                                                          placeholder="اكتب سبب الإلغاء...",
+                                                          key=f"dc_reason_{inv_id}", height=70)
+                                dc_boq = st.text_input("📋 BOQ الحالة * (إجباري)",
+                                                         placeholder="أدخل رقم أو وصف BOQ...",
+                                                         key=f"dc_boq_{inv_id}").strip()
+                                dc_confirm_key = f"dc_confirm_{inv_id}"
+                                if dc_confirm_key not in st.session_state: st.session_state[dc_confirm_key] = False
+                                dc_col1, dc_col2 = st.columns([1, 1])
+                                if not st.session_state[dc_confirm_key]:
+                                    st.markdown("<div class='btn-danger'>", unsafe_allow_html=True)
+                                    if dc_col1.button("🚫 تأكيد الإلغاء", key=f"dc_submit_{inv_id}"):
+                                        if not dc_reason.strip():
+                                            st.error("❌ سبب الإلغاء إجباري!")
+                                        elif not dc_boq:
+                                            st.error("❌ BOQ الحالة إجباري!")
+                                        else:
+                                            st.session_state[dc_confirm_key] = True; st.rerun()
+                                    st.markdown("</div>", unsafe_allow_html=True)
+                                    if dc_col2.button("❌ إلغاء", key=f"dc_abort_{inv_id}"):
+                                        st.session_state[direct_cancel_key] = False; st.rerun()
+                                else:
+                                    try:
+                                        _dc_items = json.loads(pd.read_sql(f"SELECT items_json FROM archived_invoices WHERE id={inv_id}", conn).iloc[0]['items_json'])
+                                    except Exception:
+                                        _dc_items = []
+                                    _dc_sum = "، ".join([f"{i.get('name','?')} ({i.get('qty',0)})" for i in _dc_items])
+                                    st.markdown(f"""<div class='warn-box'>⚠️ <b>هل أنت متأكد من إلغاء الفاتورة ({row['invoice_no']})؟</b><br>
+                                    سيتم ارجاع هذه المواد إلى مستودع <b>{dc_wh}</b>:<br>{_dc_sum}</div>""",
+                                    unsafe_allow_html=True)
+                                    dc_yes, dc_no = st.columns([1,1])
+                                    if dc_yes.button("✅ نعم، إلغاء الفاتورة", key=f"dc_yes_{inv_id}"):
+                                        ts_dc = now_mecca().strftime("%Y-%m-%d %H:%M:%S")
+                                        req_dc = "CR" + now_mecca().strftime("%d%H%M%S")
+                                        _dc_html_row = pd.read_sql(f"SELECT html_content FROM archived_invoices WHERE id={inv_id}", conn)
+                                        _dc_html = _dc_html_row.iloc[0]['html_content'] if not _dc_html_row.empty else ""
+                                        # إدخال طلب الإلغاء كمعتمد مباشرة
+                                        c.execute("""INSERT INTO cancel_invoice_requests
+                                                     (request_no, invoice_no, invoice_type, warehouse_return, contractor,
+                                                      items_json, cancel_reason, boq, requester, status,
+                                                      invoice_html, timestamp, approved_by, approved_at)
+                                                     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                                                  (req_dc, row['invoice_no'], row['invoice_type'],
+                                                   dc_wh, row.get('contractor',''),
+                                                   pd.read_sql(f"SELECT items_json FROM archived_invoices WHERE id={inv_id}", conn).iloc[0]['items_json'],
+                                                   dc_reason, dc_boq, u['full_name'], "معتمد",
+                                                   _dc_html, ts_dc, u['full_name'], ts_dc))
+                                        # ارجاع المواد للمستودع
+                                        for fitem in _dc_items:
+                                            c.execute("INSERT INTO inventory (item_code, qty, warehouse, contractor, category) VALUES (?,?,?,?,?)",
+                                                      (fitem.get('code',''), int(fitem.get('qty',0)), dc_wh,
+                                                       row.get('contractor',''), fitem.get('cat','')))
+                                            save_log("إلغاء فاتورة مباشر", fitem.get('code',''), int(fitem.get('qty',0)),
+                                                     f"إلغاء الفاتورة [{row['invoice_no']}] وارجاع المواد لمستودع [{dc_wh}] — السبب: {dc_reason} | BOQ: {dc_boq}",
+                                                     u['full_name'])
+                                        conn.commit()
+                                        st.session_state[direct_cancel_key] = False
+                                        st.session_state[dc_confirm_key] = False
+                                        st.success(f"✅ تم إلغاء الفاتورة ({row['invoice_no']}) وارجاع المواد لمستودع [{dc_wh}] بنجاح!")
+                                        st.rerun()
+                                    if dc_no.button("❌ إلغاء", key=f"dc_no_{inv_id}"):
+                                        st.session_state[dc_confirm_key] = False; st.rerun()
+                                st.markdown("</div>", unsafe_allow_html=True)
+                        else:
+                            st.markdown("<div class='btn-danger'>", unsafe_allow_html=True)
+                            if st.button(f"🚫 إلغاء الفاتورة {row['invoice_no']}", key=f"cancel_arch_{inv_id}"):
+                                st.session_state[direct_cancel_key] = True; st.rerun()
+                            st.markdown("</div>", unsafe_allow_html=True)
 
                     # ── جلب HTML عند الطلب فقط ──
                     if st.session_state[arch_view_key]:
@@ -2770,6 +3103,270 @@ else:
                     st.markdown("<hr style='margin:4px 0;'>", unsafe_allow_html=True)
             else:
                 st.info("ℹ️ لم يتم العثور على أي مستندات مؤرشفة تطابق الكلمات المفتاحية أو التاريخ المحدد حالياً.")
+
+        # ══════════════════════════════════════════════════════
+        # تبويب ٤: إلغاء الفواتير — قسم منفصل كامل الصلاحية
+        # ══════════════════════════════════════════════════════
+        with tab_cancel_invoices_mgr:
+            st.write("##### 🚫 إلغاء الفواتير — عرض جميع الفواتير مع إمكانية الإلغاء المباشر")
+            st.info("ℹ️ اختر الفاتورة من القائمة، شاهد محتواها، ثم ألغِها مع اختيار المستودع وسبب الإلغاء. ستُرجع المواد تلقائياً بعد التأكيد.")
+
+            # ── فلاتر البحث ──
+            cm_c1, cm_c2, cm_c3, cm_c4 = st.columns([1, 1, 1.5, 1.2])
+            cm_type_f   = cm_c1.selectbox("نوع الفاتورة:", ["الكل", "صرف", "ارجاع", "تحويل"], key="cm_type_f")
+            cm_no_f     = cm_c2.text_input("رقم الفاتورة:", key="cm_no_f").strip()
+            cm_boq_f    = cm_c3.text_input("🔍 BOQ الحالة:", key="cm_boq_f").strip()
+            cm_date_f   = cm_c4.date_input("تصفية بالتاريخ:", value=None, key="cm_date_f")
+
+            cm_query = """SELECT id, invoice_type, invoice_no, warehouse_from,
+                          warehouse_to, contractor, employee, boq, timestamp
+                          FROM archived_invoices WHERE 1=1"""
+            if cm_type_f != "الكل":
+                cm_query += f" AND invoice_type='{cm_type_f}'"
+            if cm_no_f:
+                cm_query += f" AND invoice_no LIKE '%{cm_no_f}%'"
+            if cm_boq_f:
+                cm_query += f" AND boq LIKE '%{cm_boq_f}%'"
+            if cm_date_f:
+                cm_query += f" AND timestamp >= '{cm_date_f.strftime('%Y-%m-%d')}'"
+            cm_query += " ORDER BY id DESC"
+
+            df_cm = pd.read_sql(cm_query, conn)
+
+            if df_cm.empty:
+                st.info("ℹ️ لا توجد فواتير تطابق الفلاتر المحددة.")
+            else:
+                st.success(f"✅ تم العثور على ({len(df_cm)}) فاتورة.")
+                st.markdown("---")
+
+                for _, cm_row in df_cm.iterrows():
+                    cm_inv_id   = int(cm_row['id'])
+                    cm_view_key = f"cm_view_{cm_inv_id}"
+                    cm_form_key = f"cm_cancel_{cm_inv_id}"
+                    cm_conf_key = f"cm_conf_{cm_inv_id}"
+                    for _k in [cm_view_key, cm_form_key, cm_conf_key]:
+                        if _k not in st.session_state:
+                            st.session_state[_k] = False
+
+                    # بطاقة الفاتورة
+                    _type_color = "#e65100" if cm_row['invoice_type']=="صرف" else ("#2e7d32" if cm_row['invoice_type']=="ارجاع" else "#1a237e")
+                    st.markdown(f"""
+                    <div style='background:rgba(255,255,255,0.9);border-right:5px solid {_type_color};
+                                border-radius:10px;padding:12px 16px;margin-bottom:6px;direction:rtl;'>
+                        <b style='color:{_type_color};'>فاتورة {cm_row['invoice_type']}</b>
+                        رقم <span style='color:red;font-weight:900;font-size:15px;'>{cm_row['invoice_no']}</span>
+                        &nbsp;|&nbsp; 📅 {cm_row['timestamp']}<br>
+                        📍 {cm_row['warehouse_from'] or 'N/A'}
+                        {f" ➡️ {cm_row['warehouse_to']}" if cm_row['warehouse_to'] else ""}
+                        {f" &nbsp;|&nbsp; 🏗️ {cm_row['contractor']}" if cm_row['contractor'] else ""}
+                        &nbsp;|&nbsp; 👤 {cm_row['employee']}
+                        {f"<br>📋 <b>BOQ:</b> <span style='color:#e65100;'>{cm_row['boq']}</span>" if cm_row.get('boq') else ""}
+                    </div>""", unsafe_allow_html=True)
+
+                    # أزرار: عرض الفاتورة + إلغاء
+                    btn_col_v, btn_col_c = st.columns([1, 1])
+                    if btn_col_v.button(f"👁️ عرض الفاتورة", key=f"cm_view_btn_{cm_inv_id}"):
+                        st.session_state[cm_view_key] = not st.session_state[cm_view_key]
+                        if st.session_state[cm_view_key]:
+                            st.session_state[cm_form_key] = False
+
+                    st.markdown("<div class='btn-danger'>", unsafe_allow_html=True)
+                    if btn_col_c.button(f"🚫 إلغاء الفاتورة", key=f"cm_cancel_btn_{cm_inv_id}"):
+                        st.session_state[cm_form_key] = not st.session_state[cm_form_key]
+                        if st.session_state[cm_form_key]:
+                            st.session_state[cm_view_key] = False
+                            st.session_state[cm_conf_key] = False
+                    st.markdown("</div>", unsafe_allow_html=True)
+
+                    # عرض الفاتورة
+                    if st.session_state[cm_view_key]:
+                        with st.spinner("جاري تحميل الفاتورة..."):
+                            _cm_html = pd.read_sql(
+                                "SELECT html_content FROM archived_invoices WHERE id=?",
+                                conn, params=(cm_inv_id,))
+                            if not _cm_html.empty:
+                                components.html(_cm_html.iloc[0]['html_content'], height=520, scrolling=True)
+
+                    # نموذج الإلغاء
+                    if st.session_state[cm_form_key]:
+                        with st.container():
+                            st.markdown("""<div style='background:rgba(255,235,238,0.95);
+                                border:2px solid #d32f2f;border-radius:12px;
+                                padding:16px;margin:8px 0;direction:rtl;'>""",
+                                unsafe_allow_html=True)
+                            st.markdown(f"**🚫 إلغاء الفاتورة رقم {cm_row['invoice_no']}**")
+
+                            # اختيار المستودع
+                            _cm_wh_opts = list_warehouses
+                            _cm_wh_def  = cm_row.get('warehouse_from', '')
+                            _cm_wh_idx  = _cm_wh_opts.index(_cm_wh_def) if _cm_wh_def in _cm_wh_opts else 0
+                            cm_sel_wh = st.selectbox(
+                                "📍 المستودع الذي ستُرجع إليه المواد *",
+                                _cm_wh_opts, index=_cm_wh_idx,
+                                key=f"cm_wh_{cm_inv_id}")
+
+                            cm_reason = st.text_area(
+                                "📝 سبب الإلغاء * (إجباري)",
+                                placeholder="اكتب سبب الإلغاء بوضوح...",
+                                key=f"cm_reason_{cm_inv_id}", height=75)
+
+                            cm_boq_inp = st.text_input(
+                                "📋 BOQ الحالة * (إجباري)",
+                                placeholder="أدخل رقم أو وصف BOQ...",
+                                key=f"cm_boq_{cm_inv_id}").strip()
+
+                            st.markdown("</div>", unsafe_allow_html=True)
+
+                            if not st.session_state[cm_conf_key]:
+                                _ca1, _ca2 = st.columns([1, 1])
+                                st.markdown("<div class='btn-danger'>", unsafe_allow_html=True)
+                                if _ca1.button("⚠️ متابعة الإلغاء", key=f"cm_proceed_{cm_inv_id}"):
+                                    if not cm_reason.strip():
+                                        st.error("❌ سبب الإلغاء إجباري!")
+                                    elif not cm_boq_inp:
+                                        st.error("❌ BOQ الحالة إجباري!")
+                                    else:
+                                        st.session_state[cm_conf_key] = True
+                                        st.rerun()
+                                st.markdown("</div>", unsafe_allow_html=True)
+                                if _ca2.button("❌ إلغاء", key=f"cm_abort_{cm_inv_id}"):
+                                    st.session_state[cm_form_key] = False
+                                    st.session_state[cm_conf_key] = False
+                                    st.rerun()
+                            else:
+                                # جلب المواد للتأكيد
+                                try:
+                                    _cm_items_r = pd.read_sql(
+                                        "SELECT items_json FROM archived_invoices WHERE id=?",
+                                        conn, params=(cm_inv_id,))
+                                    _cm_items = json.loads(_cm_items_r.iloc[0]['items_json']) if not _cm_items_r.empty else []
+                                except Exception:
+                                    _cm_items = []
+
+                                _cm_sum = "، ".join([f"{i.get('name','?')} ({i.get('qty',0)})" for i in _cm_items])
+                                _cm_wh_val  = st.session_state.get(f"cm_wh_{cm_inv_id}", cm_sel_wh)
+                                _cm_rsn_val = st.session_state.get(f"cm_reason_{cm_inv_id}", cm_reason)
+                                _cm_boq_val = st.session_state.get(f"cm_boq_{cm_inv_id}", cm_boq_inp)
+
+                                st.markdown(f"""
+                                <div class='warn-box'>
+                                ⚠️ <b>هل أنت متأكد من إلغاء الفاتورة ({cm_row['invoice_no']})؟</b><br>
+                                سيتم ارجاع المواد التالية إلى مستودع <b>{_cm_wh_val}</b>:<br>
+                                {_cm_sum or "لا توجد مواد"}<br>
+                                <b>سبب الإلغاء:</b> {_cm_rsn_val} | <b>BOQ:</b> {_cm_boq_val}
+                                </div>""", unsafe_allow_html=True)
+
+                                _cy, _cn = st.columns([1, 1])
+                                st.markdown("<div class='btn-danger'>", unsafe_allow_html=True)
+                                if _cy.button("✅ نعم، تأكيد الإلغاء وإرجاع المواد", key=f"cm_yes_{cm_inv_id}"):
+                                    ts_cm = now_mecca().strftime("%Y-%m-%d %H:%M:%S")
+                                    req_cm = "CR" + now_mecca().strftime("%d%H%M%S")
+                                    _cm_html_r = pd.read_sql(
+                                        "SELECT html_content FROM archived_invoices WHERE id=?",
+                                        conn, params=(cm_inv_id,))
+                                    _cm_html_c = _cm_html_r.iloc[0]['html_content'] if not _cm_html_r.empty else ""
+                                    _cm_items_json = pd.read_sql(
+                                        "SELECT items_json FROM archived_invoices WHERE id=?",
+                                        conn, params=(cm_inv_id,)).iloc[0]['items_json']
+
+                                    # حفظ طلب الإلغاء كمعتمد
+                                    c.execute("""INSERT INTO cancel_invoice_requests
+                                                 (request_no, invoice_no, invoice_type, warehouse_return,
+                                                  contractor, items_json, cancel_reason, boq, requester,
+                                                  status, invoice_html, timestamp, approved_by, approved_at)
+                                                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                                              (req_cm, cm_row['invoice_no'], cm_row['invoice_type'],
+                                               _cm_wh_val, cm_row.get('contractor', ''),
+                                               _cm_items_json, _cm_rsn_val, _cm_boq_val,
+                                               u['full_name'], "معتمد", _cm_html_c,
+                                               ts_cm, u['full_name'], ts_cm))
+
+                                    # إرجاع المواد للمستودع
+                                    for fitem in _cm_items:
+                                        c.execute("""INSERT INTO inventory
+                                                     (item_code, qty, warehouse, contractor, category)
+                                                     VALUES (?,?,?,?,?)""",
+                                                  (fitem.get('code', ''), int(fitem.get('qty', 0)),
+                                                   _cm_wh_val, cm_row.get('contractor', ''),
+                                                   fitem.get('cat', '')))
+                                        save_log("إلغاء فاتورة",
+                                                 fitem.get('code', ''),
+                                                 int(fitem.get('qty', 0)),
+                                                 f"إلغاء الفاتورة [{cm_row['invoice_no']}] وارجاع المواد "
+                                                 f"لمستودع [{_cm_wh_val}] — السبب: {_cm_rsn_val} | BOQ: {_cm_boq_val}",
+                                                 u['full_name'])
+                                    conn.commit()
+
+                                    # تصفير حالة هذه الفاتورة
+                                    st.session_state[cm_form_key] = False
+                                    st.session_state[cm_conf_key] = False
+                                    st.session_state[cm_view_key] = False
+                                    st.success(f"✅ تم إلغاء الفاتورة ({cm_row['invoice_no']}) وارجاع المواد لمستودع [{_cm_wh_val}] بنجاح!")
+                                    st.rerun()
+                                st.markdown("</div>", unsafe_allow_html=True)
+
+                                if _cn.button("❌ رجوع", key=f"cm_no_{cm_inv_id}"):
+                                    st.session_state[cm_conf_key] = False
+                                    st.rerun()
+
+                    st.markdown("<hr style='margin:6px 0;'>", unsafe_allow_html=True)
+
+        # ══════════════════════════════════════════════════════
+        # تبويب ٥: سجل الفواتير الملغية
+        # ══════════════════════════════════════════════════════
+        with tab_cancelled_invoices:
+            st.write("##### 🚫 أرشيف الفواتير الملغية — طلبات الإلغاء المعتمدة والمرفوضة والمعلقة")
+
+            # ── فلاتر البحث ──
+            ci_c1, ci_c2, ci_c3 = st.columns([1, 1.5, 1.2])
+            ci_status_f   = ci_c1.selectbox("الحالة:", ["الكل", "معلق", "معتمد", "مرفوض"], key="ci_status_f")
+            ci_search_req = ci_c2.text_input("ابحث برقم الطلب أو الفاتورة أو مقدم الطلب:", key="ci_search_req").strip()
+            ci_date_f     = ci_c3.date_input("تصفية بالتاريخ:", value=None, key="ci_date_f")
+
+            ci_query = "SELECT * FROM cancel_invoice_requests WHERE 1=1"
+            if ci_status_f != "الكل":
+                ci_query += f" AND status='{ci_status_f}'"
+            if ci_search_req:
+                ci_query += f" AND (request_no LIKE '%{ci_search_req}%' OR invoice_no LIKE '%{ci_search_req}%' OR requester LIKE '%{ci_search_req}%')"
+            if ci_date_f:
+                ci_query += f" AND timestamp LIKE '{ci_date_f.strftime('%Y-%m-%d')}%'"
+            ci_query += " ORDER BY id DESC"
+
+            df_cancelled = pd.read_sql(ci_query, conn)
+
+            if df_cancelled.empty:
+                st.info("ℹ️ لا توجد طلبات إلغاء فواتير تطابق الفلاتر المحددة.")
+            else:
+                st.success(f"✅ تم العثور على ({len(df_cancelled)}) طلب إلغاء.")
+                st.markdown("---")
+
+                for _, cr in df_cancelled.iterrows():
+                    sc_ci = "#2e7d32" if cr['status']=="معتمد" else ("#d32f2f" if cr['status']=="مرفوض" else "#f9a825")
+                    ci_view_key = f"ci_arch_view_{cr['id']}"
+                    if ci_view_key not in st.session_state:
+                        st.session_state[ci_view_key] = False
+
+                    st.markdown(f"""
+                    <div style='background:rgba(252,228,236,0.7);border-right:6px solid {sc_ci};
+                                border-radius:10px;padding:14px 18px;margin-bottom:10px;direction:rtl;'>
+                        🚫 <b>طلب إلغاء رقم (<span style='color:red;'>{cr['request_no']}</span>)</b>
+                        <span style='background:{sc_ci};color:white;border-radius:8px;padding:2px 10px;font-size:13px;margin-right:8px;'>{cr['status']}</span><br>
+                        📄 <b>رقم الفاتورة:</b> {cr['invoice_no']} ({cr['invoice_type']}) |
+                        👤 <b>مقدم الطلب:</b> {cr['requester']}<br>
+                        📍 <b>المستودع المُرجَع إليه:</b> {cr['warehouse_return']} |
+                        🏗️ <b>المقاول:</b> {cr['contractor']}<br>
+                        📝 <b>سبب الإلغاء:</b> {cr['cancel_reason']}<br>
+                        📅 <b>تاريخ الطلب:</b> {cr['timestamp']}
+                        {f"<br>✅ <b>اعتمده:</b> <span style='color:#2e7d32;font-weight:bold;'>{cr['approved_by']}</span> في {cr['approved_at']}" if cr.get('approved_by') else ""}
+                    </div>""", unsafe_allow_html=True)
+
+                    if st.button(f"👁️ معاينة الفاتورة الأصلية {cr['invoice_no']}", key=f"ci_preview_{cr['id']}"):
+                        st.session_state[ci_view_key] = not st.session_state[ci_view_key]
+
+                    if st.session_state[ci_view_key] and cr.get('invoice_html'):
+                        components.html(cr['invoice_html'], height=500, scrolling=True)
+
+                    st.markdown("<hr style='margin:4px 0;'>", unsafe_allow_html=True)
 
     # ---------------------------------------------------------
     # صفحة: أرقام التواصل مع المقاولين والمستودعات
@@ -3625,6 +4222,270 @@ else:
                             st.success("✅ تم تغيير كلمة مرور مدير النظام بنجاح!")
                             st.session_state['admin_pwd_auth'] = False
                             st.rerun()
+
+    # ---------------------------------------------------------
+    # صفحة: تقديم طلب إلغاء فاتورة (موجه البلاغات)
+    # ---------------------------------------------------------
+    elif st.session_state.page == "cancel_invoice_user":
+        st.markdown("<div class='main-title'>🚫 تقديم طلب إلغاء فاتورة</div>", unsafe_allow_html=True)
+        st.info("ℹ️ يمكنك هنا تقديم طلب إلغاء فاتورة صرف. سيتم مراجعة الطلب من قِبل مسؤول المستودع أو مدير النظام، وعند الاعتماد ستُرجع المواد للمستودع المحدد.")
+
+        tab_new_cancel, tab_my_cancel = st.tabs(["➕ طلب إلغاء جديد", "📋 طلباتي السابقة"])
+
+        with tab_new_cancel:
+            c1_cn, c2_cn = st.columns([1, 1.5])
+            cancel_inv_type_sel = c1_cn.selectbox("نوع الفاتورة:", ["صرف", "تحويل"], key="cancel_type_sel")
+            cancel_inv_no_input = c2_cn.text_input("رقم الفاتورة المراد إلغاؤها *", key="cancel_no_input").strip()
+
+            if st.button("🔍 بحث عن الفاتورة", key="cancel_search_btn"):
+                if not cancel_inv_no_input:
+                    st.error("❌ يرجى إدخال رقم الفاتورة!")
+                else:
+                    df_ci = pd.read_sql(
+                        "SELECT * FROM archived_invoices WHERE invoice_no=? AND invoice_type=?",
+                        conn, params=(cancel_inv_no_input, cancel_inv_type_sel))
+                    if df_ci.empty:
+                        st.error(f"❌ لم يتم العثور على فاتورة {cancel_inv_type_sel} برقم ({cancel_inv_no_input}).")
+                        st.session_state['cancel_inv_data'] = None
+                    else:
+                        st.session_state['cancel_inv_data'] = df_ci.iloc[0].to_dict()
+                        st.session_state['cancel_inv_confirm'] = False
+
+            if st.session_state.get('cancel_inv_data'):
+                ci_row = st.session_state['cancel_inv_data']
+                st.success(f"✅ تم العثور على الفاتورة | المستودع: {ci_row.get('warehouse_from','')} | المقاول: {ci_row.get('contractor','')} | التاريخ: {ci_row.get('timestamp','')}")
+
+                # ── معاينة الفاتورة ──
+                if st.button("👁️ معاينة الفاتورة", key="cancel_preview_btn"):
+                    st.session_state['cancel_show_preview'] = not st.session_state.get('cancel_show_preview', False)
+                if st.session_state.get('cancel_show_preview', False):
+                    _ci_html = pd.read_sql("SELECT html_content FROM archived_invoices WHERE id=?",
+                                           conn, params=(int(ci_row['id']),))
+                    if not _ci_html.empty:
+                        components.html(_ci_html.iloc[0]['html_content'], height=480, scrolling=True)
+
+                st.markdown("---")
+
+                # ── بيانات الإلغاء ──
+                st.markdown("##### 📝 بيانات طلب الإلغاء:")
+                ci_col1, ci_col2 = st.columns([1, 1])
+                # المستودع الذي ستُرجع إليه المواد
+                _wh_opts_ci = list_warehouses
+                _ci_wh_default = ci_row.get('warehouse_from', '')
+                _ci_wh_idx = _wh_opts_ci.index(_ci_wh_default) if _ci_wh_default in _wh_opts_ci else 0
+                cancel_wh_return = ci_col1.selectbox(
+                    "📍 المستودع الذي ستُرجع إليه المواد *",
+                    _wh_opts_ci, index=_ci_wh_idx, key="cancel_wh_return"
+                )
+                # المقاول المسلّم للمادة
+                _con_opts_ci = list_contractors
+                _ci_con_default = ci_row.get('contractor', '')
+                _ci_con_idx = _con_opts_ci.index(_ci_con_default) if _ci_con_default in _con_opts_ci else 0
+                cancel_contractor = ci_col2.selectbox(
+                    "🏗️ المقاول المسلّم للمادة *",
+                    _con_opts_ci, index=_ci_con_idx, key="cancel_contractor_sel"
+                )
+                # سبب الإلغاء الإجباري
+                cancel_reason = st.text_area(
+                    "📝 سبب الإلغاء * (إجباري)",
+                    placeholder="يرجى كتابة سبب إلغاء الفاتورة بوضوح...",
+                    key="cancel_reason_txt",
+                    height=80
+                )
+                # BOQ الحالة الإجبارية
+                cancel_boq = st.text_input(
+                    "📋 BOQ الحالة * (إجباري)",
+                    placeholder="أدخل رقم أو وصف BOQ الحالة...",
+                    key="cancel_boq_txt"
+                ).strip()
+
+                if not st.session_state.get('cancel_inv_confirm'):
+                    st.markdown("<div class='btn-danger'>", unsafe_allow_html=True)
+                    if st.button("🚫 تقديم طلب الإلغاء", key="submit_cancel_req"):
+                        if not cancel_reason.strip():
+                            st.error("❌ يرجى كتابة سبب الإلغاء — هذا الحقل إجباري!")
+                        elif not st.session_state.get('cancel_boq_txt', '').strip():
+                            st.error("❌ يرجى إدخال BOQ الحالة — هذا الحقل إجباري!")
+                        else:
+                            st.session_state['cancel_inv_confirm'] = True
+                            st.rerun()
+                    st.markdown("</div>", unsafe_allow_html=True)
+                else:
+                    ci_items = json.loads(ci_row.get('items_json', '[]'))
+                    items_summary = "، ".join([f"{i.get('name','?')} ({i.get('qty',0)})" for i in ci_items])
+                    _cr_text = st.session_state.get('cancel_reason_txt', cancel_reason)
+                    _cr_wh   = st.session_state.get('cancel_wh_return', cancel_wh_return)
+                    _cr_con  = st.session_state.get('cancel_contractor_sel', cancel_contractor)
+                    st.markdown(f"""<div class='warn-box'>⚠️ <b>هل أنت متأكد أنك تريد إلغاء الفاتورة؟</b><br>
+                    سيتم ارجاع المواد المصروفة إلى مستودع <b>{_cr_wh}</b> بعد الاعتماد كما هو في خانة الارجاع.<br>
+                    المواد: {items_summary}<br>
+                    <b>سبب الإلغاء:</b> {_cr_text}<br>
+                    <b>المقاول:</b> {_cr_con}
+                    </div>""", unsafe_allow_html=True)
+                    col_cy, col_cn_cancel = st.columns([1, 1])
+                    if col_cy.button("✅ نعم، تأكيد وإرسال الطلب", key="confirm_cancel_yes"):
+                        ts_c = now_mecca().strftime("%Y-%m-%d %H:%M:%S")
+                        req_no_c = "CR" + now_mecca().strftime("%d%H%M")
+                        _ci_html_row = pd.read_sql("SELECT html_content FROM archived_invoices WHERE id=?",
+                                                   conn, params=(int(ci_row['id']),))
+                        _ci_html_content = _ci_html_row.iloc[0]['html_content'] if not _ci_html_row.empty else ""
+                        c.execute("""INSERT INTO cancel_invoice_requests
+                                     (request_no, invoice_no, invoice_type, warehouse_return, contractor, items_json,
+                                      cancel_reason, boq, requester, status, invoice_html, timestamp)
+                                     VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""",
+                                  (req_no_c, ci_row['invoice_no'], ci_row['invoice_type'],
+                                   st.session_state.get('cancel_wh_return', cancel_wh_return),
+                                   st.session_state.get('cancel_contractor_sel', cancel_contractor),
+                                   ci_row.get('items_json', '[]'),
+                                   st.session_state.get('cancel_reason_txt', cancel_reason),
+                                   st.session_state.get('cancel_boq_txt', ''),
+                                   u['full_name'], "معلق", _ci_html_content, ts_c))
+                        conn.commit()
+                        save_log("طلب إلغاء فاتورة", "—", 0,
+                                 f"طلب إلغاء فاتورة [{ci_row['invoice_no']}] — السبب: {st.session_state.get('cancel_reason_txt', '')}",
+                                 u['full_name'])
+                        st.session_state['cancel_inv_data'] = None
+                        st.session_state['cancel_inv_confirm'] = False
+                        st.session_state['last_cancel_req_no'] = req_no_c
+                        st.success(f"✅ تم إرسال طلب الإلغاء رقم ({req_no_c}) بنجاح — بانتظار اعتماد مسؤول المستودع أو مدير النظام.")
+                        st.rerun()
+                    if col_cn_cancel.button("❌ إلغاء", key="confirm_cancel_no"):
+                        st.session_state['cancel_inv_confirm'] = False; st.rerun()
+
+            # ── إشعار نجاح بعد إرسال الطلب ──
+            if st.session_state.get('last_cancel_req_no') and not st.session_state.get('cancel_inv_data'):
+                st.markdown(
+                    f"<div style='background:#e8f5e9;border:2px solid #1daa60;border-radius:12px;"
+                    f"padding:18px;text-align:center;direction:rtl;margin-top:16px;'>"
+                    f"✅ <b>تم إنشاء طلب إلغاء الفاتورة بنجاح — بانتظار اعتماد مدير النظام أو أمين المستودع</b><br>"
+                    f"رقم الطلب: <span style='color:red;font-weight:900;font-size:18px;'>"
+                    f"{st.session_state['last_cancel_req_no']}</span><br>"
+                    f"<small>لن تُرجع المواد إلى المستودع إلا بعد الاعتماد.</small>"
+                    f"</div>",
+                    unsafe_allow_html=True)
+                if st.button("✖️ إغلاق الإشعار", key="close_cancel_notif"):
+                    st.session_state['last_cancel_req_no'] = None; st.rerun()
+
+        with tab_my_cancel:
+            st.write(f"### 📋 طلبات الإلغاء المقدمة من: {u['full_name']}")
+            df_my_cancel = pd.read_sql(
+                "SELECT * FROM cancel_invoice_requests WHERE requester=? ORDER BY id DESC",
+                conn, params=(u['full_name'],))
+            if df_my_cancel.empty:
+                st.info("ℹ️ لم تقدم أي طلبات إلغاء فواتير حتى الآن.")
+            else:
+                for _, cr in df_my_cancel.iterrows():
+                    sc = "#2e7d32" if cr['status']=="معتمد" else ("#d32f2f" if cr['status']=="مرفوض" else "#f9a825")
+                    st.markdown(f"""<div class='report-box'>
+                        🚫 <b>طلب إلغاء رقم (<span style='color:red;'>{cr['request_no']}</span>)</b>
+                        <span style='background:{sc};color:white;border-radius:8px;padding:2px 10px;'>{cr['status']}</span><br>
+                        📄 رقم الفاتورة: <b>{cr['invoice_no']}</b> ({cr['invoice_type']}) | 📍 المستودع: {cr['warehouse_return']} | 🏗️ {cr['contractor']}<br>
+                        📅 {cr['timestamp']} | <b>السبب:</b> {cr['cancel_reason']}
+                        {f"<br>✅ اعتمده: <b>{cr['approved_by']}</b> في {cr['approved_at']}" if cr.get('approved_by') else ""}
+                    </div>""", unsafe_allow_html=True)
+                    st.markdown("<hr style='margin:4px 0;'>", unsafe_allow_html=True)
+
+    # ---------------------------------------------------------
+    # صفحة: اعتماد طلبات إلغاء الفواتير (مسؤول مستودع / مدير نظام)
+    # ---------------------------------------------------------
+    elif st.session_state.page == "cancel_invoice_admin":
+        st.markdown("<div class='main-title'>🚫 طلبات إلغاء الفواتير — المراجعة والاعتماد</div>", unsafe_allow_html=True)
+        if role == "موجه بلاغات":
+            st.error("❌ هذه الصفحة متاحة لمسؤول المستودع ومدير النظام فقط.")
+        else:
+            tab_cancel_pending, tab_cancel_all = st.tabs(["⏳ الطلبات المعلقة", "📋 جميع الطلبات"])
+
+            with tab_cancel_pending:
+                df_cancel_pending = pd.read_sql(
+                    "SELECT * FROM cancel_invoice_requests WHERE status='معلق' ORDER BY id DESC", conn)
+                if df_cancel_pending.empty:
+                    st.success("✅ لا توجد طلبات إلغاء فواتير معلقة حالياً.")
+                else:
+                    st.info(f"📋 يوجد ({len(df_cancel_pending)}) طلب إلغاء معلق.")
+                    for _, cr in df_cancel_pending.iterrows():
+                        cr_items = json.loads(cr.get('items_json', '[]'))
+                        with st.expander(f"🚫 طلب رقم {cr['request_no']} | الفاتورة: {cr['invoice_no']} | من: {cr['requester']} | {cr['timestamp']}", expanded=True):
+                            st.markdown(f"""
+                            <div style='background:#fce4ec;border:1px solid #c62828;border-radius:8px;padding:12px;margin-bottom:10px;'>
+                                📄 <b>فاتورة {cr['invoice_type']}:</b> {cr['invoice_no']}<br>
+                                📍 <b>المستودع الذي سترجع إليه المواد:</b> {cr['warehouse_return']}<br>
+                                🏗️ <b>المقاول:</b> {cr['contractor']}<br>
+                                👤 <b>مقدّم الطلب:</b> {cr['requester']}<br>
+                                📝 <b>سبب الإلغاء:</b> {cr['cancel_reason']}
+                            </div>""", unsafe_allow_html=True)
+
+                            # عرض المواد
+                            st.write("##### 📦 المواد التي ستُرجع للمستودع:")
+                            if cr_items:
+                                df_cr_items = pd.DataFrame(cr_items)
+                                st.dataframe(df_cr_items[['code','name','qty'] if 'code' in df_cr_items.columns else df_cr_items.columns.tolist()],
+                                             use_container_width=True, hide_index=True)
+
+                            # معاينة الفاتورة الأصلية
+                            if st.button(f"👁️ معاينة الفاتورة الأصلية", key=f"cancel_prev_{cr['id']}"):
+                                st.session_state.view_archived_html[f"cancel_{cr['id']}"] = not st.session_state.view_archived_html.get(f"cancel_{cr['id']}", False)
+                            if st.session_state.view_archived_html.get(f"cancel_{cr['id']}", False) and cr.get('invoice_html'):
+                                components.html(cr['invoice_html'], height=480, scrolling=True)
+
+                            st.write("---")
+                            btn_ca1, btn_ca2 = st.columns([1, 1])
+                            ca_confirm_key = f"ca_confirm_{cr['id']}"
+                            if ca_confirm_key not in st.session_state: st.session_state[ca_confirm_key] = False
+
+                            st.markdown("<div class='btn-success'>", unsafe_allow_html=True)
+                            if btn_ca1.button(f"✅ اعتماد الإلغاء وارجاع المواد", key=f"ca_approve_{cr['id']}"):
+                                st.session_state[ca_confirm_key] = True
+                            st.markdown("</div>", unsafe_allow_html=True)
+                            st.markdown("<div class='btn-danger'>", unsafe_allow_html=True)
+                            if btn_ca2.button(f"❌ رفض الطلب", key=f"ca_reject_{cr['id']}"):
+                                c.execute("UPDATE cancel_invoice_requests SET status='مرفوض', approved_by=?, approved_at=? WHERE id=?",
+                                          (u['full_name'], now_mecca().strftime("%Y-%m-%d %H:%M:%S"), int(cr['id'])))
+                                conn.commit()
+                                save_log("رفض طلب إلغاء فاتورة", "—", 0,
+                                         f"رفض طلب إلغاء الفاتورة [{cr['invoice_no']}] من [{cr['requester']}]",
+                                         u['full_name'])
+                                st.warning(f"⚠️ تم رفض طلب الإلغاء ({cr['request_no']})."); st.rerun()
+                            st.markdown("</div>", unsafe_allow_html=True)
+
+                            if st.session_state.get(ca_confirm_key):
+                                items_sum_ca = "، ".join([f"{i.get('name','?')} ({i.get('qty',0)})" for i in cr_items])
+                                st.markdown(f"""<div class='warn-box'>⚠️ <b>تأكيد اعتماد إلغاء الفاتورة ({cr['invoice_no']})؟</b><br>
+                                سيتم ارجاع المواد التالية إلى مستودع <b>{cr['warehouse_return']}</b>:<br>
+                                {items_sum_ca}
+                                </div>""", unsafe_allow_html=True)
+                                cay, can_c = st.columns([1, 1])
+                                if cay.button(f"✅ نعم، اعتماد الإلغاء", key=f"ca_yes_{cr['id']}"):
+                                    ts_ca = now_mecca().strftime("%Y-%m-%d %H:%M:%S")
+                                    for fitem in cr_items:
+                                        c.execute("INSERT INTO inventory (item_code, qty, warehouse, contractor, category) VALUES (?,?,?,?,?)",
+                                                  (fitem.get('code',''), int(fitem.get('qty',0)), cr['warehouse_return'],
+                                                   cr.get('contractor',''), fitem.get('cat','')))
+                                        save_log("اعتماد إلغاء فاتورة", fitem.get('code',''), int(fitem.get('qty',0)),
+                                                 f"إلغاء فاتورة [{cr['invoice_no']}] وارجاع المواد لمستودع [{cr['warehouse_return']}] — السبب: {cr['cancel_reason']}",
+                                                 u['full_name'])
+                                    c.execute("UPDATE cancel_invoice_requests SET status='معتمد', approved_by=?, approved_at=? WHERE id=?",
+                                              (u['full_name'], ts_ca, int(cr['id'])))
+                                    conn.commit()
+                                    st.success(f"🎉 تم اعتماد إلغاء الفاتورة ({cr['invoice_no']}) وارجاع المواد لمستودع [{cr['warehouse_return']}] بنجاح!"); st.rerun()
+                                if can_c.button(f"❌ إلغاء", key=f"ca_no_{cr['id']}"):
+                                    st.session_state[ca_confirm_key] = False; st.rerun()
+
+            with tab_cancel_all:
+                st.write("### 📋 جميع طلبات الإلغاء")
+                df_cancel_all = pd.read_sql("SELECT * FROM cancel_invoice_requests ORDER BY id DESC", conn)
+                if df_cancel_all.empty:
+                    st.info("ℹ️ لا توجد أي طلبات إلغاء في النظام حتى الآن.")
+                else:
+                    for _, cr in df_cancel_all.iterrows():
+                        sc = "#2e7d32" if cr['status']=="معتمد" else ("#d32f2f" if cr['status']=="مرفوض" else "#f9a825")
+                        st.markdown(f"""<div class='report-box'>
+                            🚫 <b>طلب إلغاء (<span style='color:red;'>{cr['request_no']}</span>)</b>
+                            <span style='background:{sc};color:white;border-radius:8px;padding:2px 10px;'>{cr['status']}</span><br>
+                            📄 فاتورة: <b>{cr['invoice_no']}</b> | 📍 {cr['warehouse_return']} | 🏗️ {cr['contractor']}<br>
+                            👤 {cr['requester']} | 📅 {cr['timestamp']} | السبب: {cr['cancel_reason']}
+                            {f"<br>✅ اعتمده: <b>{cr['approved_by']}</b> في {cr['approved_at']}" if cr.get('approved_by') else ""}
+                        </div>""", unsafe_allow_html=True)
+                        st.markdown("<hr style='margin:4px 0;'>", unsafe_allow_html=True)
 
     # ---------------------------------------------------------
     # صفحة: الثوابت العامة والإعدادات التشغيلية
