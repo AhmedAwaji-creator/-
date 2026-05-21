@@ -340,7 +340,7 @@ def render_invoice_html(title, items_list, warehouse, contractor, employee, cust
     extra_row = ""
     if extra_info:
         extra_row = f"<tr><td colspan='2'><b>{extra_info[0]}</b> {extra_info[1]}</td></tr>"
-    boq_line = f"<div style='font-size:13px;color:#e65100;font-weight:bold;margin-top:4px;'>BOQ الحالة: {boq}</div>" if boq else ""
+    boq_line = f"<div style='font-size:13px;color:#111111;font-weight:bold;margin-top:4px;'>BOQ الحالة: {boq}</div>" if boq else ""
     html = f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap');
@@ -406,7 +406,7 @@ def render_return_invoice_html(title, items_list, warehouse, contractor, employe
             f"<td style='border:1px solid #ddd;padding:10px;text-align:center;color:#004a99;font-weight:bold;font-size:16px;'>{item['qty']}</td>"
             "</tr>"
         )
-    boq_line = f"<div style='font-size:13px;color:#e65100;font-weight:bold;margin-top:4px;'>BOQ الحالة: {boq}</div>" if boq else ""
+    boq_line = f"<div style='font-size:13px;color:#111111;font-weight:bold;margin-top:4px;'>BOQ الحالة: {boq}</div>" if boq else ""
     html = f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap');
@@ -919,6 +919,8 @@ if 'cancel_inv_type' not in st.session_state: st.session_state['cancel_inv_type'
 if 'cancel_inv_data' not in st.session_state: st.session_state['cancel_inv_data'] = None
 if 'cancel_inv_confirm' not in st.session_state: st.session_state['cancel_inv_confirm'] = False
 if 'last_cancel_req_no' not in st.session_state: st.session_state['last_cancel_req_no'] = None
+if '_boq_override' not in st.session_state: st.session_state['_boq_override'] = None
+if '_view_inv_no' not in st.session_state: st.session_state['_view_inv_no'] = None
 
 # ── متغيرات انتهاء الجلسة (30 دقيقة) ──
 import time as _time
@@ -1322,7 +1324,6 @@ else:
             st.divider()
             if st.button("🛠️ سجل العمليات التفصيلي"): st.session_state.page = "view_logs"
             if st.button("✏️ تعديل فاتورة سابقة"): st.session_state.page = "edit_invoice"
-            if st.button("🗂️ أرشيف فواتير"): st.session_state.page = "my_invoices"
             st.divider()
             if st.button("📞 أرقام التواصل"): st.session_state.page = "contacts_page"
 
@@ -1355,7 +1356,6 @@ else:
             st.divider()
             if st.button("🛠️ سجل العمليات التفصيلي"): st.session_state.page = "view_logs"
             if st.button("✏️ تعديل فاتورة سابقة"): st.session_state.page = "edit_invoice"
-            if st.button("🗂️ أرشيف فواتير"): st.session_state.page = "my_invoices"
             if st.button("📞 أرقام التواصل"): st.session_state.page = "contacts_page"
             if _is_admin:
                 st.divider()
@@ -1749,234 +1749,322 @@ else:
                 st.session_state['stock_in_pending'] = None
                 st.rerun()
     # ---------------------------------------------------------
-    # صفحة: صرف مواد للمقاول (إصلاح محاذاة سلة الصرف)
+    # صفحة: صرف مواد للمقاول
     # ---------------------------------------------------------
     elif st.session_state.page == "stock_out":
-        st.markdown("<div class='main-title'>🛒 عمليات صرف ومواجهة حالات الطوارئ للمقاولين</div>", unsafe_allow_html=True)
+        st.markdown("<div class='main-title'>🛒 صرف مواد للمقاول</div>", unsafe_allow_html=True)
+
         if not list_warehouses or not list_contractors:
-            st.warning("⚠️ يرجى التأكد من تعريف المستودعات والمقاولين المعتمدين في لوحة الإعدادات أولاً.")
+            st.warning("⚠️ يرجى تعريف المستودعات والمقاولين في الإعدادات أولاً.")
         else:
-            col_out_h1, col_out_h2 = st.columns([1.5, 2])
-            out_wh = col_out_h1.selectbox("📍 مستودع الصرف :", list_warehouses)
-            out_contractor = col_out_h2.selectbox("🏗️ المقاول المستلم للمواد:", list_contractors)
+            # ════════════════════════════════════════════
+            # إذا تم إنشاء الفاتورة — إشعار النجاح
+            # ════════════════════════════════════════════
+            if st.session_state.last_created_inv_no and st.session_state.last_created_inv_type == "صرف" and not st.session_state.cart:
+                st.markdown(f"""
+                <div dir="rtl" style="background:linear-gradient(135deg,#e8f5e9,#f1f8e9);
+                    border:2px solid #1daa60;border-radius:16px;padding:24px;text-align:center;
+                    box-shadow:0 4px 16px rgba(29,170,96,0.15);margin:16px 0;">
+                    <div style="font-size:42px;margin-bottom:8px;">✅</div>
+                    <div style="font-size:19px;font-weight:900;color:#1b5e20;margin-bottom:6px;">تم إنشاء الفاتورة بنجاح</div>
+                    <div style="font-size:14px;color:#2e7d32;margin-bottom:12px;">فاتورة صرف مواد طوارئ</div>
+                    <div style="font-size:28px;font-weight:900;color:#c62828;background:rgba(198,40,40,0.08);
+                                border-radius:8px;padding:6px 18px;display:inline-block;">
+                        {st.session_state.last_created_inv_no}
+                    </div>
+                </div>""", unsafe_allow_html=True)
+                _nc1, _nc2, _nc3 = st.columns([2, 2, 1])
+                if _nc1.button("👁️ مشاهدة الفاتورة وطباعتها", key="preview_out_inv", use_container_width=True):
+                    st.session_state["_view_inv_no"] = st.session_state.last_created_inv_no
+                    st.session_state.page = "view_logs"
+                    st.session_state.last_created_inv_no = None; st.session_state.last_created_inv_type = None; st.rerun()
+                if _nc2.button("➕ إنشاء فاتورة صرف جديدة", key="new_out_inv", use_container_width=True):
+                    st.session_state.last_created_inv_no = None; st.session_state.last_created_inv_type = None; st.rerun()
+                if _nc3.button("✖️ إغلاق", key="dismiss_out_inv", use_container_width=True):
+                    st.session_state.last_created_inv_no = None; st.session_state.last_created_inv_type = None; st.rerun()
 
-            # ── خانة BOQ الإجبارية ──
-            out_boq = st.text_input(
-                "📋 BOQ الحالة * (إجباري)",
-                placeholder="أدخل رقم أو وصف BOQ الحالة...",
-                key="out_boq_val"
-            ).strip()
-            if not out_boq:
-                st.warning("⚠️ يرجى إدخال BOQ الحالة لإمكانية المتابعة وإصدار الفاتورة.")
+            # ════════════════════════════════════════════
+            # المرحلة ١: بيانات الفاتورة + إضافة المواد
+            # ════════════════════════════════════════════
+            elif not st.session_state.confirm_out:
+                # ── رأس الفاتورة ──
+                c1, c2 = st.columns(2)
+                out_wh         = c1.selectbox("📍 مستودع الصرف", list_warehouses, key="out_wh_sel")
+                out_contractor = c2.selectbox("🏗️ المقاول المستلم", list_contractors, key="out_cont_sel")
+                out_boq = st.text_input("📋 BOQ الحالة *", placeholder="BoQ/Zone2/2026/...", key="out_boq_val").strip()
 
-            st.write("---")
-            # إضافة يدوية باستخدام الكود
-            col_out1, col_out2, col_out3 = st.columns([1.5, 2, 1])
-            out_code = col_out1.text_input("كود المادة للصرف *", key=f"out_code_val_{st.session_state.input_out_code}").strip()
-            out_qty = col_out2.number_input("الكمية المراد سحبها *", min_value=1, value=1, step=1, key=f"out_qty_val_{st.session_state.input_out_qty}")
-            if col_out3.button("➕ إضافة الصنف للسلة"):
-                if out_code and out_qty > 0:
-                    mat_chk = pd.read_sql(f"SELECT item_name, category FROM material_definitions WHERE item_code='{out_code}'", conn)
-                    if mat_chk.empty:
-                        st.error("❌ كود المادة المدخل غير معرّف بالنظام!")
+                st.divider()
+
+                # ── إضافة مادة ──
+                a1, a2, a3 = st.columns([2, 1.5, 1])
+                out_code = a1.text_input("كود المادة", key=f"out_code_val_{st.session_state.input_out_code}", label_visibility="visible").strip()
+                out_qty  = a2.number_input("الكمية", min_value=1, value=1, step=1, key=f"out_qty_val_{st.session_state.input_out_qty}")
+                a3.markdown("<br>", unsafe_allow_html=True)
+                if a3.button("➕ إضافة", use_container_width=True):
+                    if out_code:
+                        mat = pd.read_sql(f"SELECT item_name, category FROM material_definitions WHERE item_code='{out_code}'", conn)
+                        if mat.empty:
+                            st.error("❌ الكود غير معرّف في النظام")
+                        else:
+                            avail = int(pd.read_sql(f"SELECT COALESCE(SUM(qty),0) as t FROM inventory WHERE item_code='{out_code}' AND warehouse='{out_wh}'", conn).iloc[0]['t'])
+                            already = sum(x["qty"] for x in st.session_state.cart if x["code"] == out_code)
+                            if avail < (out_qty + already):
+                                st.error(f"❌ الرصيد غير كافٍ — المتاح: {avail}")
+                            else:
+                                ex = [i for i,x in enumerate(st.session_state.cart) if x["code"] == out_code]
+                                if ex: st.session_state.cart[ex[0]]["qty"] += out_qty
+                                else:  st.session_state.cart.append({"code": out_code, "name": mat.iloc[0]["item_name"], "qty": out_qty, "cat": mat.iloc[0]["category"]})
+                                st.session_state.input_out_code += 1; st.session_state.input_out_qty += 1; st.rerun()
+
+                # ── عرض السلة ──
+                if st.session_state.cart:
+                    st.divider()
+                    st.markdown("**📦 المواد المضافة:**")
+                    # رأس الجدول
+                    h1,h2,h3,h4,h5 = st.columns([1.5, 3, 1.5, 1.2, 0.6])
+                    h1.markdown("**الكود**"); h2.markdown("**الاسم**"); h3.markdown("**الفئة**"); h4.markdown("**الكمية**"); h5.markdown("**حذف**")
+                    _rm = None
+                    for i, item in enumerate(st.session_state.cart):
+                        c1,c2,c3,c4,c5 = st.columns([1.5, 3, 1.5, 1.2, 0.6])
+                        avail_i = int(pd.read_sql(f"SELECT COALESCE(SUM(qty),0) as t FROM inventory WHERE item_code='{item['code']}' AND warehouse='{out_wh}'", conn).iloc[0]['t'])
+                        c1.write(item["code"]); c2.write(item["name"]); c3.write(item.get("cat",""))
+                        nq = c4.number_input("", min_value=1, max_value=max(1,avail_i), value=min(int(item["qty"]),max(1,avail_i)), step=1, key=f"oq_{i}", label_visibility="collapsed")
+                        if nq != int(item["qty"]): st.session_state.cart[i]["qty"] = nq; st.rerun()
+                        if c5.button("🗑️", key=f"od_{i}"): _rm = i
+                    if _rm is not None: st.session_state.cart.pop(_rm); st.rerun()
+
+                    st.divider()
+                    # إجمالي + زر التصدير
+                    tot = sum(x["qty"] for x in st.session_state.cart)
+                    st.markdown(f"**الإجمالي:** {len(st.session_state.cart)} صنف — {tot} وحدة")
+                    b1, b2 = st.columns([1, 3])
+                    if b1.button("🗑️ تفريغ السلة"):
+                        st.session_state.cart = []; st.rerun()
+                    # التحقق من الأرصدة
+                    errs = validate_cart_stock(st.session_state.cart, out_wh)
+                    if errs:
+                        st.error("⛔ " + " | ".join(errs))
+                    elif not out_boq:
+                        st.warning("⚠️ أدخل BOQ الحالة أولاً")
                     else:
-                        item_name = mat_chk.iloc[0]['item_name']; item_cat = mat_chk.iloc[0]['category']
-                        avail_qty_res = pd.read_sql(f"SELECT SUM(qty) as total FROM inventory WHERE item_code='{out_code}' AND warehouse='{out_wh}'", conn)
-                        avail_qty = avail_qty_res.iloc[0]['total'] if not avail_qty_res.empty and avail_qty_res.iloc[0]['total'] is not None else 0
-                        already_in_cart = sum(item['qty'] for item in st.session_state.cart if item['code'] == out_code)
-                        if avail_qty < (out_qty + already_in_cart):
-                            st.error(f"❌ رصيد غير كافٍ! المتاح في المستودع حالياً هو ({int(avail_qty)}) فقط.")
-                        else:
-                            ex = [i for i,x in enumerate(st.session_state.cart) if x['code']==out_code]
-                            if ex: st.session_state.cart[ex[0]]['qty'] += out_qty
-                            else: st.session_state.cart.append({'code': out_code, 'name': item_name, 'qty': out_qty, 'cat': item_cat})
-                            st.session_state.input_out_code += 1; st.session_state.input_out_qty += 1; st.rerun()
+                        st.markdown("<div class='btn-success'>", unsafe_allow_html=True)
+                        if b2.button("🚀 تصدير الفاتورة", use_container_width=True):
+                            st.session_state.confirm_out = True; st.rerun()
+                        st.markdown("</div>", unsafe_allow_html=True)
 
-            if st.session_state.cart:
-                render_editable_cart('cart', out_wh)
-                c_btn1, c_btn2 = st.columns([1, 1])
-                if c_btn1.button("🗑️ تفريغ وإلغاء السلة بالكامل"):
-                    st.session_state.cart = []; st.session_state.review_out = False; st.session_state.confirm_out = False; st.rerun()
-                # ── التحقق من الأرصدة قبل السماح بالمراجعة ──
-                stock_errors_out = validate_cart_stock(st.session_state.cart, out_wh)
-                if stock_errors_out:
-                    st.markdown("<div style='background:#ffebee;border:2px solid #c62828;border-radius:10px;padding:14px 18px;margin:10px 0;direction:rtl;'>"
-                                "⛔ <b>لا يمكن إصدار الفاتورة — الكميات التالية تتجاوز الرصيد المتاح في المستودع:</b><br>"
-                                + "<br>".join(stock_errors_out) +
-                                "</div>", unsafe_allow_html=True)
-                    st.session_state.review_out = False
-                    st.session_state.confirm_out = False
-                else:
-                    st.markdown("<div class='btn-success'>", unsafe_allow_html=True)
-                    if c_btn2.button("🔍 مراجعة ومعاينة مستند الصرف الرسمي قبل الاعتماد"):
-                        if not out_boq:
-                            st.error("❌ يرجى إدخال BOQ الحالة أولاً — هذا الحقل إجباري!")
-                        else:
-                            st.session_state.review_out = True; st.session_state.confirm_out = False
-                    st.markdown("</div>", unsafe_allow_html=True)
-                if st.session_state.review_out:
-                    st.write("---")
-                    # تحقق مزدوج لحظة الإصدار (قد يتغير الرصيد بين المراجعة والتأكيد)
-                    stock_errors_final = validate_cart_stock(st.session_state.cart, out_wh)
-                    if stock_errors_final:
-                        st.markdown("<div style='background:#ffebee;border:2px solid #c62828;border-radius:10px;padding:14px 18px;margin:10px 0;direction:rtl;'>"
-                                    "⛔ <b>تغيّر الرصيد! لا يمكن إصدار الفاتورة:</b><br>"
-                                    + "<br>".join(stock_errors_final) +
-                                    "</div>", unsafe_allow_html=True)
-                        st.session_state.review_out = False
+            # ════════════════════════════════════════════
+            # المرحلة ٢: تأكيد التصدير
+            # ════════════════════════════════════════════
+            else:
+                # استرجاع القيم من session (لأن widgets غير متاحة هنا)
+                out_wh         = st.session_state.get("out_wh_sel", list_warehouses[0])
+                out_contractor = st.session_state.get("out_cont_sel", list_contractors[0])
+                _final_boq     = st.session_state.get("_boq_override") or st.session_state.get("out_boq_val", "")
+
+                _td  = "padding:8px 12px;border-bottom:1px solid #f0f0f0;"
+                _tdc = _td + "text-align:center;font-weight:700;color:#c62828;"
+                rows_html = "".join([
+                    f"<tr>"
+                    f"<td style='{_td}'>{it['code']}</td>"
+                    f"<td style='{_td}'>{it['name']}</td>"
+                    f"<td style='{_tdc}'>{it['qty']}</td>"
+                    f"</tr>"
+                    for it in st.session_state.cart
+                ])
+                st.markdown(f"""
+                <div dir="rtl" style="background:#fff8e1;border:2px solid #f9a825;border-radius:14px;
+                    padding:22px 26px;box-shadow:0 2px 12px rgba(249,168,37,0.2);">
+                    <div style="font-size:18px;font-weight:900;color:#e65100;margin-bottom:10px;">⚠️ تأكيد تصدير الفاتورة</div>
+                    <div style="font-size:14px;color:#555;margin-bottom:14px;">
+                        سيتم <b style="color:#c62828;">خصم المواد التالية</b> من مستودع
+                        <b style="color:#004a99;">{out_wh}</b> وتسليمها للمقاول
+                        <b style="color:#004a99;">{out_contractor}</b>
+                    </div>
+                    <table style="width:100%;border-collapse:collapse;font-size:14px;background:white;border-radius:8px;overflow:hidden;">
+                        <tr style="background:#004a99;color:white;">
+                            <th style="padding:9px 12px;text-align:right;">كود المادة</th>
+                            <th style="padding:9px 12px;text-align:right;">اسم المادة</th>
+                            <th style="padding:9px 12px;text-align:center;">الكمية</th>
+                        </tr>
+                        {rows_html}
+                    </table>
+                    <div style="margin-top:10px;font-size:13px;color:#666;">📋 BOQ: <b>{_final_boq}</b></div>
+                </div>""", unsafe_allow_html=True)
+
+                st.markdown("<br>", unsafe_allow_html=True)
+                ya, na = st.columns(2)
+                st.markdown("<div class='btn-success'>", unsafe_allow_html=True)
+                if ya.button("✅ تأكيد وإصدار الفاتورة", use_container_width=True):
+                    final_errs = validate_cart_stock(st.session_state.cart, out_wh)
+                    if final_errs:
+                        st.error("⛔ تغيّر الرصيد — " + " | ".join(final_errs))
                         st.session_state.confirm_out = False
                     else:
-                        st.write("### 📄  معاينة الفاتورة الصادره قبل الطباعة و الأعتماد :")
-                        inv_no_preview = now_mecca().strftime("%d%H%M")
-                        html_invoice = render_invoice_html("فاتورة صرف مواد طوارئ", st.session_state.cart, out_wh, out_contractor, u['full_name'], inv_no_preview, boq=out_boq)
-                        components.html(html_invoice, height=480, scrolling=True)
-                        if not st.session_state.confirm_out:
-                            st.markdown("<div class='btn-success'>", unsafe_allow_html=True)
-                            if st.button("🚀 تصدير الفاتورة وخصم المواد من المستودع"):
-                                st.session_state.confirm_out = True; st.rerun()
-                            st.markdown("</div>", unsafe_allow_html=True)
-                        else:
-                            items_txt = "، ".join([f"{i['name']} ({i['qty']})" for i in st.session_state.cart])
-                            st.markdown(f"""<div class='warn-box'>⚠️ <b>هل أنت متأكد من تصدير الفاتورة؟</b><br>
-                            سيتم خصم المواد التالية من مستودع <b>{out_wh}</b> تلقائياً:<br>
-                            {items_txt}<br>المقاول المستلم: <b>{out_contractor}</b></div>""", unsafe_allow_html=True)
-                            col_yes, col_no = st.columns([1, 1])
-                            if col_yes.button("✅ نعم، تأكيد الخصم والأرشفة"):
-                                # تحقق أخير قبل الخصم الفعلي
-                                final_errors = validate_cart_stock(st.session_state.cart, out_wh)
-                                if final_errors:
-                                    st.error("⛔ لا يمكن تنفيذ الصرف — الرصيد غير كافٍ:\n" + "\n".join(final_errors))
-                                    st.session_state.confirm_out = False
-                                else:
-                                    for item in st.session_state.cart:
-                                        c.execute("INSERT INTO inventory (item_code, qty, warehouse, contractor, category) VALUES (?,?,?,?,?)",
-                                                  (item['code'], -item['qty'], out_wh, out_contractor, item['cat']))
-                                        save_log("صرف مواد لمقاول", item['code'], item['qty'], f"صرف للمقاول [{out_contractor}] من مستودع [{out_wh}] برقم قيد {inv_no_preview}", u['full_name'])
-                                    archive_invoice("صرف", inv_no_preview, out_wh, "", out_contractor, u['full_name'], json.dumps(st.session_state.cart), html_invoice, out_boq)
-                                    conn.commit()
-                                    st.session_state.last_inv_html = html_invoice
-                                    st.session_state.last_created_inv_no = inv_no_preview
-                                    st.session_state.last_created_inv_type = "صرف"
-                                    st.session_state.cart = []; st.session_state.review_out = False; st.session_state.confirm_out = False
-                                    st.success(f"🎉 تم إنشاء فاتورة صرف مواد طوارئ بنجاح! رقم الفاتورة: ({inv_no_preview})"); st.rerun()
-                            if col_no.button("❌ لا، إلغاء"):
-                                st.session_state.confirm_out = False; st.rerun()
+                        inv_no = now_mecca().strftime("%d%H%M")
+                        html_inv = render_invoice_html("فاتورة صرف مواد طوارئ", st.session_state.cart, out_wh, out_contractor, u["full_name"], inv_no, boq=_final_boq)
+                        for it in st.session_state.cart:
+                            c.execute("INSERT INTO inventory (item_code,qty,warehouse,contractor,category) VALUES (?,?,?,?,?)",
+                                      (it["code"], -it["qty"], out_wh, out_contractor, it["cat"]))
+                            save_log("صرف مواد لمقاول", it["code"], it["qty"], f"صرف للمقاول [{out_contractor}] من [{out_wh}] | {inv_no} | BOQ:{_final_boq}", u["full_name"])
+                        archive_invoice("صرف", inv_no, out_wh, "", out_contractor, u["full_name"], json.dumps(st.session_state.cart), html_inv, _final_boq)
+                        conn.commit()
+                        st.session_state.last_inv_html = html_inv
+                        st.session_state.last_created_inv_no = inv_no
+                        st.session_state.last_created_inv_type = "صرف"
+                        st.session_state.pop("_boq_override", None)
+                        st.session_state.cart = []; st.session_state.confirm_out = False; st.rerun()
+                st.markdown("</div>", unsafe_allow_html=True)
+                st.markdown("<div class='btn-danger'>", unsafe_allow_html=True)
+                if na.button("❌ إلغاء والرجوع للتعديل", use_container_width=True):
+                    st.session_state.confirm_out = False; st.rerun()
+                st.markdown("</div>", unsafe_allow_html=True)
 
-            if st.session_state.last_created_inv_no and st.session_state.last_created_inv_type == "صرف" and not st.session_state.cart:
-                st.divider()
-                st.markdown(f"""
-                <div style='background:#e8f5e9;border:2px solid #1daa60;border-radius:12px;padding:18px;text-align:center;direction:rtl;'>
-                    ✅ <b>تم إنشاء فاتورة صرف مواد طوارئ بنجاح</b><br>
-                    رقم الفاتورة: <span style='color:red;font-weight:900;font-size:18px;'>{st.session_state.last_created_inv_no}</span>
-                </div>""", unsafe_allow_html=True)
-                col_prev_btn, col_close_btn = st.columns([2, 1])
-                if col_prev_btn.button("👁️ معاينة الفاتورة والطباعة", key="preview_out_inv", use_container_width=True):
-                    st.session_state.page = "my_invoices"
-                    st.session_state.last_created_inv_no = None
-                    st.session_state.last_created_inv_type = None
-                    st.rerun()
-                if col_close_btn.button("✖️ إغفال", key="dismiss_out_inv"):
-                    st.session_state.last_created_inv_no = None
-                    st.session_state.last_created_inv_type = None
-                    st.rerun()
     # ---------------------------------------------------------
-    # صفحة: ارجاع فائض المواد من المقاولين
+    # صفحة: ارجاع مواد للمستودع
     # ---------------------------------------------------------
     elif st.session_state.page == "stock_return":
-        st.markdown("<div class='main-title'>ارجاع مواد الى المستودعات</div>", unsafe_allow_html=True)
+        st.markdown("<div class='main-title'>🔄 ارجاع مواد للمستودع</div>", unsafe_allow_html=True)
+
         if not list_warehouses or not list_contractors:
-            st.warning("⚠️ يرجى التأكد من تعريف المستودعات والمقاولين المعتمدين في لوحة الإعدادات أولاً.")
+            st.warning("⚠️ يرجى تعريف المستودعات والمقاولين في الإعدادات أولاً.")
         else:
-            col_ret_h1, col_ret_h2 = st.columns([2, 1.5])
-            ret_contractor = col_ret_h1.selectbox(" المقاول الذي سوف يعيد المواد الى المستودع :", list_contractors)
-            ret_wh = col_ret_h2.selectbox("📍 إيداع وارجاع إلى مستودع:", list_warehouses)
+            # ── إشعار النجاح ──
+            if st.session_state.last_created_inv_no and st.session_state.last_created_inv_type == "ارجاع" and not st.session_state.return_cart:
+                st.markdown(f"""
+                <div dir="rtl" style="background:linear-gradient(135deg,#e8f5e9,#f1f8e9);
+                    border:2px solid #1daa60;border-radius:16px;padding:24px;text-align:center;
+                    box-shadow:0 4px 16px rgba(29,170,96,0.15);margin:16px 0;">
+                    <div style="font-size:42px;margin-bottom:8px;">✅</div>
+                    <div style="font-size:19px;font-weight:900;color:#1b5e20;margin-bottom:6px;">تم إنشاء الفاتورة بنجاح</div>
+                    <div style="font-size:14px;color:#2e7d32;margin-bottom:12px;">فاتورة ارجاع مواد طوارئ</div>
+                    <div style="font-size:28px;font-weight:900;color:#c62828;background:rgba(198,40,40,0.08);
+                                border-radius:8px;padding:6px 18px;display:inline-block;">
+                        {st.session_state.last_created_inv_no}
+                    </div>
+                </div>""", unsafe_allow_html=True)
+                _rc1, _rc2, _rc3 = st.columns([2, 2, 1])
+                if _rc1.button("👁️ مشاهدة الفاتورة وطباعتها", key="preview_ret_inv", use_container_width=True):
+                    st.session_state["_view_inv_no"] = st.session_state.last_created_inv_no
+                    st.session_state.page = "view_logs"
+                    st.session_state.last_created_inv_no = None; st.session_state.last_created_inv_type = None; st.rerun()
+                if _rc2.button("➕ إنشاء فاتورة ارجاع جديدة", key="new_ret_inv", use_container_width=True):
+                    st.session_state.last_created_inv_no = None; st.session_state.last_created_inv_type = None; st.rerun()
+                if _rc3.button("✖️ إغلاق", key="dismiss_ret_inv", use_container_width=True):
+                    st.session_state.last_created_inv_no = None; st.session_state.last_created_inv_type = None; st.rerun()
 
-            # ── خانة BOQ الإجبارية ──
-            ret_boq = st.text_input(
-                "📋 BOQ الحالة * (إجباري)",
-                placeholder="أدخل رقم أو وصف BOQ الحالة...",
-                key="ret_boq_val"
-            ).strip()
-            if not ret_boq:
-                st.warning("⚠️ يرجى إدخال BOQ الحالة لإمكانية المتابعة وإصدار الفاتورة.")
+            elif not st.session_state.confirm_return:
+                # ── رأس الفاتورة ──
+                c1, c2 = st.columns(2)
+                ret_contractor = c1.selectbox("🏗️ المقاول المسلّم للمواد", list_contractors, key="ret_cont_sel")
+                ret_wh         = c2.selectbox("📍 المستودع المستلم", list_warehouses, key="ret_wh_sel")
+                ret_boq = st.text_input("📋 BOQ الحالة *", placeholder="BoQ/Zone2/2026/...", key="ret_boq_val").strip()
 
-            st.write("---")
-            col_ret1, col_ret2, col_ret3 = st.columns([1.5, 2, 1])
-            ret_code = col_ret1.text_input("كود المادة المراد ارجاعها *", key=f"ret_code_val_{st.session_state.input_ret_code}").strip()
-            ret_qty = col_ret2.number_input("الكمية*", min_value=1, value=1, step=1, key=f"ret_qty_val_{st.session_state.input_ret_qty}")
-            if col_ret3.button("➕ إضافة المرتجع للسلة"):
-                if ret_code and ret_qty > 0:
-                    mat_chk = pd.read_sql(f"SELECT item_name, category FROM material_definitions WHERE item_code='{ret_code}'", conn)
-                    if mat_chk.empty:
-                        st.error("❌ كود المادة المدخل غير معرّف بالنظام!")
-                    else:
-                        item_name = mat_chk.iloc[0]['item_name']; item_cat = mat_chk.iloc[0]['category']
-                        ex = [i for i,x in enumerate(st.session_state.return_cart) if x['code']==ret_code]
-                        if ex: st.session_state.return_cart[ex[0]]['qty'] += ret_qty
-                        else: st.session_state.return_cart.append({'code': ret_code, 'name': item_name, 'qty': ret_qty, 'cat': item_cat})
-                        st.session_state.input_ret_code += 1; st.session_state.input_ret_qty += 1; st.rerun()
+                st.divider()
 
-            if st.session_state.return_cart:
-                render_editable_cart('return_cart')
-                c_r_btn1, c_r_btn2 = st.columns([1, 1])
-                if c_r_btn1.button("🗑️ تفريغ وإلغاء سلة الارجاع"):
-                    st.session_state.return_cart = []; st.session_state.review_return = False; st.session_state.confirm_return = False; st.rerun()
-                st.markdown("<div class='btn-success'>", unsafe_allow_html=True)
-                if c_r_btn2.button("🔍 مراجعة ومعاينة مستند الارجاع الرسمي قبل الاعتماد"):
+                # ── إضافة مادة ──
+                a1, a2, a3 = st.columns([2, 1.5, 1])
+                ret_code = a1.text_input("كود المادة", key=f"ret_code_val_{st.session_state.input_ret_code}").strip()
+                ret_qty  = a2.number_input("الكمية", min_value=1, value=1, step=1, key=f"ret_qty_val_{st.session_state.input_ret_qty}")
+                a3.markdown("<br>", unsafe_allow_html=True)
+                if a3.button("➕ إضافة", use_container_width=True):
+                    if ret_code:
+                        mat = pd.read_sql(f"SELECT item_name, category FROM material_definitions WHERE item_code='{ret_code}'", conn)
+                        if mat.empty:
+                            st.error("❌ الكود غير معرّف في النظام")
+                        else:
+                            ex = [i for i,x in enumerate(st.session_state.return_cart) if x["code"] == ret_code]
+                            if ex: st.session_state.return_cart[ex[0]]["qty"] += ret_qty
+                            else:  st.session_state.return_cart.append({"code": ret_code, "name": mat.iloc[0]["item_name"], "qty": ret_qty, "cat": mat.iloc[0]["category"]})
+                            st.session_state.input_ret_code += 1; st.session_state.input_ret_qty += 1; st.rerun()
+
+                # ── عرض السلة ──
+                if st.session_state.return_cart:
+                    st.divider()
+                    st.markdown("**📦 المواد المضافة:**")
+                    h1,h2,h3,h4,h5 = st.columns([1.5, 3, 1.5, 1.2, 0.6])
+                    h1.markdown("**الكود**"); h2.markdown("**الاسم**"); h3.markdown("**الفئة**"); h4.markdown("**الكمية**"); h5.markdown("**حذف**")
+                    _rm = None
+                    for i, item in enumerate(st.session_state.return_cart):
+                        c1,c2,c3,c4,c5 = st.columns([1.5, 3, 1.5, 1.2, 0.6])
+                        c1.write(item["code"]); c2.write(item["name"]); c3.write(item.get("cat",""))
+                        nq = c4.number_input("", min_value=1, value=int(item["qty"]), step=1, key=f"rq_{i}", label_visibility="collapsed")
+                        if nq != int(item["qty"]): st.session_state.return_cart[i]["qty"] = nq; st.rerun()
+                        if c5.button("🗑️", key=f"rd_{i}"): _rm = i
+                    if _rm is not None: st.session_state.return_cart.pop(_rm); st.rerun()
+
+                    st.divider()
+                    tot = sum(x["qty"] for x in st.session_state.return_cart)
+                    st.markdown(f"**الإجمالي:** {len(st.session_state.return_cart)} صنف — {tot} وحدة")
+                    b1, b2 = st.columns([1, 3])
+                    if b1.button("🗑️ تفريغ السلة"):
+                        st.session_state.return_cart = []; st.rerun()
                     if not ret_boq:
-                        st.error("❌ يرجى إدخال BOQ الحالة أولاً — هذا الحقل إجباري!")
+                        st.warning("⚠️ أدخل BOQ الحالة أولاً")
                     else:
-                        st.session_state.review_return = True; st.session_state.confirm_return = False
-                st.markdown("</div>", unsafe_allow_html=True)
-                if st.session_state.review_return:
-                    st.write("---")
-                    st.write("### 📄 معاينة فاتورة الأرجاع الصادره قبل الطباعة و الأعتماد :")
-                    ret_inv_no_preview = now_mecca().strftime("%d%H%M")
-                    html_ret_invoice = render_return_invoice_html("فاتورة إرجاع مواد طوارئ", st.session_state.return_cart, ret_wh, ret_contractor, u['full_name'], ret_inv_no_preview, boq=ret_boq)
-                    components.html(html_ret_invoice, height=480, scrolling=True)
-                    if not st.session_state.confirm_return:
                         st.markdown("<div class='btn-success'>", unsafe_allow_html=True)
-                        if st.button("🚀 تصدير فاتورة الارجاع وإضافة المواد للمستودع"):
+                        if b2.button("🚀 تصدير فاتورة الارجاع", use_container_width=True):
                             st.session_state.confirm_return = True; st.rerun()
                         st.markdown("</div>", unsafe_allow_html=True)
-                    else:
-                        items_txt = "، ".join([f"{i['name']} ({i['qty']})" for i in st.session_state.return_cart])
-                        st.markdown(f"""<div class='warn-box'>⚠️ <b>هل أنت متأكد من تصدير فاتورة الارجاع؟</b><br>
-                        سيتم إضافة المواد التالية إلى مستودع <b>{ret_wh}</b> تلقائياً:<br>
-                        {items_txt}<br>المقاول المسلّم: <b>{ret_contractor}</b></div>""", unsafe_allow_html=True)
-                        col_yes, col_no = st.columns([1, 1])
-                        if col_yes.button("✅ نعم، تأكيد قيد الارجاع والأرشفة"):
-                            for item in st.session_state.return_cart:
-                                c.execute("INSERT INTO inventory (item_code, qty, warehouse, contractor, category) VALUES (?,?,?,?,?)",
-                                          (item['code'], item['qty'], ret_wh, ret_contractor, item['cat']))
-                                save_log("ارجاع مواد", item['code'], item['qty'], f"ارجاع وإيداع من المقاول [{ret_contractor}] في مستودع [{ret_wh}] برقم قيد {ret_inv_no_preview}", u['full_name'])
-                            archive_invoice("ارجاع", ret_inv_no_preview, ret_wh, "", ret_contractor, u['full_name'], json.dumps(st.session_state.return_cart), html_ret_invoice, ret_boq)
-                            conn.commit()
-                            st.session_state.last_ret_inv_html = html_ret_invoice
-                            st.session_state.last_created_inv_no = ret_inv_no_preview
-                            st.session_state.last_created_inv_type = "ارجاع"
-                            st.session_state.return_cart = []; st.session_state.review_return = False; st.session_state.confirm_return = False
-                            st.success(f"🎉 تم إنشاء فاتورة ارجاع مواد طوارئ بنجاح! رقم الفاتورة: ({ret_inv_no_preview})"); st.rerun()
-                        if col_no.button("❌ لا، إلغاء"):
-                            st.session_state.confirm_return = False; st.rerun()
 
-            if st.session_state.last_created_inv_no and st.session_state.last_created_inv_type == "ارجاع" and not st.session_state.return_cart:
-                st.divider()
+            else:
+                # ── تأكيد الارجاع ──
+                ret_contractor = st.session_state.get("ret_cont_sel", list_contractors[0])
+                ret_wh         = st.session_state.get("ret_wh_sel", list_warehouses[0])
+                ret_boq        = st.session_state.get("ret_boq_val", "")
+                ret_inv_no_preview = now_mecca().strftime("%d%H%M")
+                html_ret_invoice = render_return_invoice_html("فاتورة إرجاع مواد طوارئ", st.session_state.return_cart, ret_wh, ret_contractor, u["full_name"], ret_inv_no_preview, boq=ret_boq)
+
+                _td  = "padding:8px 12px;border-bottom:1px solid #f0f0f0;"
+                _tdg = _td + "text-align:center;font-weight:700;color:#2e7d32;"
+                rows_html = "".join([
+                    f"<tr>"
+                    f"<td style='{_td}'>{it['code']}</td>"
+                    f"<td style='{_td}'>{it['name']}</td>"
+                    f"<td style='{_tdg}'>{it['qty']}</td>"
+                    f"</tr>"
+                    for it in st.session_state.return_cart
+                ])
                 st.markdown(f"""
-                <div style='background:#e8f5e9;border:2px solid #1daa60;border-radius:12px;padding:18px;text-align:center;direction:rtl;'>
-                    ✅ <b>تم إنشاء فاتورة ارجاع مواد طوارئ بنجاح</b><br>
-                    رقم الفاتورة: <span style='color:red;font-weight:900;font-size:18px;'>{st.session_state.last_created_inv_no}</span>
+                <div dir="rtl" style="background:#fff8e1;border:2px solid #f9a825;border-radius:14px;
+                    padding:22px 26px;box-shadow:0 2px 12px rgba(249,168,37,0.2);">
+                    <div style="font-size:18px;font-weight:900;color:#e65100;margin-bottom:10px;">⚠️ تأكيد تصدير فاتورة الارجاع</div>
+                    <div style="font-size:14px;color:#555;margin-bottom:14px;">
+                        سيتم <b style="color:#2e7d32;">إضافة المواد التالية</b> إلى مستودع
+                        <b style="color:#004a99;">{ret_wh}</b> المسلّمة من المقاول
+                        <b style="color:#004a99;">{ret_contractor}</b>
+                    </div>
+                    <table style="width:100%;border-collapse:collapse;font-size:14px;background:white;border-radius:8px;overflow:hidden;">
+                        <tr style="background:#004a99;color:white;">
+                            <th style="padding:9px 12px;text-align:right;">كود المادة</th>
+                            <th style="padding:9px 12px;text-align:right;">اسم المادة</th>
+                            <th style="padding:9px 12px;text-align:center;">الكمية</th>
+                        </tr>
+                        {rows_html}
+                    </table>
+                    <div style="margin-top:10px;font-size:13px;color:#666;">📋 BOQ: <b>{ret_boq}</b></div>
                 </div>""", unsafe_allow_html=True)
-                col_prev_btn_r, col_close_btn_r = st.columns([2, 1])
-                if col_prev_btn_r.button("👁️ معاينة الفاتورة والطباعة", key="preview_ret_inv", use_container_width=True):
-                    st.session_state.page = "my_invoices"
-                    st.session_state.last_created_inv_no = None
-                    st.session_state.last_created_inv_type = None
-                    st.rerun()
-                if col_close_btn_r.button("✖️ إغفال", key="dismiss_ret_inv"):
-                    st.session_state.last_created_inv_no = None
-                    st.session_state.last_created_inv_type = None
-                    st.rerun()
+
+                st.markdown("<br>", unsafe_allow_html=True)
+                ya, na = st.columns(2)
+                st.markdown("<div class='btn-success'>", unsafe_allow_html=True)
+                if ya.button("✅ تأكيد وإصدار الفاتورة", use_container_width=True, key="ret_confirm_yes"):
+                    inv_no = ret_inv_no_preview
+                    for it in st.session_state.return_cart:
+                        c.execute("INSERT INTO inventory (item_code,qty,warehouse,contractor,category) VALUES (?,?,?,?,?)",
+                                  (it["code"], it["qty"], ret_wh, ret_contractor, it["cat"]))
+                        save_log("ارجاع مواد", it["code"], it["qty"], f"ارجاع من [{ret_contractor}] إلى [{ret_wh}] | {inv_no} | BOQ:{ret_boq}", u["full_name"])
+                    archive_invoice("ارجاع", inv_no, ret_wh, "", ret_contractor, u["full_name"], json.dumps(st.session_state.return_cart), html_ret_invoice, ret_boq)
+                    conn.commit()
+                    st.session_state.last_ret_inv_html = html_ret_invoice
+                    st.session_state.last_created_inv_no = inv_no
+                    st.session_state.last_created_inv_type = "ارجاع"
+                    st.session_state.return_cart = []; st.session_state.confirm_return = False; st.rerun()
+                st.markdown("</div>", unsafe_allow_html=True)
+                st.markdown("<div class='btn-danger'>", unsafe_allow_html=True)
+                if na.button("❌ إلغاء والرجوع للتعديل", use_container_width=True, key="ret_confirm_no"):
+                    st.session_state.confirm_return = False; st.rerun()
+                st.markdown("</div>", unsafe_allow_html=True)
+
     # ---------------------------------------------------------
     # صفحة: تقديم طلب ارجاع (موجه البلاغات)
     # ---------------------------------------------------------
@@ -2290,125 +2378,163 @@ else:
                         st.markdown("<hr style='margin:4px 0;'>", unsafe_allow_html=True)
 
     # ---------------------------------------------------------
-    # صفحة: نقل وتحويل مادة من مستودع لآخر (تحويل لوجستي بيني)
+    # صفحة: نقل مواد بين المستودعات
     # ---------------------------------------------------------
     elif st.session_state.page == "stock_transfer":
-        st.markdown("<div class='main-title'>نقل وتحويل المواد من مستودع الى اخر </div>", unsafe_allow_html=True)
-        if not list_warehouses:
-            st.warning("⚠️ يرجى أولاً التأكد من تعريف المستودعات في لوحة الإعدادات أولاً.")
-        else:
-            col_trans_h1, col_trans_h2 = st.columns([1, 1])
-            trans_wh_from = col_trans_h1.selectbox("📍 من المستودع (المنقول منه):", list_warehouses)
-            trans_wh_to = col_trans_h2.selectbox("📍 إلى المستودع (المنقول إليه ):", list_warehouses)
-            if trans_wh_from == trans_wh_to:
-                st.error("❌ خطأ: لا يمكن اختيار نفس المستودع كمصدر ومستهدف للنقل اللوجستي البيني!")
-            else:
-                st.write("---")
-                col_trans1, col_trans2, col_trans3 = st.columns([1.5, 2, 1])
-                trans_code = col_trans1.text_input("كود المادة المراد نقلها *", key=f"trans_code_val_{st.session_state.input_trans_code}").strip()
-                trans_qty = col_trans2.number_input("الكمية *", min_value=1, value=1, step=1, key=f"trans_qty_val_{st.session_state.input_trans_qty}")
-                if col_trans3.button("➕ إضافة مادة للتحويل"):
-                    if trans_code and trans_qty > 0:
-                        mat_chk = pd.read_sql(f"SELECT item_name, category FROM material_definitions WHERE item_code='{trans_code}'", conn)
-                        if mat_chk.empty:
-                            st.error("❌ كود المادة المدخل غير معرّف بالنظام!")
-                        else:
-                            item_name = mat_chk.iloc[0]['item_name']; item_cat = mat_chk.iloc[0]['category']
-                            avail_qty_res = pd.read_sql(f"SELECT SUM(qty) as total FROM inventory WHERE item_code='{trans_code}' AND warehouse='{trans_wh_from}'", conn)
-                            avail_qty = avail_qty_res.iloc[0]['total'] if not avail_qty_res.empty and avail_qty_res.iloc[0]['total'] is not None else 0
-                            already_in_cart = sum(item['qty'] for item in st.session_state.transfer_cart if item['code'] == trans_code)
-                            if avail_qty < (trans_qty + already_in_cart):
-                                st.error(f"❌ رصيد غير كافٍ! المتاح في مستودع المصدر حالياً هو ({avail_qty}) فقط.")
-                            else:
-                                ex = [i for i,x in enumerate(st.session_state.transfer_cart) if x['code']==trans_code]
-                                if ex: st.session_state.transfer_cart[ex[0]]['qty'] += trans_qty
-                                else: st.session_state.transfer_cart.append({'code': trans_code, 'name': item_name, 'qty': trans_qty, 'cat': item_cat})
-                                st.session_state.input_trans_code += 1; st.session_state.input_trans_qty += 1; st.rerun()
+        st.markdown("<div class='main-title'>🚛 نقل مواد بين المستودعات</div>", unsafe_allow_html=True)
 
-                if st.session_state.transfer_cart:
-                    render_editable_cart('transfer_cart', trans_wh_from)
-                    c_t_btn1, c_t_btn2 = st.columns([1, 1])
-                    if c_t_btn1.button("🗑️ تفريغ وإلغاء سلة التحويل"):
-                        st.session_state.transfer_cart = []; st.session_state.review_transfer = False; st.session_state.confirm_transfer = False; st.rerun()
-                    # ── التحقق من الأرصدة قبل السماح بالمراجعة ──
-                    stock_errors_trans = validate_cart_stock(st.session_state.transfer_cart, trans_wh_from)
-                    if stock_errors_trans:
-                        st.markdown("<div style='background:#ffebee;border:2px solid #c62828;border-radius:10px;padding:14px 18px;margin:10px 0;direction:rtl;'>"
-                                    "⛔ <b>لا يمكن تنفيذ النقل — الكميات التالية تتجاوز الرصيد المتاح في المستودع المصدر:</b><br>"
-                                    + "<br>".join(stock_errors_trans) +
-                                    "</div>", unsafe_allow_html=True)
-                        st.session_state.review_transfer = False
+        if not list_warehouses:
+            st.warning("⚠️ يرجى تعريف المستودعات في الإعدادات أولاً.")
+        else:
+            # ── إشعار النجاح ──
+            if st.session_state.last_created_inv_no and st.session_state.last_created_inv_type == "تحويل" and not st.session_state.transfer_cart:
+                st.markdown(f"""
+                <div dir="rtl" style="background:linear-gradient(135deg,#e8f5e9,#f1f8e9);
+                    border:2px solid #1daa60;border-radius:16px;padding:24px;text-align:center;
+                    box-shadow:0 4px 16px rgba(29,170,96,0.15);margin:16px 0;">
+                    <div style="font-size:42px;margin-bottom:8px;">✅</div>
+                    <div style="font-size:19px;font-weight:900;color:#1b5e20;margin-bottom:6px;">تم إنشاء الفاتورة بنجاح</div>
+                    <div style="font-size:14px;color:#2e7d32;margin-bottom:12px;">فاتورة نقل مواد من مستودع إلى آخر</div>
+                    <div style="font-size:28px;font-weight:900;color:#c62828;background:rgba(198,40,40,0.08);
+                                border-radius:8px;padding:6px 18px;display:inline-block;">
+                        {st.session_state.last_created_inv_no}
+                    </div>
+                </div>""", unsafe_allow_html=True)
+                _tc1, _tc2, _tc3 = st.columns([2, 2, 1])
+                if _tc1.button("👁️ مشاهدة الفاتورة وطباعتها", key="preview_trans_inv", use_container_width=True):
+                    st.session_state["_view_inv_no"] = st.session_state.last_created_inv_no
+                    st.session_state.page = "view_logs"
+                    st.session_state.last_created_inv_no = None; st.session_state.last_created_inv_type = None; st.rerun()
+                if _tc2.button("➕ إنشاء فاتورة نقل جديدة", key="new_trans_inv", use_container_width=True):
+                    st.session_state.last_created_inv_no = None; st.session_state.last_created_inv_type = None; st.rerun()
+                if _tc3.button("✖️ إغلاق", key="dismiss_trans_inv", use_container_width=True):
+                    st.session_state.last_created_inv_no = None; st.session_state.last_created_inv_type = None; st.rerun()
+
+            elif not st.session_state.confirm_transfer:
+                # ── رأس الفاتورة ──
+                c1, c2 = st.columns(2)
+                trans_wh_from = c1.selectbox("📤 من مستودع", list_warehouses, key="trans_from_sel")
+                trans_wh_to   = c2.selectbox("📥 إلى مستودع", list_warehouses, key="trans_to_sel")
+                if trans_wh_from == trans_wh_to:
+                    st.error("❌ لا يمكن اختيار نفس المستودع كمصدر ومستهدف")
+                else:
+                    st.divider()
+                    # ── إضافة مادة ──
+                    a1, a2, a3 = st.columns([2, 1.5, 1])
+                    trans_code = a1.text_input("كود المادة", key=f"trans_code_val_{st.session_state.input_trans_code}").strip()
+                    trans_qty  = a2.number_input("الكمية", min_value=1, value=1, step=1, key=f"trans_qty_val_{st.session_state.input_trans_qty}")
+                    a3.markdown("<br>", unsafe_allow_html=True)
+                    if a3.button("➕ إضافة", use_container_width=True):
+                        if trans_code:
+                            mat = pd.read_sql(f"SELECT item_name, category FROM material_definitions WHERE item_code='{trans_code}'", conn)
+                            if mat.empty:
+                                st.error("❌ الكود غير معرّف في النظام")
+                            else:
+                                avail = int(pd.read_sql(f"SELECT COALESCE(SUM(qty),0) as t FROM inventory WHERE item_code='{trans_code}' AND warehouse='{trans_wh_from}'", conn).iloc[0]["t"])
+                                already = sum(x["qty"] for x in st.session_state.transfer_cart if x["code"] == trans_code)
+                                if avail < (trans_qty + already):
+                                    st.error(f"❌ الرصيد غير كافٍ في المستودع المصدر — المتاح: {avail}")
+                                else:
+                                    ex = [i for i,x in enumerate(st.session_state.transfer_cart) if x["code"] == trans_code]
+                                    if ex: st.session_state.transfer_cart[ex[0]]["qty"] += trans_qty
+                                    else:  st.session_state.transfer_cart.append({"code": trans_code, "name": mat.iloc[0]["item_name"], "qty": trans_qty, "cat": mat.iloc[0]["category"]})
+                                    st.session_state.input_trans_code += 1; st.session_state.input_trans_qty += 1; st.rerun()
+
+                    # ── عرض السلة ──
+                    if st.session_state.transfer_cart:
+                        st.divider()
+                        st.markdown("**📦 المواد المضافة:**")
+                        h1,h2,h3,h4,h5 = st.columns([1.5, 3, 1.5, 1.2, 0.6])
+                        h1.markdown("**الكود**"); h2.markdown("**الاسم**"); h3.markdown("**الفئة**"); h4.markdown("**الكمية**"); h5.markdown("**حذف**")
+                        _rm = None
+                        for i, item in enumerate(st.session_state.transfer_cart):
+                            c1,c2,c3,c4,c5 = st.columns([1.5, 3, 1.5, 1.2, 0.6])
+                            avail_i = int(pd.read_sql("SELECT COALESCE(SUM(qty),0) as t FROM inventory WHERE item_code='" + item['code'] + "' AND warehouse='" + trans_wh_from + "'", conn).iloc[0]["t"])
+                            c1.write(item["code"]); c2.write(item["name"]); c3.write(item.get("cat",""))
+                            nq = c4.number_input("", min_value=1, max_value=max(1,avail_i), value=min(int(item["qty"]),max(1,avail_i)), step=1, key=f"tq_{i}", label_visibility="collapsed")
+                            if nq != int(item["qty"]): st.session_state.transfer_cart[i]["qty"] = nq; st.rerun()
+                            if c5.button("🗑️", key=f"td_{i}"): _rm = i
+                        if _rm is not None: st.session_state.transfer_cart.pop(_rm); st.rerun()
+
+                        st.divider()
+                        errs_t = validate_cart_stock(st.session_state.transfer_cart, trans_wh_from)
+                        tot = sum(x["qty"] for x in st.session_state.transfer_cart)
+                        st.markdown(f"**الإجمالي:** {len(st.session_state.transfer_cart)} صنف — {tot} وحدة")
+                        b1, b2 = st.columns([1, 3])
+                        if b1.button("🗑️ تفريغ السلة"):
+                            st.session_state.transfer_cart = []; st.rerun()
+                        if errs_t:
+                            st.error("⛔ " + " | ".join(errs_t))
+                        else:
+                            st.markdown("<div class='btn-success'>", unsafe_allow_html=True)
+                            if b2.button("🚀 تصدير فاتورة النقل", use_container_width=True):
+                                st.session_state.confirm_transfer = True; st.rerun()
+                            st.markdown("</div>", unsafe_allow_html=True)
+
+            else:
+                # ── تأكيد النقل ──
+                trans_wh_from = st.session_state.get("trans_from_sel", list_warehouses[0])
+                trans_wh_to   = st.session_state.get("trans_to_sel", list_warehouses[-1] if len(list_warehouses) > 1 else list_warehouses[0])
+                trans_inv_no_preview = now_mecca().strftime("%d%H%M")
+                html_trans_invoice = render_transfer_invoice_html("فاتورة نقل مواد طوارئ من مستودع إلى آخر", st.session_state.transfer_cart, trans_wh_from, trans_wh_to, u["full_name"], trans_inv_no_preview)
+
+                _td  = "padding:8px 12px;border-bottom:1px solid #f0f0f0;"
+                _tdb = _td + "text-align:center;font-weight:700;color:#1565c0;"
+                rows_html = "".join([
+                    f"<tr>"
+                    f"<td style='{_td}'>{it['code']}</td>"
+                    f"<td style='{_td}'>{it['name']}</td>"
+                    f"<td style='{_tdb}'>{it['qty']}</td>"
+                    f"</tr>"
+                    for it in st.session_state.transfer_cart
+                ])
+                st.markdown(f"""
+                <div dir="rtl" style="background:#fff8e1;border:2px solid #f9a825;border-radius:14px;
+                    padding:22px 26px;box-shadow:0 2px 12px rgba(249,168,37,0.2);">
+                    <div style="font-size:18px;font-weight:900;color:#e65100;margin-bottom:10px;">⚠️ تأكيد تصدير فاتورة النقل</div>
+                    <div style="font-size:14px;color:#555;margin-bottom:14px;">
+                        سيتم <b style="color:#c62828;">خصم المواد</b> من مستودع
+                        <b style="color:#c62828;">{trans_wh_from}</b>
+                        و<b style="color:#2e7d32;">إضافتها</b> إلى مستودع
+                        <b style="color:#2e7d32;">{trans_wh_to}</b>
+                    </div>
+                    <table style="width:100%;border-collapse:collapse;font-size:14px;background:white;border-radius:8px;overflow:hidden;">
+                        <tr style="background:#004a99;color:white;">
+                            <th style="padding:9px 12px;text-align:right;">كود المادة</th>
+                            <th style="padding:9px 12px;text-align:right;">اسم المادة</th>
+                            <th style="padding:9px 12px;text-align:center;">الكمية</th>
+                        </tr>
+                        {rows_html}
+                    </table>
+                </div>""", unsafe_allow_html=True)
+
+                st.markdown("<br>", unsafe_allow_html=True)
+                ya, na = st.columns(2)
+                st.markdown("<div class='btn-success'>", unsafe_allow_html=True)
+                if ya.button("✅ تأكيد وإصدار الفاتورة", use_container_width=True, key="trans_confirm_yes"):
+                    final_errs = validate_cart_stock(st.session_state.transfer_cart, trans_wh_from)
+                    if final_errs:
+                        st.error("⛔ تغيّر الرصيد — " + " | ".join(final_errs))
                         st.session_state.confirm_transfer = False
                     else:
-                        st.markdown("<div class='btn-success'>", unsafe_allow_html=True)
-                        if c_t_btn2.button("🔍 مراجعة ومعاينة مستند النقل البيني الرسمي قبل الاعتماد"):
-                            st.session_state.review_transfer = True; st.session_state.confirm_transfer = False
-                        st.markdown("</div>", unsafe_allow_html=True)
-                    if st.session_state.review_transfer:
-                        st.write("---")
-                        stock_errors_trans_final = validate_cart_stock(st.session_state.transfer_cart, trans_wh_from)
-                        if stock_errors_trans_final:
-                            st.markdown("<div style='background:#ffebee;border:2px solid #c62828;border-radius:10px;padding:14px 18px;margin:10px 0;direction:rtl;'>"
-                                        "⛔ <b>تغيّر الرصيد! لا يمكن تنفيذ النقل:</b><br>"
-                                        + "<br>".join(stock_errors_trans_final) +
-                                        "</div>", unsafe_allow_html=True)
-                            st.session_state.review_transfer = False
-                            st.session_state.confirm_transfer = False
-                        else:
-                            st.write("### 📄 معاينة فاتورة نقل المواد الصادره قبل الطباعة و الأعتماد :")
-                            trans_inv_no_preview = now_mecca().strftime("%d%H%M")
-                            html_trans_invoice = render_transfer_invoice_html("فاتورة نقل مواد طوارئ من مستودع إلى آخر", st.session_state.transfer_cart, trans_wh_from, trans_wh_to, u['full_name'], trans_inv_no_preview)
-                            components.html(html_trans_invoice, height=480, scrolling=True)
-                            if not st.session_state.confirm_transfer:
-                                st.markdown("<div class='btn-success'>", unsafe_allow_html=True)
-                                if st.button("🚀 تصدير فاتورة النقل وتنفيذ التحويل بين المستودعين"):
-                                    st.session_state.confirm_transfer = True; st.rerun()
-                                st.markdown("</div>", unsafe_allow_html=True)
-                            else:
-                                items_txt = "، ".join([f"{i['name']} ({i['qty']})" for i in st.session_state.transfer_cart])
-                                st.markdown(f"""<div class='warn-box'>⚠️ <b>هل أنت متأكد من تصدير فاتورة النقل؟</b><br>
-                                سيتم خصم المواد التالية من مستودع <b>{trans_wh_from}</b> وإضافتها إلى مستودع <b>{trans_wh_to}</b> تلقائياً:<br>
-                                {items_txt}</div>""", unsafe_allow_html=True)
-                                col_yes, col_no = st.columns([1, 1])
-                                if col_yes.button("✅ نعم، تأكيد النقل والخصم والإيداع والأرشفة"):
-                                    final_errors_trans = validate_cart_stock(st.session_state.transfer_cart, trans_wh_from)
-                                    if final_errors_trans:
-                                        st.error("⛔ لا يمكن تنفيذ النقل — الرصيد غير كافٍ الآن.")
-                                        st.session_state.confirm_transfer = False
-                                    else:
-                                        for item in st.session_state.transfer_cart:
-                                            c.execute("INSERT INTO inventory (item_code, qty, warehouse, contractor, category) VALUES (?,?,?,?,?)",
-                                                      (item['code'], -item['qty'], trans_wh_from, "", item['cat']))
-                                            c.execute("INSERT INTO inventory (item_code, qty, warehouse, contractor, category) VALUES (?,?,?,?,?)",
-                                                      (item['code'], item['qty'], trans_wh_to, "", item['cat']))
-                                            save_log("نقل مواد الى مستودع اخر", item['code'], item['qty'], f"نقل وتحويل من مستودع [{trans_wh_from}] إلى مستودع [{trans_wh_to}] برقم قيد {trans_inv_no_preview}", u['full_name'])
-                                        archive_invoice("تحويل", trans_inv_no_preview, trans_wh_from, trans_wh_to, "", u['full_name'], json.dumps(st.session_state.transfer_cart), html_trans_invoice)
-                                        conn.commit()
-                                        st.session_state.last_trans_inv_html = html_trans_invoice
-                                        st.session_state.last_created_inv_no = trans_inv_no_preview
-                                        st.session_state.last_created_inv_type = "تحويل"
-                                        st.session_state.transfer_cart = []; st.session_state.review_transfer = False; st.session_state.confirm_transfer = False
-                                        st.success(f"🎉 تم إنشاء فاتورة نقل مواد طوارئ من مستودع إلى آخر بنجاح! رقم الفاتورة: ({trans_inv_no_preview})"); st.rerun()
-                                if col_no.button("❌ لا، إلغاء"):
-                                    st.session_state.confirm_transfer = False; st.rerun()
+                        for it in st.session_state.transfer_cart:
+                            c.execute("INSERT INTO inventory (item_code,qty,warehouse,contractor,category) VALUES (?,?,?,?,?)",
+                                      (it["code"], -it["qty"], trans_wh_from, "", it["cat"]))
+                            c.execute("INSERT INTO inventory (item_code,qty,warehouse,contractor,category) VALUES (?,?,?,?,?)",
+                                      (it["code"], it["qty"], trans_wh_to, "", it["cat"]))
+                            save_log("نقل مواد", it["code"], it["qty"], f"نقل من [{trans_wh_from}] إلى [{trans_wh_to}] | {trans_inv_no_preview}", u["full_name"])
+                        archive_invoice("تحويل", trans_inv_no_preview, trans_wh_from, trans_wh_to, "", u["full_name"], json.dumps(st.session_state.transfer_cart), html_trans_invoice)
+                        conn.commit()
+                        st.session_state.last_trans_inv_html = html_trans_invoice
+                        st.session_state.last_created_inv_no = trans_inv_no_preview
+                        st.session_state.last_created_inv_type = "تحويل"
+                        st.session_state.transfer_cart = []; st.session_state.confirm_transfer = False; st.rerun()
+                st.markdown("</div>", unsafe_allow_html=True)
+                st.markdown("<div class='btn-danger'>", unsafe_allow_html=True)
+                if na.button("❌ إلغاء والرجوع للتعديل", use_container_width=True, key="trans_confirm_no"):
+                    st.session_state.confirm_transfer = False; st.rerun()
+                st.markdown("</div>", unsafe_allow_html=True)
 
-                if st.session_state.last_created_inv_no and st.session_state.last_created_inv_type == "تحويل" and not st.session_state.transfer_cart:
-                    st.divider()
-                    st.markdown(f"""
-                    <div style='background:#e8f5e9;border:2px solid #1daa60;border-radius:12px;padding:18px;text-align:center;direction:rtl;'>
-                        ✅ <b>تم إنشاء فاتورة نقل مواد طوارئ من مستودع إلى آخر بنجاح</b><br>
-                        رقم الفاتورة: <span style='color:red;font-weight:900;font-size:18px;'>{st.session_state.last_created_inv_no}</span>
-                    </div>""", unsafe_allow_html=True)
-                    col_prev_btn_t, col_close_btn_t = st.columns([2, 1])
-                    if col_prev_btn_t.button("👁️ معاينة الفاتورة والطباعة", key="preview_trans_inv", use_container_width=True):
-                        st.session_state.page = "my_invoices"
-                        st.session_state.last_created_inv_no = None
-                        st.session_state.last_created_inv_type = None
-                        st.rerun()
-                    if col_close_btn_t.button("✖️ إغفال", key="dismiss_trans_inv"):
-                        st.session_state.last_created_inv_no = None
-                        st.session_state.last_created_inv_type = None
-                        st.rerun()
     # ---------------------------------------------------------
     # صفحة: تعديل فاتورة سابقة
     # ---------------------------------------------------------
@@ -2846,12 +2972,13 @@ else:
             st.error("❌ هذه الصفحة متاحة لمدير النظام ومسؤول المستودع فقط.")
             st.stop()
 
-        tab_logs_actions, tab_material_track, tab_invoices_archive, tab_cancel_invoices_mgr, tab_cancelled_invoices = st.tabs([
+        tab_logs_actions, tab_material_track, tab_invoices_archive, tab_cancel_invoices_mgr, tab_cancelled_invoices, tab_my_invoices_log = st.tabs([
             "📋 سجل تتبع حركات الموظفين",
             "🔍 تتبع مسار المادة",
             "🗂️ أرشيف الفواتير والمستندات",
             "🚫 إلغاء الفواتير",
-            "📑 سجل الفواتير الملغية"
+            "📑 سجل الفواتير الملغية",
+            "📄 فواتير منشأة بواسطتي"
         ])
 
         # ══════════════════════════════════════════════════════
@@ -3068,6 +3195,12 @@ else:
         with tab_invoices_archive:
             st.write("##### 📄 أرشيف استرجاع وإعادة طباعة المستندات والفواتير الصادرة مسبقاً")
 
+            # ── إذا جاء المستخدم من زر "مشاهدة الفاتورة" بعد التصدير ──
+            _auto_inv_no = st.session_state.get('_view_inv_no', '') or ''
+            if _auto_inv_no:
+                st.success(f"✅ عرض الفاتورة رقم: **{_auto_inv_no}**")
+                st.session_state['_view_inv_no'] = None
+
             # ── حذف تلقائي للفواتير الأقدم من 90 يوماً ──
             try:
                 from datetime import timedelta
@@ -3082,7 +3215,7 @@ else:
             _arch_col4, _arch_col5, _arch_col6, _arch_col7 = st.columns([1, 1, 1, 1])
 
             filter_arch_type    = _arch_col1.selectbox("نوع المستند:", ["الكل", "صرف", "ارجاع", "تحويل"], key="arch_type")
-            search_arch_no      = _arch_col2.text_input("ابحث برقم الفاتورة:", key="arch_no")
+            search_arch_no      = _arch_col2.text_input("ابحث برقم الفاتورة:", value=_auto_inv_no, key="arch_no")
             search_arch_boq     = _arch_col3.text_input("🔍 ابحث برقم BOQ:", key="arch_boq").strip()
             search_arch_date    = _arch_col4.date_input("من تاريخ:", value=None, key="arch_date")
             search_arch_date_to = _arch_col5.date_input("إلى تاريخ:", value=None, key="arch_date_to")
@@ -3505,6 +3638,70 @@ else:
 
                     if st.session_state[ci_view_key] and cr.get('invoice_html'):
                         components.html(cr['invoice_html'], height=500, scrolling=True)
+
+                    st.markdown("<hr style='margin:4px 0;'>", unsafe_allow_html=True)
+
+        # ══════════════════════════════════════════════════════
+        # تبويب ٦: فواتير منشأة بواسطتي
+        # ══════════════════════════════════════════════════════
+        with tab_my_invoices_log:
+            st.write(f"##### 📄 الفواتير التي أنشأتها أنت: **{u['full_name']}**")
+
+            # ── فلاتر البحث ──
+            mi_c1, mi_c2, mi_c3, mi_c4 = st.columns([1, 1, 1.2, 1.2])
+            mi_type_f = mi_c1.selectbox("نوع الفاتورة:", ["الكل", "صرف", "ارجاع", "تحويل"], key="mi_type_f_log")
+            mi_no_f   = mi_c2.text_input("رقم الفاتورة:", key="mi_no_f_log").strip()
+            mi_boq_f  = mi_c3.text_input("🔍 BOQ الحالة:", key="mi_boq_f_log").strip()
+            mi_date_f = mi_c4.date_input("تصفية بالتاريخ:", value=None, key="mi_date_f_log")
+
+            mi_query = """SELECT id, invoice_type, invoice_no, warehouse_from,
+                          warehouse_to, contractor, employee, boq, timestamp
+                          FROM archived_invoices WHERE employee=?"""
+            mi_params = [u['full_name']]
+            if mi_type_f != "الكل":
+                mi_query += f" AND invoice_type='{mi_type_f}'"
+            if mi_no_f:
+                mi_query += f" AND invoice_no LIKE '%{mi_no_f}%'"
+            if mi_boq_f:
+                mi_query += f" AND boq LIKE '%{mi_boq_f}%'"
+            if mi_date_f:
+                mi_query += f" AND timestamp >= '{mi_date_f.strftime('%Y-%m-%d')}'"
+            mi_query += " ORDER BY id DESC"
+
+            df_mi = pd.read_sql(mi_query, conn, params=mi_params)
+
+            if df_mi.empty:
+                st.info("ℹ️ لا توجد فواتير منشأة بواسطتك تطابق الفلاتر المحددة.")
+            else:
+                st.success(f"✅ تم العثور على ({len(df_mi)}) فاتورة.")
+                st.markdown("---")
+                for _, mi_row in df_mi.iterrows():
+                    mi_inv_id   = int(mi_row['id'])
+                    mi_view_key = f"mi_log_view_{mi_inv_id}"
+                    if mi_view_key not in st.session_state:
+                        st.session_state[mi_view_key] = False
+
+                    _tc = "#e65100" if mi_row['invoice_type']=="صرف" else ("#2e7d32" if mi_row['invoice_type']=="ارجاع" else "#1a237e")
+                    st.markdown(f"""
+                    <div class='report-box'>
+                        📄 <b style='color:{_tc};'>فاتورة {mi_row['invoice_type']}</b>
+                        رقم <span style='color:red;font-weight:900;'>{mi_row['invoice_no']}</span>
+                        &nbsp;|&nbsp; 📅 {mi_row['timestamp']}<br>
+                        📍 {mi_row['warehouse_from'] or 'N/A'}
+                        {f" ➡️ {mi_row['warehouse_to']}" if mi_row['warehouse_to'] else ""}
+                        {f" &nbsp;|&nbsp; 🏗️ {mi_row['contractor']}" if mi_row['contractor'] else ""}
+                        {f"<br>📋 <b>BOQ:</b> <span style='color:#e65100;'>{mi_row['boq']}</span>" if mi_row.get('boq') else ""}
+                    </div>""", unsafe_allow_html=True)
+
+                    if st.button(f"👁️ معاينة الفاتورة {mi_row['invoice_no']}", key=f"mi_log_view_btn_{mi_inv_id}"):
+                        st.session_state[mi_view_key] = not st.session_state[mi_view_key]
+
+                    if st.session_state[mi_view_key]:
+                        _mi_html = pd.read_sql(
+                            "SELECT html_content FROM archived_invoices WHERE id=?",
+                            conn, params=(mi_inv_id,))
+                        if not _mi_html.empty:
+                            components.html(_mi_html.iloc[0]['html_content'], height=520, scrolling=True)
 
                     st.markdown("<hr style='margin:4px 0;'>", unsafe_allow_html=True)
 
