@@ -3907,7 +3907,7 @@ else:
                     if ct_etype == "مقاول":
                         _pos_list = CONTRACTOR_POSITIONS
                         _ename_list = ct_contractors if ct_contractors else ["لا يوجد مقاولون"]
-                        ct_ename    = st.selectbox("اسم المقاول (من المقاولين المعتمدين) *", _ename_list, key="ct_ename_con")
+                        ct_ename    = st.selectbox("اسم المقاول (من المقاولين المقاولين) *", _ename_list, key="ct_ename_con")
                         ct_pos_sel  = st.selectbox("المنصب الوظيفي *", _pos_list, key="add_pos_sel_con")
                     else:
                         _pos_list = WAREHOUSE_POSITIONS
@@ -4135,8 +4135,8 @@ else:
                 st.session_state['staff_auth'] = False; st.rerun()
 
             tab_requests_view, tab_add_new_emp, tab_change_pwd, tab_mobile_access, tab_admin_pwd = st.tabs([
-                "📥 طلبات تصفير وتعديل كلمات المرور الواردة",
-                "➕ إضافة وتعيين حساب موظف ميداني جديد",
+                "📥 طلبات تعديل كلمات المرور للموظفين",
+                "➕ إضافة حساب لموظف جديد",
                 "🔑 تغيير كلمة مرور أي مستخدم",
                 "📱 صلاحية تشغيل النظام من الجوال",
                 "🔐 تغيير كلمة مرور مدير النظام"
@@ -4173,13 +4173,13 @@ else:
                     st.success("✅ لا توجد أي طلبات إعادة تعيين معلقة أو واردة من الموظفين حالياً.")
                 
             with tab_add_new_emp:
-                st.write("##### ➕ تعيين حساب موظف تشغيلي جديد بنظام الطوارئ")
+                st.write("##### ➕ تعيين حساب موظف جديد بنظام الطوارئ")
                 with st.form("add_user_form", clear_on_submit=True):
                     c_u1, c_u2, c_u3, c_u4 = st.columns([1.5, 2, 1.5, 1.5])
                     new_username = c_u1.text_input("رقم الجوال (اسم المستخدم) *").strip()
                     new_fullname = c_u2.text_input("الاسم الثلاثي الكامل للموظف *").strip()
                     new_password = c_u3.text_input("كلمة المرور الافتراضية *", type="password")
-                    new_role = c_u4.selectbox("مستوى الصلاحية الممنوحة *", ["موظف مستودع", "موجه بلاغات", "مدير نظام"])
+                    new_role = c_u4.selectbox("نوع الصلايحة الممنوحة *", ["موظف مستودع", "موجه بلاغات", "مدير نظام"])
                     new_position = ""  # المنصب لا يُحدد عند الإنشاء
 
                     if st.form_submit_button("👥 إنشاء وتفعيل حساب الموظف فوراً"):
@@ -4198,7 +4198,7 @@ else:
                             st.error("⚠️ جميع الحقول التي تحمل علامة (*) إلزامية لإنشاء الحساب البرمجي بنجاح.")
                         
                 st.divider()
-                st.write("##### 👥 إدارة وتعديل الموظفين المقيدين حالياً بالنظام:")
+                st.write("##### 👥 إدارة وتعديل الموظفين المضافين حالياً بالنظام:")
             
                 df_all_users = pd.read_sql("SELECT username, full_name, password, role FROM users", conn)
             
@@ -4887,12 +4887,12 @@ else:
                 else:
                     st.info("ℹ️ لا توجد مستودعات طوارئ معرّفة.")
                 with st.form("add_wh_form", clear_on_submit=True):
-                    new_wh = st.text_input("اسم المستودع الميداني الجديد")
+                    new_wh = st.text_input("اضافة مستودع جديد للنظام")
                     if st.form_submit_button("حفظ المستودع"):
                         if new_wh: c.execute("INSERT INTO settings_warehouses (name) VALUES (?)",(new_wh.strip(),)); conn.commit(); st.rerun()
 
             with set_col2:
-                st.markdown("### 🏗️ المقاولين المعتمدين")
+                st.markdown("### 🏗️ المقاولين")
                 df_con = pd.read_sql("SELECT * FROM settings_contractors", conn)
                 if not df_con.empty:
                     for _, r_con in df_con.iterrows():
@@ -4923,7 +4923,7 @@ else:
                 else:
                     st.info("ℹ️ لا يوجد مقاولين معتمدين حالياً.")
                 with st.form("add_con_form", clear_on_submit=True):
-                    new_con = st.text_input("اسم المقاول / الشركة الجديد")
+                    new_con = st.text_input("اضافة مقاول جديد للنظام")
                     if st.form_submit_button("حفظ المقاول"):
                         if new_con: c.execute("INSERT INTO settings_contractors (name) VALUES (?)",(new_con.strip(),)); conn.commit(); st.rerun()
 
