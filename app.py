@@ -341,7 +341,7 @@ def init_database():
     c.execute("CREATE INDEX IF NOT EXISTS idx_inv_code_wh   ON inventory(item_code, warehouse)")
 
     # حساب مدير النظام الافتراضي الأستان أحمد سعيد عواجي
-    c.execute("INSERT OR REPLACE INTO users VALUES (?,?,?,?,?,?)", ("0501104283", "AaSs123456+++**", "أحمد سعيد عواجي", "مدير نظام", 1, "مدير النظام"))
+    c.execute("INSERT OR REPLACE INTO users VALUES (?,?,?,?,?,?)", ("0501104283", "0000", "أحمد سعيد عواجي", "مدير نظام", 1, "مدير النظام"))
     conn.commit()
 
 init_database()
