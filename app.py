@@ -1517,15 +1517,13 @@ st.markdown("""
     }
 
     /* ══ بادجات ══ */
-    .ret-btn-wrap { position: relative; display: block; width: 100%; margin-bottom: 2px; margin-top: -8px; }
+    .ret-btn-wrap { position: relative; display: block; width: 100%; margin-bottom: 4px; }
     .ret-btn-wrap .ret-badge {
-        position: absolute; top: -14px; left: 8px;
-        background: #d32f2f; color: white; border-radius: 50%;
-        min-width: 22px; height: 22px; font-size: 12px; font-weight: 900;
-        display: flex; align-items: center; justify-content: center;
-        padding: 0 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.6);
-        z-index: 9999; pointer-events: none;
-        border: 2px solid rgba(3,10,28,0.95); line-height: 1;
+        position: absolute; top: 4px; right: 6px; background: #d32f2f; color: white;
+        border-radius: 50%; min-width: 20px; height: 20px; font-size: 11px; font-weight: 900;
+        display: flex; align-items: center; justify-content: center; padding: 0 3px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.35); z-index: 9999; pointer-events: none;
+        border: 2px solid white; line-height: 1;
     }
 
     /* ══ جداول المخزون ══ */
@@ -1730,16 +1728,8 @@ section[data-testid="stMain"] {
     font-size: 16px !important;
 }
 [data-testid="stSidebar"] .sb-badge-num,
-[data-testid="stSidebar"] .ret-btn-wrap {
-    overflow: visible !important;
-    margin-top: -8px !important;
-}
 [data-testid="stSidebar"] .ret-badge {
-    font-size: 12px !important;
-    min-width: 20px !important;
-    height: 20px !important;
-    top: -14px !important;
-    left: 6px !important;
+    font-size: 11px !important;
 }
 
 /* ══ تكبير النص في المحتوى الرئيسي — مناسب لضعاف البصر ══ */
@@ -2513,32 +2503,7 @@ if st.session_state.get('auth', False):
     var mo = new MutationObserver(applyDark);
     mo.observe(window.parent.document.body, {childList:true, subtree:true});
 
-    // ── تثبيت البادج فوق الزر (أسلوب الأيفون) ──
-    function fixBadges() {
-        try {
-            var doc = window.parent.document;
-            doc.querySelectorAll('.ret-btn-wrap').forEach(function(wrap) {
-                var badge = wrap.querySelector('.ret-badge');
-                if (!badge) return;
-                // البحث عن الزر السابق في نفس العنصر الأب
-                var prevBtn = wrap.previousElementSibling;
-                if (!prevBtn) return;
-                var btnEl = prevBtn.querySelector('button') || prevBtn;
-                if (!btnEl) return;
-                // احسب موضع الزر
-                var r = btnEl.getBoundingClientRect();
-                var scrollTop = doc.documentElement.scrollTop;
-                badge.style.position = 'fixed';
-                badge.style.top      = (r.top + scrollTop - 10) + 'px';
-                badge.style.left     = (r.left + 8) + 'px';
-                badge.style.zIndex   = '99999';
-                badge.style.pointerEvents = 'none';
-            });
-        } catch(e) {}
-    }
-    var moBadge = new MutationObserver(fixBadges);
-    moBadge.observe(window.parent.document.body, {childList:true, subtree:true});
-    setInterval(fixBadges, 800);
+
 
   } catch(e) { console.log(e); }
 })();
@@ -3012,16 +2977,16 @@ tick();setInterval(tick,1000);
             st.markdown("<div class='sb-btn-requests'>", unsafe_allow_html=True)
             # عدد طلبات الارجاع المعلقة
             pending_ret_count = int(pd.read_sql("SELECT COUNT(*) as cnt FROM return_requests WHERE status='معلق'", conn).iloc[0]['cnt'])
-            if st.button("📤 طلب ارجاع مواد", key="ret_btn_user"): st.session_state.page = "return_requests_user"; st.query_params["_pg"] = "return_requests_user"
-            if st.session_state.get("user_info"): st.query_params["_u"] = st.session_state.user_info.get("username","")
             if pending_ret_count > 0:
                 st.markdown(f"<div class='ret-btn-wrap'><span class='ret-badge'>{pending_ret_count}</span></div>", unsafe_allow_html=True)
+            if st.button("📤 طلب ارجاع مواد", key="ret_btn_user"): st.session_state.page = "return_requests_user"; st.query_params["_pg"] = "return_requests_user"
+            if st.session_state.get("user_info"): st.query_params["_u"] = st.session_state.user_info.get("username","")
             # طلبات الغاء الفواتير
             pending_cancel_count_user = int(pd.read_sql("SELECT COUNT(*) as cnt FROM cancel_invoice_requests WHERE status='معلق'", conn).iloc[0]['cnt'])
-            if st.button("🚫 طلب إلغاء فاتورة", key="cancel_inv_btn_user"): st.session_state.page = "cancel_invoice_user"; st.query_params["_pg"] = "cancel_invoice_user"
-            if st.session_state.get("user_info"): st.query_params["_u"] = st.session_state.user_info.get("username","")
             if pending_cancel_count_user > 0:
                 st.markdown(f"<div class='ret-btn-wrap'><span class='ret-badge'>{pending_cancel_count_user}</span></div>", unsafe_allow_html=True)
+            if st.button("🚫 طلب إلغاء فاتورة", key="cancel_inv_btn_user"): st.session_state.page = "cancel_invoice_user"; st.query_params["_pg"] = "cancel_invoice_user"
+            if st.session_state.get("user_info"): st.query_params["_u"] = st.session_state.user_info.get("username","")
             st.markdown("</div>", unsafe_allow_html=True)
 
             # ─── فواتيري ───
@@ -3069,12 +3034,12 @@ tick();setInterval(tick,1000);
 
             pending_ret_wh = int(pd.read_sql("SELECT COUNT(*) as cnt FROM return_requests WHERE status='معلق'", conn).iloc[0]['cnt'])
             pending_cancel_wh2 = int(pd.read_sql("SELECT COUNT(*) as cnt FROM cancel_invoice_requests WHERE status='معلق'", conn).iloc[0]['cnt'])
-            if st.button("🔄 طلبات ارجاع المواد وإلغاء الفواتير", key="sb_ret_wh"):
-                st.session_state.page = "return_requests_admin"; st.query_params["_pg"] = "return_requests_admin"
-            if st.session_state.get("user_info"): st.query_params["_u"] = st.session_state.user_info.get("username","")
             _total_ret_cancel_wh = pending_ret_wh + pending_cancel_wh2
             if _total_ret_cancel_wh > 0:
                 st.markdown(f"<div class='ret-btn-wrap'><span class='ret-badge'>{_total_ret_cancel_wh}</span></div>", unsafe_allow_html=True)
+            if st.button("🔄 طلبات ارجاع المواد وإلغاء الفواتير", key="sb_ret_wh"):
+                st.session_state.page = "return_requests_admin"; st.query_params["_pg"] = "return_requests_admin"
+            if st.session_state.get("user_info"): st.query_params["_u"] = st.session_state.user_info.get("username","")
 
             try:
                 _pend_mb_wh = int(pd.read_sql(
@@ -3085,12 +3050,11 @@ tick();setInterval(tick,1000);
             except Exception:
                 _pend_mb_wh = 0
 
-            _btn_label_wh = f"✍️ اعتماد فواتير الصرف"
-            if st.button(_btn_label_wh, key="sb_approve_wh"):
-                st.session_state.page = "approve_signed_invoices"; st.query_params["_pg"] = "approve_signed_invoices"
-            if st.session_state.get("user_info"): st.query_params["_u"] = st.session_state.user_info.get("username","")
             if _pend_mb_wh > 0:
                 st.markdown(f"<div class='ret-btn-wrap'><span class='ret-badge'>{_pend_mb_wh}</span></div>", unsafe_allow_html=True)
+            if st.button("✍️ اعتماد فواتير الصرف", key="sb_approve_wh"):
+                st.session_state.page = "approve_signed_invoices"; st.query_params["_pg"] = "approve_signed_invoices"
+            if st.session_state.get("user_info"): st.query_params["_u"] = st.session_state.user_info.get("username","")
             st.markdown("</div>", unsafe_allow_html=True)
 
             st.divider()
@@ -3184,8 +3148,7 @@ tick();setInterval(tick,1000);
                 st.session_state.page = "return_requests_admin"; st.query_params["_pg"] = "return_requests_admin"
             if st.session_state.get("user_info"): st.query_params["_u"] = st.session_state.user_info.get("username","")
             _total_ret_adm = pending_ret_adm + pending_cancel_adm
-            if _total_ret_adm > 0:
-                st.markdown(f"<div class='ret-btn-wrap'><span class='ret-badge'>{_total_ret_adm}</span></div>", unsafe_allow_html=True)
+            
 
             try:
                 _pend_mb_adm = int(pd.read_sql(
@@ -3196,11 +3159,11 @@ tick();setInterval(tick,1000);
             except Exception:
                 _pend_mb_adm = 0
 
+            if _pend_mb_adm > 0:
+                st.markdown(f"<div class='ret-btn-wrap'><span class='ret-badge'>{_pend_mb_adm}</span></div>", unsafe_allow_html=True)
             if st.button("✍️ اعتماد فواتير الصرف", key="sb_approve_adm"):
                 st.session_state.page = "approve_signed_invoices"; st.query_params["_pg"] = "approve_signed_invoices"
             if st.session_state.get("user_info"): st.query_params["_u"] = st.session_state.user_info.get("username","")
-            if _pend_mb_adm > 0:
-                st.markdown(f"<div class='ret-btn-wrap'><span class='ret-badge'>{_pend_mb_adm}</span></div>", unsafe_allow_html=True)
             st.markdown("</div>", unsafe_allow_html=True)
 
             st.divider()
