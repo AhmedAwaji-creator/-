@@ -5484,7 +5484,8 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(29,218,96,0.12);font-size:17p
 
             if not df_logs.empty:
                 df_display = df_logs.drop(columns=['id'])
-                html_table(df_display, accent='#1a3a5c', info_label='📋 إجمالي العمليات المعروضة: ')
+                st.markdown(f"<div style='direction:rtl;color:#8aaac8;font-size:14px;margin-bottom:4px;'>📋 إجمالي العمليات المعروضة: <b style='color:#4db8ff;'>{len(df_display)}</b></div>", unsafe_allow_html=True)
+                st.dataframe(df_display, use_container_width=True, height=min(600, 50 + len(df_display)*38))
                 st.download_button(
                     "📥 تصدير السجل إلى Excel",
                     to_excel(df_display),
