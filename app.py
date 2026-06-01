@@ -3980,13 +3980,32 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(0,140,255,0.10);font-size:17p
                         st.session_state.pop("_saved_out_boq", None)
                         st.session_state.cart = []
                         st.session_state.confirm_out = False
-                        st.session_state["_view_inv_no"] = inv_no
-                        st.session_state['latest_inv_type_sel'] = "صرف"
-                        st.session_state["_success_msg"] = f"✅ تم إنشاء فاتورة الصرف رقم **{inv_no}** بنجاح!"
-                        _dest = "invoices_archive_admin"
-                        st.session_state.page = _dest; st.query_params["_pg"] = _dest
-                        if st.session_state.get("user_info"): st.query_params["_u"] = st.session_state.user_info.get("username","")
+                        st.session_state["_stock_out_done"] = {"inv_no": inv_no, "html": html_inv}
                         st.rerun()
+
+        # ── عرض إشعار النجاح ومعاينة الفاتورة بعد الإصدار ──
+        _done = st.session_state.get("_stock_out_done")
+        if _done:
+            st.markdown(f"""
+            <div style='background:rgba(0,60,20,0.65);border:2px solid #1daa60;border-radius:14px;
+                padding:18px 24px;direction:rtl;text-align:center;margin-bottom:16px;'>
+                <div style='font-size:26px;font-weight:900;color:#1dda70;'>✅ تم إصدار الفاتورة بنجاح!</div>
+                <div style='font-size:18px;color:#c8dff4;margin-top:6px;'>رقم الفاتورة: <b style='color:#ffffff;font-size:22px;'>{_done['inv_no']}</b></div>
+            </div>""", unsafe_allow_html=True)
+            _pv_key = "show_done_inv"
+            _pv1, _pv2 = st.columns(2)
+            if _pv1.button("👁️ معاينة الفاتورة وطباعتها", key="preview_done_inv", use_container_width=True):
+                st.session_state[_pv_key] = not st.session_state.get(_pv_key, False)
+            if _pv2.button("🔄 إصدار فاتورة جديدة", key="new_inv_after_done", use_container_width=True):
+                st.session_state.pop("_stock_out_done", None)
+                st.session_state.pop(_pv_key, None)
+                st.rerun()
+            if st.session_state.get(_pv_key, False):
+                _h = _done['html']
+                _h = _h.replace('background:rgba(3,10,28,0.82)','background:white').replace('background:rgba(3,10,28,0.88)','background:white')
+                if '<body' in _h and 'background:#f0f4f8' not in _h:
+                    _h = _h.replace('<body>','<body style="background:#f0f4f8;">').replace('<body ','<body style="background:#f0f4f8;" ')
+                components.html(_h, height=980, scrolling=True)
                 st.markdown("</div>", unsafe_allow_html=True)
                 st.markdown("<div class='btn-danger'>", unsafe_allow_html=True)
                 if na.button("❌ إلغاء والرجوع للتعديل", use_container_width=True):
