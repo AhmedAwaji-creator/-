@@ -3447,7 +3447,12 @@ tick();setInterval(tick,1000);
                             _ex = next((i for i in st.session_state.cart if i['code']==code),None)
                             if _ex: _ex['qty'] += 1
                             else: st.session_state.cart.append({"code":code,"name":name,"qty":1,"cat":cat,"wh":wh})
-                            st.session_state["_inv_cart_msg"] = f"✅ تمت إضافة **{code}** إلى سلة الصرف"
+                            # تعيين المستودع تلقائياً في سلة الصرف
+                            st.session_state["_preset_wh"] = wh
+                            # إخفاء الفاتورة السابقة عند إضافة مادة جديدة
+                            st.session_state.pop("_stock_out_done", None)
+                            st.session_state.pop("show_done_inv", None)
+                            st.session_state["_inv_cart_msg"] = f"✅ تمت إضافة **{code}** إلى سلة الصرف — المستودع: {wh}"
                             st.rerun()
                 st.markdown("<hr style='margin:1px 0;border-color:rgba(0,140,255,0.06);'>", unsafe_allow_html=True)
 
@@ -3787,7 +3792,18 @@ tick();setInterval(tick,1000);
             if not st.session_state.confirm_out:
                 section_card("📋 بيانات الفاتورة", "#f9a825")
                 c1, c2 = st.columns(2)
-                out_wh = c1.selectbox("📍 مستودع الصرف", list_warehouses, key="out_wh_sel")
+
+                # تعيين المستودع تلقائياً إذا قدم المستخدم من رصيد المستودعات
+                _preset_wh = st.session_state.pop("_preset_wh", None)
+                _wh_default_idx = 0
+                if _preset_wh and _preset_wh in list_warehouses:
+                    _wh_default_idx = list_warehouses.index(_preset_wh)
+                elif st.session_state.cart:
+                    _cart_wh = st.session_state.cart[0].get('wh','')
+                    if _cart_wh in list_warehouses:
+                        _wh_default_idx = list_warehouses.index(_cart_wh)
+
+                out_wh = c1.selectbox("📍 مستودع الصرف", list_warehouses, index=_wh_default_idx, key="out_wh_sel")
 
                 # ── اختيار المقاول — فارغ عند القدوم من رصيد المستودعات ──
                 _from_inv = bool(st.session_state.get("_success_cart"))
@@ -3986,30 +4002,37 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(0,140,255,0.10);font-size:17p
         # ── عرض إشعار النجاح ومعاينة الفاتورة بعد الإصدار ──
         _done = st.session_state.get("_stock_out_done")
         if _done:
+            # إخفاء الفاتورة فوراً عند إضافة مادة للسلة
+            if st.session_state.get("cart") and len(st.session_state.cart) > 0 and st.session_state.cart[0].get('code','') != _done.get('inv_no',''):
+                pass  # السلة جديدة — الفاتورة تبقى حتى يغلقها المستخدم
+
             st.markdown(f"""
             <div style='background:rgba(0,60,20,0.65);border:2px solid #1daa60;border-radius:14px;
                 padding:18px 24px;direction:rtl;text-align:center;margin-bottom:16px;'>
                 <div style='font-size:26px;font-weight:900;color:#1dda70;'>✅ تم إصدار الفاتورة بنجاح!</div>
                 <div style='font-size:18px;color:#c8dff4;margin-top:6px;'>رقم الفاتورة: <b style='color:#ffffff;font-size:22px;'>{_done['inv_no']}</b></div>
             </div>""", unsafe_allow_html=True)
+
             _pv_key = "show_done_inv"
             _pv1, _pv2 = st.columns(2)
             if _pv1.button("👁️ معاينة الفاتورة وطباعتها", key="preview_done_inv", use_container_width=True):
                 st.session_state[_pv_key] = not st.session_state.get(_pv_key, False)
-            if _pv2.button("🔄 إصدار فاتورة جديدة", key="new_inv_after_done", use_container_width=True):
+                st.rerun()
+            if _pv2.button("✖️ إغلاق — السلة جاهزة لفاتورة جديدة", key="close_done_inv", use_container_width=True):
                 st.session_state.pop("_stock_out_done", None)
                 st.session_state.pop(_pv_key, None)
+                st.session_state.cart = []
                 st.rerun()
+
             if st.session_state.get(_pv_key, False):
-                _h = _done['html']
+                _h = str(_done['html'])
                 _h = _h.replace('background:rgba(3,10,28,0.82)','background:white').replace('background:rgba(3,10,28,0.88)','background:white')
                 if '<body' in _h and 'background:#f0f4f8' not in _h:
                     _h = _h.replace('<body>','<body style="background:#f0f4f8;">').replace('<body ','<body style="background:#f0f4f8;" ')
                 components.html(_h, height=980, scrolling=True)
-                st.markdown("</div>", unsafe_allow_html=True)
-                if na.button("❌ إلغاء والرجوع للتعديل", use_container_width=True):
-                    st.session_state.confirm_out = False; st.rerun()
-                st.markdown("</div>", unsafe_allow_html=True)
+                if st.button("✖️ إغلاق المعاينة", key="close_preview_inv"):
+                    st.session_state[_pv_key] = False
+                    st.rerun()
 
     # ---------------------------------------------------------
     # صفحة: ارجاع مواد للمستودع
