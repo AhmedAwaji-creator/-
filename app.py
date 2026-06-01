@@ -3976,15 +3976,17 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(0,140,255,0.10);font-size:17p
 
                         if role in ("مدير نظام", "مسؤول المستودعات"):
                             for item in st.session_state.cart:
-                                remaining = int(item['qty'])
-                                _dc = conn.cursor()
-                                _dc.execute("SELECT id, qty FROM inventory WHERE item_code=? AND warehouse=? AND qty>0 ORDER BY id",
-                                            (str(item['code']), str(out_wh)))
-                                for row in _dc.fetchall():
-                                    if remaining <= 0: break
-                                    take = min(remaining, int(row[1]))
-                                    c.execute("UPDATE inventory SET qty = qty - ? WHERE id=?", (take, int(row[0])))
-                                    remaining -= take
+                                _code = str(item['code']).replace("'","''")
+                                _wh   = str(out_wh).replace("'","''")
+                                _need = int(item['qty'])
+                                _inv_rows = pd.read_sql(
+                                    f"SELECT id, qty FROM inventory WHERE item_code='{_code}' AND warehouse='{_wh}' AND qty>0 ORDER BY id",
+                                    conn)
+                                for _, _ir in _inv_rows.iterrows():
+                                    if _need <= 0: break
+                                    _take = min(_need, int(_ir['qty']))
+                                    conn.execute(f"UPDATE inventory SET qty = qty - {_take} WHERE id={int(_ir['id'])}")
+                                    _need -= _take
                             conn.commit()
                             release_reservation(inv_no)
                             save_log("صرف مواد (مباشر)", "-", 0,
