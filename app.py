@@ -2513,6 +2513,33 @@ if st.session_state.get('auth', False):
     var mo = new MutationObserver(applyDark);
     mo.observe(window.parent.document.body, {childList:true, subtree:true});
 
+    // ── تثبيت البادج فوق الزر (أسلوب الأيفون) ──
+    function fixBadges() {
+        try {
+            var doc = window.parent.document;
+            doc.querySelectorAll('.ret-btn-wrap').forEach(function(wrap) {
+                var badge = wrap.querySelector('.ret-badge');
+                if (!badge) return;
+                // البحث عن الزر السابق في نفس العنصر الأب
+                var prevBtn = wrap.previousElementSibling;
+                if (!prevBtn) return;
+                var btnEl = prevBtn.querySelector('button') || prevBtn;
+                if (!btnEl) return;
+                // احسب موضع الزر
+                var r = btnEl.getBoundingClientRect();
+                var scrollTop = doc.documentElement.scrollTop;
+                badge.style.position = 'fixed';
+                badge.style.top      = (r.top + scrollTop - 10) + 'px';
+                badge.style.left     = (r.left + 8) + 'px';
+                badge.style.zIndex   = '99999';
+                badge.style.pointerEvents = 'none';
+            });
+        } catch(e) {}
+    }
+    var moBadge = new MutationObserver(fixBadges);
+    moBadge.observe(window.parent.document.body, {childList:true, subtree:true});
+    setInterval(fixBadges, 800);
+
   } catch(e) { console.log(e); }
 })();
 </script>
