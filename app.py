@@ -1519,13 +1519,13 @@ st.markdown("""
     /* ══ بادجات ══ */
     .ret-btn-wrap { position: relative; display: block; width: 100%; margin-bottom: 2px; }
     .ret-btn-wrap .ret-badge {
-        position: absolute; top: -28px; right: 6px;
+        position: absolute; top: -10px; left: 8px;
         background: #d32f2f; color: white; border-radius: 50%;
-        min-width: 20px; height: 20px; font-size:15px; font-weight: 900;
+        min-width: 22px; height: 22px; font-size: 13px; font-weight: 900;
         display: flex; align-items: center; justify-content: center;
-        padding: 0 3px; box-shadow: 0 1px 4px rgba(0,0,0,0.35);
+        padding: 0 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.5);
         z-index: 9999; pointer-events: none;
-        border: 2px solid rgba(3,10,28,0.9); line-height: 1;
+        border: 2px solid rgba(3,10,28,0.95); line-height: 1;
     }
 
     /* ══ جداول المخزون ══ */
@@ -1730,8 +1730,15 @@ section[data-testid="stMain"] {
     font-size: 16px !important;
 }
 [data-testid="stSidebar"] .sb-badge-num,
+[data-testid="stSidebar"] .ret-btn-wrap {
+    overflow: visible !important;
+}
 [data-testid="stSidebar"] .ret-badge {
-    font-size: 13px !important;
+    font-size: 12px !important;
+    min-width: 20px !important;
+    height: 20px !important;
+    top: -8px !important;
+    left: 6px !important;
 }
 
 /* ══ تكبير النص في المحتوى الرئيسي — مناسب لضعاف البصر ══ */
@@ -3055,11 +3062,7 @@ tick();setInterval(tick,1000);
                 st.session_state.page = "approve_signed_invoices"; st.query_params["_pg"] = "approve_signed_invoices"
             if st.session_state.get("user_info"): st.query_params["_u"] = st.session_state.user_info.get("username","")
             if _pend_mb_wh > 0:
-                st.markdown(f"""<div style='position:relative;margin-top:-52px;margin-right:4px;text-align:left;pointer-events:none;'>
-                    <span style='background:#d32f2f;color:white;border-radius:50%;min-width:22px;height:22px;
-                    font-size:13px;font-weight:900;padding:2px 6px;display:inline-block;text-align:center;
-                    border:2px solid rgba(0,10,30,0.8);box-shadow:0 2px 6px rgba(0,0,0,0.5);line-height:18px;'>
-                    {_pend_mb_wh}</span></div>""", unsafe_allow_html=True)
+                st.markdown(f"<div class='ret-btn-wrap'><span class='ret-badge'>{_pend_mb_wh}</span></div>", unsafe_allow_html=True)
             st.markdown("</div>", unsafe_allow_html=True)
 
             st.divider()
@@ -3169,11 +3172,7 @@ tick();setInterval(tick,1000);
                 st.session_state.page = "approve_signed_invoices"; st.query_params["_pg"] = "approve_signed_invoices"
             if st.session_state.get("user_info"): st.query_params["_u"] = st.session_state.user_info.get("username","")
             if _pend_mb_adm > 0:
-                st.markdown(f"""<div style='position:relative;margin-top:-52px;margin-right:4px;text-align:left;pointer-events:none;'>
-                    <span style='background:#d32f2f;color:white;border-radius:50%;min-width:22px;height:22px;
-                    font-size:13px;font-weight:900;padding:2px 6px;display:inline-block;text-align:center;
-                    border:2px solid rgba(0,10,30,0.8);box-shadow:0 2px 6px rgba(0,0,0,0.5);line-height:18px;'>
-                    {_pend_mb_adm}</span></div>""", unsafe_allow_html=True)
+                st.markdown(f"<div class='ret-btn-wrap'><span class='ret-badge'>{_pend_mb_adm}</span></div>", unsafe_allow_html=True)
             st.markdown("</div>", unsafe_allow_html=True)
 
             st.divider()
