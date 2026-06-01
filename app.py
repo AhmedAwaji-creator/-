@@ -4896,6 +4896,38 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(29,218,96,0.12);font-size:17p
                 st.error(f"❌ لم يتم العثور على فاتورة {ef_type} برقم ({st.session_state['ef_search']}).")
             else:
                 row = df_inv.iloc[0]
+
+                # ── فحص إذا كانت الفاتورة معتمدة — حد 72 ساعة ──
+                from datetime import timedelta as _td72
+                _ef_signed = pd.read_sql("SELECT status, reviewed_at FROM signed_invoices WHERE invoice_no=? AND status='معتمد'",
+                                         conn, params=(str(row['invoice_no']),))
+                _ef_is_approved = not _ef_signed.empty
+                _ef_can_edit = True
+                _ef_hours_since = None
+
+                if _ef_is_approved:
+                    try:
+                        _reviewed_at = _ef_signed.iloc[0]['reviewed_at']
+                        _rev_dt = datetime.strptime(str(_reviewed_at)[:19], "%Y-%m-%d %H:%M:%S")
+                        _ef_hours_since = (now_mecca().replace(tzinfo=None) - _rev_dt).total_seconds() / 3600
+                        if _ef_hours_since > 72:
+                            _ef_can_edit = False
+                    except Exception:
+                        pass
+
+                if _ef_is_approved and not _ef_can_edit:
+                    st.error(f"❌ هذه الفاتورة معتمدة ومضى عليها أكثر من 72 ساعة — لا يمكن تعديلها.")
+                    st.stop()
+
+                if _ef_is_approved and _ef_can_edit:
+                    _hrs_left = max(0, round(72 - (_ef_hours_since or 0), 1))
+                    st.markdown(f"""
+                    <div style='background:rgba(60,40,0,0.50);border:2px solid #f9a825;border-radius:10px;
+                        padding:12px 16px;direction:rtl;margin-bottom:10px;'>
+                        ⚠️ <b style='color:#ffaa66;'>هذه الفاتورة معتمدة</b> — يمكن التعديل عليها خلال
+                        <b style='color:#ff6666;font-size:17px;'>{_hrs_left} ساعة</b> متبقية.<br>
+                        <span style='color:#8aaac8;font-size:14px;'>بعد التعديل ستعود للاعتماد مجدداً وسيتم تسجيل اسمك.</span>
+                    </div>""", unsafe_allow_html=True)
                 if st.session_state.get('ef_items') is None:
                     st.session_state['ef_items'] = json.loads(row['items_json'])
                 if 'ef_confirm' not in st.session_state: st.session_state['ef_confirm'] = False
@@ -5195,6 +5227,16 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(29,218,96,0.12);font-size:17p
                             new_html = render_transfer_invoice_html(f"فاتورة نقل مواد من مستودع إلى آخر (معدّل)", filtered, wh_from, wh_to, u['full_name'], row['invoice_no'])
                         c.execute("UPDATE archived_invoices SET items_json=?, html_content=?, warehouse_from=?, warehouse_to=?, contractor=? WHERE id=?",
                                   (json.dumps(new_items), new_html, wh_from, wh_to, contractor, int(row['id'])))
+
+                        # إذا كانت الفاتورة معتمدة سابقاً — أعدها للاعتماد وسجّل التنبيه
+                        if _ef_is_approved:
+                            c.execute("UPDATE signed_invoices SET status='معدّلة-تحتاج اعتماد', deducted=0, admin_notes=? WHERE invoice_no=? AND status='معتمد'",
+                                      (f"⚠️ تم التعديل بواسطة: {u['full_name']} بتاريخ {now_mecca().strftime('%Y-%m-%d %H:%M')} — تحتاج اعتماداً جديداً",
+                                       str(row['invoice_no'])))
+                            save_log("⚠️ تعديل فاتورة معتمدة", "—", 0,
+                                     f"تم التعديل على الفاتورة المعتمدة [{row['invoice_no']}] بواسطة: {u['full_name']} — تحتاج اعتماداً جديداً",
+                                     u['full_name'])
+
                         conn.commit()
                         st.session_state['ef_result_html'] = new_html
                         st.session_state['ef_items']       = None
@@ -7900,7 +7942,9 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(29,218,96,0.12);font-size:17p
                     <b>المقاول:</b> {_cr_con}
                     </div>""", unsafe_allow_html=True)
                     col_cy, col_cn_cancel = st.columns([1, 1])
-                    if col_cy.button("✅ نعم، تأكيد وإرسال الطلب", key="confirm_cancel_yes"):
+                    _cy_pressed = col_cy.button("✅ نعم، تأكيد وإرسال الطلب", key="confirm_cancel_yes", type="primary")
+                    _cn_pressed = col_cn_cancel.button("🔙 الرجوع للبداية", key="confirm_cancel_no")
+                    if _cy_pressed:
                         ts_c = now_mecca().strftime("%Y-%m-%d %H:%M:%S")
                         req_no_c = "CR" + now_mecca().strftime("%d%H%M")
                         _ci_html_row = pd.read_sql("SELECT html_content FROM archived_invoices WHERE id=?",
@@ -7924,9 +7968,8 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(29,218,96,0.12);font-size:17p
                         st.session_state['cancel_inv_data'] = None
                         st.session_state['cancel_inv_confirm'] = False
                         st.session_state['last_cancel_req_no'] = req_no_c
-                        st.success(f"✅ تم إرسال طلب الإلغاء رقم ({req_no_c}) بنجاح — بانتظار اعتماد مسؤول المستودع أو مدير النظام.")
                         st.rerun()
-                    if col_cn_cancel.button("🔙 الرجوع للبداية", key="confirm_cancel_no"):
+                    if _cn_pressed:
                         st.session_state['cancel_inv_confirm'] = False
                         st.session_state['cancel_inv_data'] = None
                         st.session_state.pop('cancel_show_preview', None)
