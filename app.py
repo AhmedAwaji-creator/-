@@ -3043,15 +3043,24 @@ tick();setInterval(tick,1000);
                 st.markdown(f"<div class='ret-btn-wrap'><span class='ret-badge'>{_total_ret_cancel_wh}</span></div>", unsafe_allow_html=True)
 
             try:
-                _pend_signed_wh = int(pd.read_sql("SELECT COUNT(*) as cnt FROM signed_invoices WHERE status='بانتظار الاعتماد'", conn).iloc[0]['cnt'])
+                _pend_mb_wh = int(pd.read_sql(
+                    "SELECT COUNT(*) as cnt FROM archived_invoices a "
+                    "WHERE a.invoice_type='صرف' AND a.employee IN (SELECT full_name FROM users WHERE role='موجه بلاغات') "
+                    "AND NOT EXISTS (SELECT 1 FROM signed_invoices s WHERE s.original_invoice_id=a.id AND s.status='معتمد')",
+                    conn).iloc[0]['cnt'])
             except Exception:
-                _pend_signed_wh = 0
+                _pend_mb_wh = 0
 
-            if st.button("✍️ اعتماد فواتير الصرف", key="sb_approve_wh"):
+            _btn_label_wh = f"✍️ اعتماد فواتير الصرف"
+            if st.button(_btn_label_wh, key="sb_approve_wh"):
                 st.session_state.page = "approve_signed_invoices"; st.query_params["_pg"] = "approve_signed_invoices"
             if st.session_state.get("user_info"): st.query_params["_u"] = st.session_state.user_info.get("username","")
-            if _pend_signed_wh > 0:
-                st.markdown(f"<div class='ret-btn-wrap'><span class='ret-badge'>{_pend_signed_wh}</span></div>", unsafe_allow_html=True)
+            if _pend_mb_wh > 0:
+                st.markdown(f"""<div style='position:relative;margin-top:-52px;margin-right:4px;text-align:left;pointer-events:none;'>
+                    <span style='background:#d32f2f;color:white;border-radius:50%;min-width:22px;height:22px;
+                    font-size:13px;font-weight:900;padding:2px 6px;display:inline-block;text-align:center;
+                    border:2px solid rgba(0,10,30,0.8);box-shadow:0 2px 6px rgba(0,0,0,0.5);line-height:18px;'>
+                    {_pend_mb_wh}</span></div>""", unsafe_allow_html=True)
             st.markdown("</div>", unsafe_allow_html=True)
 
             st.divider()
@@ -3149,15 +3158,23 @@ tick();setInterval(tick,1000);
                 st.markdown(f"<div class='ret-btn-wrap'><span class='ret-badge'>{_total_ret_adm}</span></div>", unsafe_allow_html=True)
 
             try:
-                _pend_signed_adm = int(pd.read_sql("SELECT COUNT(*) as cnt FROM signed_invoices WHERE status='بانتظار الاعتماد'", conn).iloc[0]['cnt'])
+                _pend_mb_adm = int(pd.read_sql(
+                    "SELECT COUNT(*) as cnt FROM archived_invoices a "
+                    "WHERE a.invoice_type='صرف' AND a.employee IN (SELECT full_name FROM users WHERE role='موجه بلاغات') "
+                    "AND NOT EXISTS (SELECT 1 FROM signed_invoices s WHERE s.original_invoice_id=a.id AND s.status='معتمد')",
+                    conn).iloc[0]['cnt'])
             except Exception:
-                _pend_signed_adm = 0
+                _pend_mb_adm = 0
 
             if st.button("✍️ اعتماد فواتير الصرف", key="sb_approve_adm"):
                 st.session_state.page = "approve_signed_invoices"; st.query_params["_pg"] = "approve_signed_invoices"
             if st.session_state.get("user_info"): st.query_params["_u"] = st.session_state.user_info.get("username","")
-            if _pend_signed_adm > 0:
-                st.markdown(f"<div class='ret-btn-wrap'><span class='ret-badge'>{_pend_signed_adm}</span></div>", unsafe_allow_html=True)
+            if _pend_mb_adm > 0:
+                st.markdown(f"""<div style='position:relative;margin-top:-52px;margin-right:4px;text-align:left;pointer-events:none;'>
+                    <span style='background:#d32f2f;color:white;border-radius:50%;min-width:22px;height:22px;
+                    font-size:13px;font-weight:900;padding:2px 6px;display:inline-block;text-align:center;
+                    border:2px solid rgba(0,10,30,0.8);box-shadow:0 2px 6px rgba(0,0,0,0.5);line-height:18px;'>
+                    {_pend_mb_adm}</span></div>""", unsafe_allow_html=True)
             st.markdown("</div>", unsafe_allow_html=True)
 
             st.divider()
@@ -8495,6 +8512,26 @@ tbody tr:hover td{{color:#1dda70!important;}}
             _tab_stock, = st.tabs(["🛒 اعتماد فواتير الصرف"])
 
             with _tab_stock:
+                # ── عرض التنبيه بعد الاعتماد/الرفض ──
+                _mb_notify = st.session_state.pop("_mb_notify", None)
+                if _mb_notify:
+                    _nb_type, _nb_msg = _mb_notify
+                    if _nb_type == "success":
+                        st.markdown(f"""
+                        <div style='background:rgba(0,60,20,0.65);border:2px solid #1daa60;border-radius:12px;
+                            padding:14px 20px;direction:rtl;margin-bottom:12px;
+                            animation:fadeIn 0.5s ease;'>
+                            <span style='font-size:22px;'>✅</span>
+                            <span style='font-size:17px;font-weight:900;color:#1dda70;margin-right:8px;'>{_nb_msg}</span>
+                        </div>""", unsafe_allow_html=True)
+                    else:
+                        st.markdown(f"""
+                        <div style='background:rgba(80,0,0,0.55);border:2px solid #c62828;border-radius:12px;
+                            padding:14px 20px;direction:rtl;margin-bottom:12px;'>
+                            <span style='font-size:22px;'>❌</span>
+                            <span style='font-size:17px;font-weight:900;color:#ff6666;margin-right:8px;'>{_nb_msg}</span>
+                        </div>""", unsafe_allow_html=True)
+
                 # ── فلاتر في الأعلى ──
                 _af1, _af2, _af3 = st.columns([2, 1.5, 1.5])
                 _mb_emp_filter = _af1.selectbox("👤 الموجه:", ["الكل"] + list(pd.read_sql(
@@ -8575,7 +8612,8 @@ tbody tr:hover td{{color:#1dda70!important;}}
                                               (_aid_val, _inv_key, 'صرف', u['full_name'], 'معتمد', u['full_name'], now_mecca().strftime("%Y-%m-%d %H:%M:%S")))
                                 release_reservation(_inv_key)
                                 conn.commit()
-                                st.success(f"✅ تم اعتماد {_inv_key} وخصم المواد"); st.rerun()
+                                st.session_state["_mb_notify"] = ("success", f"✅ تم اعتماد الفاتورة {_inv_key} بنجاح وخصم المواد من المستودع")
+                                st.rerun()
                             if _ac2.button("❌ رفض", key=f"mb_rej_{_inv_key}"):
                                 _aid = pd.read_sql("SELECT id FROM archived_invoices WHERE invoice_no=?", conn, params=(_inv_key,))
                                 if not _aid.empty:
@@ -8584,7 +8622,8 @@ tbody tr:hover td{{color:#1dda70!important;}}
                                               (_aid_val, _inv_key, 'صرف', u['full_name'], 'مرفوض', u['full_name'], now_mecca().strftime("%Y-%m-%d %H:%M:%S")))
                                 release_reservation(_inv_key)
                                 conn.commit()
-                                st.warning(f"❌ تم رفض {_inv_key}"); st.rerun()
+                                st.session_state["_mb_notify"] = ("reject", f"❌ تم رفض الفاتورة {_inv_key} — لم يتم خصم أي مواد من المستودع")
+                                st.rerun()
                 else:
                     st.info("✅ لا توجد فواتير بانتظار الاعتماد وفق الفلاتر المحددة.")
 
