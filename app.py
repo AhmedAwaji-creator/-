@@ -3071,7 +3071,7 @@ tick();setInterval(tick,1000);
             if st.session_state.get("user_info"): st.query_params["_u"] = st.session_state.user_info.get("username","")
             if st.button("🗂️ أرشيف الفواتير", key="sb_inv_archive_wh"): st.session_state.page = "invoices_archive_admin"; st.query_params["_pg"] = "invoices_archive_admin"
             if st.session_state.get("user_info"): st.query_params["_u"] = st.session_state.user_info.get("username","")
-            if st.button("📄 فواتير المقاولين وموجهي البلاغات", key="sb_my_inv_wh"): st.session_state.page = "my_invoices"; st.query_params["_pg"] = "my_invoices"
+            if st.button("📄 فواتير موجهي البلاغات", key="sb_my_inv_wh"): st.session_state.page = "my_invoices"; st.query_params["_pg"] = "my_invoices"
             if st.session_state.get("user_info"): st.query_params["_u"] = st.session_state.user_info.get("username","")
             st.markdown("</div>", unsafe_allow_html=True)
 
@@ -3205,7 +3205,7 @@ tick();setInterval(tick,1000);
             if st.session_state.get("user_info"): st.query_params["_u"] = st.session_state.user_info.get("username","")
             if st.button("🗂️ أرشيف الفواتير", key="sb_inv_archive_adm"): st.session_state.page = "invoices_archive_admin"; st.query_params["_pg"] = "invoices_archive_admin"
             if st.session_state.get("user_info"): st.query_params["_u"] = st.session_state.user_info.get("username","")
-            if st.button("📄 فواتير المقاولين وموجهي البلاغات", key="sb_my_inv_adm"): st.session_state.page = "my_invoices"; st.query_params["_pg"] = "my_invoices"
+            if st.button("📄 فواتير موجهي البلاغات", key="sb_my_inv_adm"): st.session_state.page = "my_invoices"; st.query_params["_pg"] = "my_invoices"
             if st.session_state.get("user_info"): st.query_params["_u"] = st.session_state.user_info.get("username","")
             st.markdown("</div>", unsafe_allow_html=True)
 
@@ -5309,8 +5309,8 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(29,218,96,0.12);font-size:17p
                 <span style='font-size:32px;'>✅</span>
                 <div style='font-size:17px;font-weight:900;color:#1dda70;margin-top:6px;'>{_smsg}</div>
             </div>""", unsafe_allow_html=True)
-        page_header("📄", "فواتير منشأة من الموظفين",
-                    "جميع الفواتير الصادرة مع إحصائيات فواتير المقاولين", "#004a99")
+        page_header("📄", "فواتير موجهي البلاغات",
+                    "جميع فواتير موجهي البلاغات", "#004a99")
 
         # ═══════════════════════════════════════════════════════
         # إذا قادمون من زر "مشاهدة الفاتورة" — نعرضها مباشرة
@@ -5346,11 +5346,9 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(29,218,96,0.12);font-size:17p
         _all_employees = pd.read_sql(
             "SELECT DISTINCT full_name FROM users WHERE role IN ('موجه بلاغات','مسؤول المستودعات','أمين مستودع','مدير نظام') ORDER BY full_name",
             conn)['full_name'].tolist()
-        _all_cwk = pd.read_sql(
-            "SELECT DISTINCT full_name FROM users WHERE role='أمين مستودع المقاول' ORDER BY full_name",
-            conn)['full_name'].tolist()
+        _all_cwk = []
 
-        _mi_tab1, _mi_tab2 = st.tabs(["👤 فواتير الموظفين", "🏗️ فواتير المقاولين"])
+        _mi_tab1, = st.tabs(["📄 فواتير موجهي البلاغات"])
 
         with _mi_tab1:
             _view_mode = st.radio("عرض:", ["📋 عرض الكل", "👤 حسب الموظف"], horizontal=True, key="mi_view_mode")
@@ -5463,222 +5461,6 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(29,218,96,0.12);font-size:17p
                         components.html(mrow['html_content'],height=520,scrolling=True)
                     st.markdown("<hr style='margin:4px 0;'>",unsafe_allow_html=True)
 
-        with _mi_tab2:
-
-            # ── فلاتر ──
-            _f1, _f2, _f3 = st.columns([1.5, 1.5, 1.5])
-            _wh_list_tab  = pd.read_sql("SELECT name FROM settings_warehouses ORDER BY name", conn)['name'].tolist()
-            _cont_list_tab = pd.read_sql("SELECT DISTINCT contractor FROM archived_invoices WHERE contractor!='' ORDER BY contractor", conn)['contractor'].tolist()
-            _wh_filter    = _f1.selectbox("🏢 المستودع:", ["الكل"] + _wh_list_tab, key="cwk_wh_filter")
-            _cont_filter  = _f2.selectbox("🏗️ المقاول:", ["الكل"] + _cont_list_tab, key="cwk_cont_filter")
-            _stat_filter  = _f3.selectbox("📊 الحالة:", ["الكل","📝 تحتاج إرفاق","🔄 بانتظار الاعتماد","🔴 مُعادة","✅ معتمدة"], key="cwk_stat_filter2")
-
-            # ── جلب البيانات ──
-            _cwk_q = (
-                "SELECT s.id, s.invoice_no, s.invoice_type, s.signed_by, s.signed_at,"
-                "s.status, s.boq, a.contractor, a.warehouse_from, a.employee as creator, a.timestamp "
-                "FROM signed_invoices s "
-                "LEFT JOIN archived_invoices a ON s.original_invoice_id = a.id WHERE 1=1"
-            )
-            if _wh_filter   != "الكل": _cwk_q += f" AND a.warehouse_from='{_wh_filter}'"
-            if _cont_filter != "الكل": _cwk_q += f" AND a.contractor='{_cont_filter}'"
-            _cwk_q += " ORDER BY s.id DESC"
-
-            _not_q = (
-                "SELECT a.id, a.invoice_no, a.invoice_type, a.contractor,"
-                "a.warehouse_from, a.employee as creator, a.timestamp "
-                "FROM archived_invoices a WHERE NOT EXISTS ("
-                "SELECT 1 FROM signed_invoices s WHERE s.original_invoice_id=a.id) "
-                "AND a.invoice_type IN ('صرف','ارجاع','نقل')"
-            )
-            if _wh_filter   != "الكل": _not_q += f" AND a.warehouse_from='{_wh_filter}'"
-            if _cont_filter != "الكل": _not_q += f" AND a.contractor='{_cont_filter}'"
-
-            df_signed   = pd.read_sql(_cwk_q, conn)
-            df_unsigned = pd.read_sql(_not_q, conn)
-
-            # ── إحصائية شاملة ──
-            _tp = len(df_unsigned)
-            _tw = len(df_signed[df_signed['status'].isin(['بانتظار الاعتماد'])]) if not df_signed.empty else 0
-            _tr = len(df_signed[df_signed['status'].isin(['مُعادة','معادة'])]) if not df_signed.empty else 0
-            _ta = len(df_signed[df_signed['status'].isin(['معتمد','معتمدة'])]) if not df_signed.empty else 0
-            _tf = len(df_signed[df_signed['status'].isin(['مرفوض','مرفوضة'])]) if not df_signed.empty else 0
-            _ttotal = _tp + _tw + _tr + _ta + _tf
-            _title_sfx = f" — {_cont_filter}" if _cont_filter != "الكل" else ""
-
-            st.markdown(f"""
-            <div style='direction:rtl;font-size:15px;color:#8aaac8;margin-bottom:6px;font-weight:700;'>
-                📊 إحصائيات فواتير المقاولين{_title_sfx}
-                <span style='color:#4db8ff;font-size:13px;margin-right:8px;'>({_ttotal} فاتورة إجمالاً)</span>
-            </div>
-            <div style='display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:8px 0 16px 0;direction:rtl;'>
-                <div style='background:rgba(60,0,0,0.40);border:2px solid #e53e3e;border-radius:10px;padding:12px;text-align:center;'>
-                    <div style='font-size:28px;font-weight:900;color:#ff6666;'>{_tp}</div>
-                    <div style='font-size:13px;color:#8aaac8;margin-top:4px;'>📝 تحتاج إرفاق</div>
-                </div>
-                <div style='background:rgba(0,30,80,0.50);border:2px solid #0288d1;border-radius:10px;padding:12px;text-align:center;'>
-                    <div style='font-size:28px;font-weight:900;color:#4db8ff;'>{_tw}</div>
-                    <div style='font-size:13px;color:#8aaac8;margin-top:4px;'>🔄 بانتظار الاعتماد</div>
-                </div>
-                <div style='background:rgba(60,20,0,0.45);border:2px solid #e65100;border-radius:10px;padding:12px;text-align:center;'>
-                    <div style='font-size:28px;font-weight:900;color:#ffaa66;'>{_tr}</div>
-                    <div style='font-size:13px;color:#8aaac8;margin-top:4px;'>🔴 مُعادة</div>
-                </div>
-                <div style='background:rgba(0,50,20,0.45);border:2px solid #1daa60;border-radius:10px;padding:12px;text-align:center;'>
-                    <div style='font-size:28px;font-weight:900;color:#1dda70;'>{_ta}</div>
-                    <div style='font-size:13px;color:#8aaac8;margin-top:4px;'>✅ معتمدة</div>
-                </div>
-                <div style='background:rgba(80,0,0,0.40);border:2px solid #c62828;border-radius:10px;padding:12px;text-align:center;'>
-                    <div style='font-size:28px;font-weight:900;color:#ff4444;'>{_tf}</div>
-                    <div style='font-size:13px;color:#8aaac8;margin-top:4px;'>❌ مرفوضة</div>
-                </div>
-            </div>""", unsafe_allow_html=True)
-
-            st.divider()
-
-            # ── بناء قائمة الفواتير الموحّدة ──
-            rows = []
-
-            # الفواتير غير المُرفقة
-            if _stat_filter in ("الكل","📝 تحتاج إرفاق"):
-                for _, r in df_unsigned.iterrows():
-                    rows.append({
-                        "status":"📝 إرفاق","status_color":"#e53e3e","bg":"rgba(80,0,0,0.35)",
-                        "invoice_no":str(r.get('invoice_no','')),
-                        "invoice_type":str(r.get('invoice_type','')),
-                        "contractor":str(r.get('contractor','—') or '—'),
-                        "warehouse":str(r.get('warehouse_from','—') or '—'),
-                        "date":str(r.get('timestamp',''))[:16],
-                        "by":str(r.get('creator','—')),
-                    })
-
-            # الفواتير المُرفقة
-            stat_map = {
-                "🔄 بانتظار الاعتماد": ("بانتظار الاعتماد","🔄 اعتماد","#0288d1","rgba(0,30,80,0.45)"),
-                "🔴 مُعادة":            ("مُعادة","🔴 مُعادة","#e65100","rgba(60,20,0,0.45)"),
-                "✅ معتمدة":            ("معتمد","✅ معتمدة","#1daa60","rgba(0,50,20,0.40)"),
-            }
-            for label,(db_status,disp,color,bg) in stat_map.items():
-                if _stat_filter not in ("الكل", label): continue
-                _df_s = df_signed[df_signed['status']==db_status] if not df_signed.empty else pd.DataFrame()
-                for _, r in _df_s.iterrows():
-                    rows.append({
-                        "status":disp,"status_color":color,"bg":bg,
-                        "invoice_no":str(r.get('invoice_no','')),
-                        "invoice_type":str(r.get('invoice_type','')),
-                        "contractor":str(r.get('contractor','—') or '—'),
-                        "warehouse":str(r.get('warehouse_from','—') or '—'),
-                        "date":str(r.get('signed_at',''))[:16],
-                        "by":str(r.get('signed_by','—') or str(r.get('creator','—'))),
-                    })
-
-            if not rows:
-                st.info("ℹ️ لا توجد فواتير تطابق الفلاتر المحددة.")
-            else:
-                # ── زر سحب التقرير ──
-                import io
-                _rpt_data = []
-                for _rr in rows:
-                    _status_clean = _rr['status'].replace("📝 ","").replace("🔄 ","").replace("🔴 ","").replace("✅ ","")
-                    _rpt_data.append({
-                        "رقم الفاتورة":    _rr['invoice_no'],
-                        "نوع الفاتورة":    _rr['invoice_type'],
-                        "المقاول":         _rr['contractor'],
-                        "المستودع":        _rr['warehouse'],
-                        "الحالة":          _status_clean,
-                        "بواسطة":          _rr['by'],
-                        "التاريخ":         _rr['date'],
-                    })
-                _df_rpt = pd.DataFrame(_rpt_data)
-                _excel_buf = io.BytesIO()
-                with pd.ExcelWriter(_excel_buf, engine='xlsxwriter') as _writer:
-                    _df_rpt.to_excel(_writer, index=False, sheet_name="فواتير المقاولين")
-                    _ws = _writer.sheets["فواتير المقاولين"]
-                    _ws.set_column('A:A', 16)
-                    _ws.set_column('B:B', 12)
-                    _ws.set_column('C:C', 18)
-                    _ws.set_column('D:D', 18)
-                    _ws.set_column('E:E', 18)
-                    _ws.set_column('F:F', 18)
-                    _ws.set_column('G:G', 18)
-                _excel_buf.seek(0)
-
-                _rc, _dl = st.columns([3, 1])
-                _rc.caption(f"📋 {len(rows)} فاتورة")
-                _dl.download_button(
-                    label="📥 تحميل التقرير Excel",
-                    data=_excel_buf,
-                    file_name=f"تقرير_فواتير_المقاولين_{now_mecca().strftime('%Y%m%d_%H%M')}.xlsx",
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    use_container_width=True
-                )
-
-                # تجميع حسب المقاول
-                _by_con = {}
-                for row in rows:
-                    _by_con.setdefault(row['contractor'], []).append(row)
-
-                for _con, _con_rows in _by_con.items():
-                    _con_tp = sum(1 for r in _con_rows if r['status']=="📝 إرفاق")
-                    _con_tw = sum(1 for r in _con_rows if r['status']=="🔄 اعتماد")
-                    _con_tr = sum(1 for r in _con_rows if r['status']=="🔴 مُعادة")
-                    _con_ta = sum(1 for r in _con_rows if r['status']=="✅ معتمدة")
-                    _has_urgent = _con_tp > 0 or _con_tr > 0
-
-                    # عنوان المقاول
-                    _badges = ""
-                    if _con_tp: _badges += f"<span style='background:#e53e3e;color:white;border-radius:20px;padding:2px 10px;font-size:19px;margin-right:4px;'>📝 {_con_tp}</span>"
-                    if _con_tw: _badges += f"<span style='background:#0288d1;color:white;border-radius:20px;padding:2px 10px;font-size:19px;margin-right:4px;'>🔄 {_con_tw}</span>"
-                    if _con_tr: _badges += f"<span style='background:#e65100;color:white;border-radius:20px;padding:2px 10px;font-size:19px;margin-right:4px;'>🔴 {_con_tr}</span>"
-                    if _con_ta: _badges += f"<span style='background:#1daa60;color:white;border-radius:20px;padding:2px 10px;font-size:19px;'>✅ {_con_ta}</span>"
-
-                    _border = "#e65100" if _has_urgent else "#1daa60" if _con_ta == len(_con_rows) else "#0288d1"
-
-                    with st.expander(f"🏗️ {_con}", expanded=_has_urgent):
-                        st.markdown(
-                            f"<div style='direction:rtl;margin-bottom:12px;'>{_badges}</div>",
-                            unsafe_allow_html=True)
-
-                        for _row in _con_rows:
-                            _tc = {"صرف":"#e53e3e","ارجاع":"#2b6cb0","نقل":"#276749"}.get(_row['invoice_type'],"#555")
-                            # حساب عدد الأيام منذ الفاتورة
-                            try:
-                                from datetime import datetime
-                                _inv_date = datetime.strptime(_row['date'][:10], "%Y-%m-%d")
-                                _days_ago = (now_mecca().replace(tzinfo=None) - _inv_date).days
-                                _days_left = 180 - _days_ago
-                                if _days_left <= 30:
-                                    _age_color = "#d32f2f"; _age_icon = "🔴"
-                                elif _days_left <= 60:
-                                    _age_color = "#f9a825"; _age_icon = "🟡"
-                                else:
-                                    _age_color = "#1daa60"; _age_icon = "🟢"
-                                _age_txt = f"{_age_icon} <span style='color:{_age_color};font-size:13px;'>منذ {_days_ago} يوم | يُحذف بعد {max(0,_days_left)} يوم</span>"
-                            except:
-                                _age_txt = ""
-                            _row_html = (
-                                f"<div style='background:{_row['bg']};border-right:4px solid {_row['status_color']};"
-                                "border-radius:8px;padding:10px 14px;direction:rtl;"
-                                "font-size:17px;margin-bottom:8px;display:flex;"
-                                "justify-content:space-between;align-items:center;'>"
-                                "<div>"
-                                f"<span style='background:{_tc};color:white;border-radius:4px;"
-                                f"padding:1px 8px;font-size:19px;font-weight:bold;'>{_row['invoice_type']}</span>"
-                                f"&nbsp;&nbsp;<b style='font-size:18px;'>{_row['invoice_no']}</b>"
-                                f"&nbsp;<span style='background:{_row['status_color']};color:white;"
-                                f"border-radius:10px;padding:1px 8px;font-size:19px;'>{_row['status']}</span>"
-                                f"<br><span style='color:#7aaac8;font-size:20px;'>"
-                                f"📍 {_row['warehouse']} &nbsp;|&nbsp; 👤 {_row['by']}"
-                                f"</span><br>{_age_txt}"
-                                "</div>"
-                                f"<span style='color:#6898c0;font-size:20px;white-space:nowrap;'>📅 {_row['date']}</span>"
-                                "</div>"
-                            )
-                            st.markdown(_row_html, unsafe_allow_html=True)
-
-    # ---------------------------------------------------------
-    # صفحة: سجل العمليات التفصيلي وأرشيف المستندات الذكي
-    # ---------------------------------------------------------
     elif st.session_state.page == "view_logs":
         st.markdown("<div class='main-title'>🛠️ سجل العمليات التفصيلي وأرشيف فواتير النظام</div>", unsafe_allow_html=True)
 
@@ -8695,111 +8477,69 @@ tbody tr:hover td{{color:#1dda70!important;}}
 
             with _tab_stock:
                 # ── إحصائية عامة ──
-                try:
-                    _agg = pd.read_sql("SELECT status, COUNT(*) as cnt FROM signed_invoices GROUP BY status", conn)
-                    _agg_map = {r['status']: int(r['cnt']) for _, r in _agg.iterrows()}
-                except Exception:
-                    _agg_map = {}
+                # ── فواتير موجهي البلاغات بانتظار الاعتماد ──
+                _mb_pending = pd.read_sql(
+                    "SELECT a.invoice_no, a.employee, a.warehouse_from, a.contractor, a.timestamp, a.boq, a.items_json "
+                    "FROM archived_invoices a "
+                    "WHERE a.invoice_type='صرف' "
+                    "AND a.employee IN (SELECT full_name FROM users WHERE role='موجه بلاغات') "
+                    "AND NOT EXISTS (SELECT 1 FROM signed_invoices s WHERE s.original_invoice_id=a.id AND s.status='معتمد') "
+                    "ORDER BY a.id DESC", conn)
 
-                # الفواتير التي لم تُرفق بعد
-                try:
-                    _unsigned_cnt = int(pd.read_sql(
-                        "SELECT COUNT(*) as cnt FROM archived_invoices a "
-                        "WHERE NOT EXISTS (SELECT 1 FROM signed_invoices s WHERE s.original_invoice_id=a.id) "
-                        "AND a.invoice_type IN ('صرف','ارجاع','نقل')", conn).iloc[0]['cnt'])
-                except:
-                    _unsigned_cnt = 0
-
-                _cnt_pending  = _agg_map.get("بانتظار الاعتماد", 0)
-                _cnt_approved = sum(v for k,v in _agg_map.items() if 'معتمد' in k)
-                _cnt_rejected = sum(v for k,v in _agg_map.items() if 'مرفوض' in k)
-                _cnt_returned = sum(v for k,v in _agg_map.items() if 'معادة' in k or 'مُعادة' in k)
-                _cnt_total    = _unsigned_cnt + _cnt_pending + _cnt_approved + _cnt_rejected + _cnt_returned
-
+                _mb_count = len(_mb_pending)
                 st.markdown(f"""
-                <div style='direction:rtl;font-size:15px;color:#8aaac8;margin-bottom:8px;font-weight:700;'>
-                    📊 إحصائيات فواتير جميع أمناء المستودعات
-                    <span style='color:#4db8ff;font-size:13px;margin-right:8px;'>({_cnt_total} فاتورة إجمالاً)</span>
-                </div>
-                <div style='display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:0 0 14px 0;direction:rtl;'>
-                    <div style='background:rgba(60,0,0,0.40);border:2px solid #e53e3e;border-radius:10px;padding:14px;text-align:center;'>
-                        <div style='font-size:30px;font-weight:900;color:#ff6666;'>{_unsigned_cnt}</div>
-                        <div style='font-size:13px;color:#8aaac8;margin-top:4px;'>📝 لم تُرفق بعد</div>
-                    </div>
-                    <div style='background:rgba(0,30,80,0.50);border:2px solid #0288d1;border-radius:10px;padding:14px;text-align:center;'>
-                        <div style='font-size:30px;font-weight:900;color:#4db8ff;'>{_cnt_pending}</div>
-                        <div style='font-size:13px;color:#8aaac8;margin-top:4px;'>🔄 بانتظار الاعتماد</div>
-                    </div>
-                    <div style='background:rgba(60,20,0,0.45);border:2px solid #e65100;border-radius:10px;padding:14px;text-align:center;'>
-                        <div style='font-size:30px;font-weight:900;color:#ffaa66;'>{_cnt_returned}</div>
-                        <div style='font-size:13px;color:#8aaac8;margin-top:4px;'>🔴 مُعادة</div>
-                    </div>
-                    <div style='background:rgba(0,50,20,0.45);border:2px solid #1daa60;border-radius:10px;padding:14px;text-align:center;'>
-                        <div style='font-size:30px;font-weight:900;color:#1dda70;'>{_cnt_approved}</div>
-                        <div style='font-size:13px;color:#8aaac8;margin-top:4px;'>✅ معتمدة</div>
-                    </div>
-                    <div style='background:rgba(80,0,0,0.40);border:2px solid #c62828;border-radius:10px;padding:14px;text-align:center;'>
-                        <div style='font-size:30px;font-weight:900;color:#ff4444;'>{_cnt_rejected}</div>
-                        <div style='font-size:13px;color:#8aaac8;margin-top:4px;'>❌ مرفوضة</div>
-                    </div>
+                <div style='background:rgba(0,30,80,0.50);border:1px solid rgba(0,140,255,0.30);
+                    border-radius:10px;padding:10px 16px;direction:rtl;margin-bottom:10px;
+                    display:flex;justify-content:space-between;align-items:center;'>
+                    <span style='font-size:17px;font-weight:900;color:#ddeeff;'>
+                        🔄 فواتير صرف موجهي البلاغات بانتظار الاعتماد
+                    </span>
+                    <span style='background:{"#d32f2f" if _mb_count>0 else "#1daa60"};color:white;border-radius:20px;padding:3px 16px;font-weight:900;font-size:18px;'>
+                        {_mb_count}
+                    </span>
                 </div>""", unsafe_allow_html=True)
 
-                # ── تفصيل حسب أمين المستودع ──
-                try:
-                    _cwk_users = pd.read_sql(
-                        "SELECT username, full_name FROM users WHERE role='أمين مستودع المقاول' ORDER BY full_name", conn)
-                except:
-                    _cwk_users = pd.DataFrame()
+                if not _mb_pending.empty:
+                    for _, _mb in _mb_pending.iterrows():
+                        _mb = _mb.to_dict()
+                        try: _items = json.loads(_mb.get('items_json','[]'))
+                        except: _items = []
+                        _items_txt = " | ".join([f"{i.get('name',i.get('code',''))} ({i.get('qty',0)})" for i in _items])
+                        with st.expander(f"🛒 {_mb['invoice_no']} | 👤 {_mb['employee']} | 📍 {_mb.get('warehouse_from','')} | 📅 {str(_mb.get('timestamp',''))[:16]}", expanded=False):
+                            st.markdown(f"""
+                            <div style='background:rgba(3,10,28,0.75);border:1px solid rgba(0,140,255,0.15);
+                                border-radius:8px;padding:10px 14px;direction:rtl;color:#ddeeff;font-size:15px;'>
+                                🏗️ <b>المقاول:</b> {_mb.get('contractor','—')}<br>
+                                📦 <b>المواد:</b> {_items_txt}<br>
+                                {"📋 <b>BOQ:</b> " + str(_mb.get('boq','')) if _mb.get('boq') else ""}
+                            </div>""", unsafe_allow_html=True)
+                            _ac1, _ac2 = st.columns(2)
+                            if _ac1.button("✅ اعتماد وخصم من المخزون", key=f"mb_app_{_mb['invoice_no']}"):
+                                # خصم من المخزون
+                                for _it in _items:
+                                    c.execute("UPDATE inventory SET qty = qty - ? WHERE item_code=? AND warehouse=?",
+                                              (int(_it.get('qty',0)), _it.get('code',''), _mb.get('warehouse_from','')))
+                                # تسجيل الاعتماد
+                                _aid = pd.read_sql("SELECT id FROM archived_invoices WHERE invoice_no=?", conn, params=(_mb['invoice_no'],))
+                                if not _aid.empty:
+                                    _aid_val = int(_aid.iloc[0]['id'])
+                                    c.execute("INSERT OR IGNORE INTO signed_invoices (original_invoice_id,invoice_no,invoice_type,signed_by,status,reviewed_by,reviewed_at) VALUES (?,?,?,?,?,?,?)",
+                                              (_aid_val, _mb['invoice_no'], 'صرف', u['full_name'], 'معتمد', u['full_name'], now_mecca().strftime("%Y-%m-%d %H:%M:%S")))
+                                release_reservation(_mb['invoice_no'])
+                                conn.commit()
+                                st.success(f"✅ تم اعتماد {_mb['invoice_no']} وخصم المواد"); st.rerun()
+                            if _ac2.button("❌ رفض", key=f"mb_rej_{_mb['invoice_no']}"):
+                                _aid = pd.read_sql("SELECT id FROM archived_invoices WHERE invoice_no=?", conn, params=(_mb['invoice_no'],))
+                                if not _aid.empty:
+                                    _aid_val = int(_aid.iloc[0]['id'])
+                                    c.execute("INSERT OR IGNORE INTO signed_invoices (original_invoice_id,invoice_no,invoice_type,signed_by,status,reviewed_by,reviewed_at) VALUES (?,?,?,?,?,?,?)",
+                                              (_aid_val, _mb['invoice_no'], 'صرف', u['full_name'], 'مرفوض', u['full_name'], now_mecca().strftime("%Y-%m-%d %H:%M:%S")))
+                                release_reservation(_mb['invoice_no'])
+                                conn.commit()
+                                st.warning(f"❌ تم رفض {_mb['invoice_no']}"); st.rerun()
+                else:
+                    st.success("✅ لا توجد فواتير صرف من موجهي البلاغات بانتظار الاعتماد.")
 
-                if not _cwk_users.empty:
-                    _cwk_rows = ""
-                    for _, _cu in _cwk_users.iterrows():
-                        _cname = str(_cu['full_name'])
-                        _c_unsigned = int(pd.read_sql(
-                            "SELECT COUNT(*) as cnt FROM archived_invoices a "
-                            "WHERE a.employee=? AND NOT EXISTS (SELECT 1 FROM signed_invoices s WHERE s.original_invoice_id=a.id) "
-                            "AND a.invoice_type IN ('صرف','ارجاع','نقل')", conn, params=(_cname,)).iloc[0]['cnt'])
-                        _c_stat = pd.read_sql(
-                            "SELECT s.status, COUNT(*) as cnt FROM signed_invoices s "
-                            "WHERE s.signed_by=? GROUP BY s.status", conn, params=(_cname,))
-                        _csm = {r['status']:int(r['cnt']) for _,r in _c_stat.iterrows()}
-                        _c_p  = _csm.get("بانتظار الاعتماد", 0)
-                        _c_a  = sum(v for k,v in _csm.items() if 'معتمد' in k)
-                        _c_rt = sum(v for k,v in _csm.items() if 'معادة' in k)
-                        _c_rj = sum(v for k,v in _csm.items() if 'مرفوض' in k)
-                        _cwk_rows += (
-                            f"<tr>"
-                            f"<td style='padding:9px 14px;border-bottom:1px solid rgba(0,140,255,0.10);color:#ddeeff;font-weight:700;'>👤 {_cname}</td>"
-                            f"<td style='padding:9px 14px;border-bottom:1px solid rgba(0,140,255,0.10);text-align:center;'><span style='color:#ff6666;font-weight:900;font-size:16px;'>{_c_unsigned}</span></td>"
-                            f"<td style='padding:9px 14px;border-bottom:1px solid rgba(0,140,255,0.10);text-align:center;'><span style='color:#4db8ff;font-weight:900;font-size:16px;'>{_c_p}</span></td>"
-                            f"<td style='padding:9px 14px;border-bottom:1px solid rgba(0,140,255,0.10);text-align:center;'><span style='color:#1dda70;font-weight:900;font-size:16px;'>{_c_a}</span></td>"
-                            f"<td style='padding:9px 14px;border-bottom:1px solid rgba(0,140,255,0.10);text-align:center;'><span style='color:#ffaa66;font-weight:900;font-size:16px;'>{_c_rt}</span></td>"
-                            f"<td style='padding:9px 14px;border-bottom:1px solid rgba(0,140,255,0.10);text-align:center;'><span style='color:#ff4444;font-weight:900;font-size:16px;'>{_c_rj}</span></td>"
-                            f"</tr>"
-                        )
-                    components.html(f"""<!DOCTYPE html><html><head><meta charset="utf-8">
-    <style>
-    *{{box-sizing:border-box;}}
-    body{{margin:0;padding:6px;font-family:'Tajawal',Arial,sans-serif;direction:rtl;background:transparent;}}
-    table{{width:100%;border-collapse:collapse;border-radius:10px;overflow:hidden;border:1px solid rgba(0,140,255,0.20);}}
-    thead tr{{background:linear-gradient(90deg,#003580,#004a99,#003580);color:white;font-size:14px;font-weight:900;}}
-    thead th{{padding:11px 14px;text-align:right;}}
-    tbody tr{{background:rgba(3,10,28,0.75);}}
-    tbody tr:nth-child(even){{background:rgba(0,20,60,0.65);}}
-    </style></head><body>
-    <table>
-    <thead><tr>
-    <th>👤 أمين المستودع</th>
-    <th style="text-align:center;">📝 لم تُرفق</th>
-    <th style="text-align:center;">🔄 بانتظار</th>
-    <th style="text-align:center;">✅ معتمدة</th>
-    <th style="text-align:center;">🔴 معادة</th>
-    <th style="text-align:center;">❌ مرفوضة</th>
-    </tr></thead>
-    <tbody>{_cwk_rows}</tbody>
-    </table>
-    </body></html>
-    """, height=min(60 + len(_cwk_users)*48, 400), scrolling=True)
                 st.divider()
 
                 # ── فلاتر القائمة ──
