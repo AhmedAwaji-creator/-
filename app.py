@@ -3977,10 +3977,10 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(0,140,255,0.10);font-size:17p
                         if role in ("مدير نظام", "مسؤول المستودعات"):
                             for item in st.session_state.cart:
                                 remaining = int(item['qty'])
-                                c.execute("SELECT id, qty FROM inventory WHERE item_code=? AND warehouse=? AND qty>0 ORDER BY id",
-                                          (item['code'], out_wh))
-                                rows = c.fetchall()
-                                for row in rows:
+                                _dc = conn.cursor()
+                                _dc.execute("SELECT id, qty FROM inventory WHERE item_code=? AND warehouse=? AND qty>0 ORDER BY id",
+                                            (str(item['code']), str(out_wh)))
+                                for row in _dc.fetchall():
                                     if remaining <= 0: break
                                     take = min(remaining, int(row[1]))
                                     c.execute("UPDATE inventory SET qty = qty - ? WHERE id=?", (take, int(row[0])))
