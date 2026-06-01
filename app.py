@@ -8495,20 +8495,39 @@ tbody tr:hover td{{color:#1dda70!important;}}
             _tab_stock, = st.tabs(["🛒 اعتماد فواتير الصرف"])
 
             with _tab_stock:
-                # ── إحصائية عامة ──
-                # ── فواتير موجهي البلاغات بانتظار الاعتماد ──
-                _mb_pending = pd.read_sql(
-                    "SELECT a.invoice_no, a.employee, a.warehouse_from, a.contractor, a.timestamp, a.boq, a.items_json "
+                # ── فلاتر في الأعلى ──
+                _af1, _af2, _af3 = st.columns([2, 1.5, 1.5])
+                _mb_emp_filter = _af1.selectbox("👤 الموجه:", ["الكل"] + list(pd.read_sql(
+                    "SELECT DISTINCT full_name FROM users WHERE role='موجه بلاغات' ORDER BY full_name",conn)['full_name'].tolist()), key="mb_emp_filter")
+                _mb_wh_filter  = _af2.selectbox("🏢 المستودع:", ["الكل"] + list_warehouses, key="mb_wh_filter")
+                _mb_cont_filter= _af3.selectbox("🏗️ المقاول:", ["الكل"] + list_contractors, key="mb_cont_filter")
+
+                # ── بناء الاستعلام مع الفلاتر ──
+                _mb_query = (
+                    "SELECT a.id, a.invoice_no, a.employee, a.warehouse_from, a.contractor, a.timestamp, a.boq, a.items_json, a.html_content "
                     "FROM archived_invoices a "
                     "WHERE a.invoice_type='صرف' "
                     "AND a.employee IN (SELECT full_name FROM users WHERE role='موجه بلاغات') "
                     "AND NOT EXISTS (SELECT 1 FROM signed_invoices s WHERE s.original_invoice_id=a.id AND s.status='معتمد') "
-                    "ORDER BY a.id DESC", conn)
+                )
+                _mb_params = []
+                if _mb_emp_filter != "الكل":
+                    _mb_query += " AND a.employee=?"
+                    _mb_params.append(_mb_emp_filter)
+                if _mb_wh_filter != "الكل":
+                    _mb_query += " AND a.warehouse_from=?"
+                    _mb_params.append(_mb_wh_filter)
+                if _mb_cont_filter != "الكل":
+                    _mb_query += " AND a.contractor=?"
+                    _mb_params.append(_mb_cont_filter)
+                _mb_query += " ORDER BY a.id DESC"
+
+                _mb_pending = pd.read_sql(_mb_query, conn, params=_mb_params if _mb_params else None)
 
                 _mb_count = len(_mb_pending)
                 st.markdown(f"""
                 <div style='background:rgba(0,30,80,0.50);border:1px solid rgba(0,140,255,0.30);
-                    border-radius:10px;padding:10px 16px;direction:rtl;margin-bottom:10px;
+                    border-radius:10px;padding:10px 16px;direction:rtl;margin:10px 0;
                     display:flex;justify-content:space-between;align-items:center;'>
                     <span style='font-size:17px;font-weight:900;color:#ddeeff;'>
                         🔄 فواتير صرف موجهي البلاغات بانتظار الاعتماد
@@ -8524,40 +8543,50 @@ tbody tr:hover td{{color:#1dda70!important;}}
                         try: _items = json.loads(_mb.get('items_json','[]'))
                         except: _items = []
                         _items_txt = " | ".join([f"{i.get('name',i.get('code',''))} ({i.get('qty',0)})" for i in _items])
-                        with st.expander(f"🛒 {_mb['invoice_no']} | 👤 {_mb['employee']} | 📍 {_mb.get('warehouse_from','')} | 📅 {str(_mb.get('timestamp',''))[:16]}", expanded=False):
+                        _inv_key = str(_mb['invoice_no'])
+                        with st.expander(f"🛒 {_inv_key} | 👤 {_mb['employee']} | 📍 {_mb.get('warehouse_from','')} | 🏗️ {_mb.get('contractor','')} | 📅 {str(_mb.get('timestamp',''))[:16]}", expanded=False):
                             st.markdown(f"""
                             <div style='background:rgba(3,10,28,0.75);border:1px solid rgba(0,140,255,0.15);
                                 border-radius:8px;padding:10px 14px;direction:rtl;color:#ddeeff;font-size:15px;'>
-                                🏗️ <b>المقاول:</b> {_mb.get('contractor','—')}<br>
-                                📦 <b>المواد:</b> {_items_txt}<br>
-                                {"📋 <b>BOQ:</b> " + str(_mb.get('boq','')) if _mb.get('boq') else ""}
+                                📦 <b>المواد:</b> {_items_txt}
+                                {"<br>📋 <b>BOQ:</b> " + str(_mb.get('boq','')) if _mb.get('boq') else ""}
                             </div>""", unsafe_allow_html=True)
+
+                            # زر معاينة الفاتورة
+                            _prev_key = f"mb_prev_{_inv_key}"
+                            if st.button("👁️ معاينة الفاتورة", key=f"mb_prev_btn_{_inv_key}"):
+                                st.session_state[_prev_key] = not st.session_state.get(_prev_key, False)
+                            if st.session_state.get(_prev_key, False):
+                                _inv_html = str(_mb.get('html_content',''))
+                                _inv_html = _inv_html.replace('background:rgba(3,10,28,0.82)','background:white').replace('background:rgba(3,10,28,0.88)','background:white')
+                                if '<body' in _inv_html and 'background:#f0f4f8' not in _inv_html:
+                                    _inv_html = _inv_html.replace('<body>','<body style="background:#f0f4f8;">').replace('<body ','<body style="background:#f0f4f8;" ')
+                                components.html(_inv_html, height=950, scrolling=True)
+
                             _ac1, _ac2 = st.columns(2)
-                            if _ac1.button("✅ اعتماد وخصم من المخزون", key=f"mb_app_{_mb['invoice_no']}"):
-                                # خصم من المخزون
+                            if _ac1.button("✅ اعتماد وخصم من المخزون", key=f"mb_app_{_inv_key}"):
                                 for _it in _items:
                                     c.execute("UPDATE inventory SET qty = qty - ? WHERE item_code=? AND warehouse=?",
                                               (int(_it.get('qty',0)), _it.get('code',''), _mb.get('warehouse_from','')))
-                                # تسجيل الاعتماد
-                                _aid = pd.read_sql("SELECT id FROM archived_invoices WHERE invoice_no=?", conn, params=(_mb['invoice_no'],))
+                                _aid = pd.read_sql("SELECT id FROM archived_invoices WHERE invoice_no=?", conn, params=(_inv_key,))
                                 if not _aid.empty:
                                     _aid_val = int(_aid.iloc[0]['id'])
                                     c.execute("INSERT OR IGNORE INTO signed_invoices (original_invoice_id,invoice_no,invoice_type,signed_by,status,reviewed_by,reviewed_at) VALUES (?,?,?,?,?,?,?)",
-                                              (_aid_val, _mb['invoice_no'], 'صرف', u['full_name'], 'معتمد', u['full_name'], now_mecca().strftime("%Y-%m-%d %H:%M:%S")))
-                                release_reservation(_mb['invoice_no'])
+                                              (_aid_val, _inv_key, 'صرف', u['full_name'], 'معتمد', u['full_name'], now_mecca().strftime("%Y-%m-%d %H:%M:%S")))
+                                release_reservation(_inv_key)
                                 conn.commit()
-                                st.success(f"✅ تم اعتماد {_mb['invoice_no']} وخصم المواد"); st.rerun()
-                            if _ac2.button("❌ رفض", key=f"mb_rej_{_mb['invoice_no']}"):
-                                _aid = pd.read_sql("SELECT id FROM archived_invoices WHERE invoice_no=?", conn, params=(_mb['invoice_no'],))
+                                st.success(f"✅ تم اعتماد {_inv_key} وخصم المواد"); st.rerun()
+                            if _ac2.button("❌ رفض", key=f"mb_rej_{_inv_key}"):
+                                _aid = pd.read_sql("SELECT id FROM archived_invoices WHERE invoice_no=?", conn, params=(_inv_key,))
                                 if not _aid.empty:
                                     _aid_val = int(_aid.iloc[0]['id'])
                                     c.execute("INSERT OR IGNORE INTO signed_invoices (original_invoice_id,invoice_no,invoice_type,signed_by,status,reviewed_by,reviewed_at) VALUES (?,?,?,?,?,?,?)",
-                                              (_aid_val, _mb['invoice_no'], 'صرف', u['full_name'], 'مرفوض', u['full_name'], now_mecca().strftime("%Y-%m-%d %H:%M:%S")))
-                                release_reservation(_mb['invoice_no'])
+                                              (_aid_val, _inv_key, 'صرف', u['full_name'], 'مرفوض', u['full_name'], now_mecca().strftime("%Y-%m-%d %H:%M:%S")))
+                                release_reservation(_inv_key)
                                 conn.commit()
-                                st.warning(f"❌ تم رفض {_mb['invoice_no']}"); st.rerun()
+                                st.warning(f"❌ تم رفض {_inv_key}"); st.rerun()
                 else:
-                    st.success("✅ لا توجد فواتير صرف من موجهي البلاغات بانتظار الاعتماد.")
+                    st.info("✅ لا توجد فواتير بانتظار الاعتماد وفق الفلاتر المحددة.")
 
                 st.divider()
 
