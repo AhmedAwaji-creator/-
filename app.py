@@ -3079,16 +3079,16 @@ tick();setInterval(tick,1000);
             if st.button("📞 أرقام التواصل", key="sb_contacts_wh"): st.session_state.page = "contacts_page"; st.query_params["_pg"] = "contacts_page"
             if st.session_state.get("user_info"): st.query_params["_u"] = st.session_state.user_info.get("username","")
 
-        # ── أمين مستودع المقاول: صلاحيات محدودة ──
+        # ── أمين مستودع المقاول: رصيد المستودعات المصرح بها فقط ──
         elif role == "أمين مستودع المقاول":
-            # ── أمين مستودع المقاول: رصيد المستودعات فقط ──
             _cwp = pd.read_sql(
                 "SELECT warehouse FROM contractor_warehouse_permissions WHERE username=?",
                 conn, params=(u['username'],))
             _allowed_wh = _cwp['warehouse'].tolist()
-
             if st.button("📊 رصيد المستودعات (المصرح بها)", key="cwk_inv_btn"):
-                st.session_state.page = "contractor_inventory"; st.query_params["_pg"] = "contractor_inventory"
+                st.session_state.page = "inventory_status"
+                st.session_state["cwk_wh_filter"] = _allowed_wh
+                st.query_params["_pg"] = "inventory_status"
                 if st.session_state.get("user_info"): st.query_params["_u"] = st.session_state.user_info.get("username","")
 
         # ── مدير النظام: صلاحيات كاملة ──
@@ -3337,6 +3337,13 @@ tick();setInterval(tick,1000);
 
         _can_add_cart = role in ("مدير نظام", "مسؤول المستودعات", "موجه بلاغات")
 
+        # فلتر خاص بأمين مستودع المقاول — يرى فقط مستودعاته
+        _cwk_allowed = st.session_state.pop("cwk_wh_filter", None)
+        if role == "أمين مستودع المقاول" and not _cwk_allowed:
+            _cwk_perm = pd.read_sql("SELECT warehouse FROM contractor_warehouse_permissions WHERE username=?",
+                                    conn, params=(u['username'],))
+            _cwk_allowed = _cwk_perm['warehouse'].tolist()
+
         _scs = st.session_state.pop("_success_cart", None)
         if _scs:
             st.markdown(f"<div style='background:rgba(0,50,20,0.50);border:1px solid #1dda70;border-radius:8px;"
@@ -3365,20 +3372,36 @@ tick();setInterval(tick,1000);
         col_s1, col_s2, col_s3 = st.columns([2, 1, 1])
         search_txt = col_s1.text_input("🔍 ابحث فوراً بكتابة كود المادة أو اسم الصنف بدقة")
         cat_filter = col_s2.selectbox("تصفية بحسب الفئة", ["عرض الكل"] + list_categories)
-        wh_filter  = col_s3.selectbox("🏢 المستودع:", ["الكل"] + list_warehouses)
+
+        # أمين مستودع المقاول: يرى فقط مستودعاته المصرح بها
+        if role == "أمين مستودع المقاول" and _cwk_allowed:
+            _wh_opts_inv = _cwk_allowed
+            wh_filter = col_s3.selectbox("🏢 المستودع:", _wh_opts_inv) if len(_wh_opts_inv) > 1 else _wh_opts_inv[0] if _wh_opts_inv else "الكل"
+        else:
+            wh_filter = col_s3.selectbox("🏢 المستودع:", ["الكل"] + list_warehouses)
 
         query = """SELECT i.item_code as 'كود المادة', m.item_name as 'اسم الصنف والمادة التفصيلي',
                    m.description as 'وصف المادة',
                    i.category as 'تصنيف الفئة', i.warehouse as 'موقع المستودع', SUM(i.qty) as 'الرصيد المتاح حالياً'
                    FROM inventory i JOIN material_definitions m ON i.item_code = m.item_code
                    WHERE i.warehouse != '' """
+
+        # تطبيق قيود أمين المستودع
+        if role == "أمين مستودع المقاول" and _cwk_allowed:
+            _wh_placeholders = ",".join(["?" for _ in _cwk_allowed])
+            query += f" AND i.warehouse IN ({_wh_placeholders})"
         if cat_filter != "عرض الكل":
             query += f" AND i.category='{cat_filter}'"
-        if wh_filter != "الكل":
+        if wh_filter not in ("الكل", None) and role != "أمين مستودع المقاول":
+            query += f" AND i.warehouse='{wh_filter}'"
+        elif role == "أمين مستودع المقاول" and wh_filter not in ("الكل", None) and len(_cwk_allowed or []) > 1:
             query += f" AND i.warehouse='{wh_filter}'"
         query += " GROUP BY i.item_code, i.warehouse HAVING SUM(i.qty) > 0"
 
-        df_inventory = pd.read_sql(query, conn)
+        if role == "أمين مستودع المقاول" and _cwk_allowed:
+            df_inventory = pd.read_sql(query, conn, params=_cwk_allowed)
+        else:
+            df_inventory = pd.read_sql(query, conn)
 
         if search_txt:
             df_inventory = df_inventory[
@@ -3960,7 +3983,7 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(0,140,255,0.10);font-size:17p
                         st.session_state["_view_inv_no"] = inv_no
                         st.session_state['latest_inv_type_sel'] = "صرف"
                         st.session_state["_success_msg"] = f"✅ تم إنشاء فاتورة الصرف رقم **{inv_no}** بنجاح!"
-                        _dest = "my_invoices" if role in ("مدير نظام","مسؤول المستودعات") else "my_invoices_personal"
+                        _dest = "invoices_archive_admin"
                         st.session_state.page = _dest; st.query_params["_pg"] = _dest
                         if st.session_state.get("user_info"): st.query_params["_u"] = st.session_state.user_info.get("username","")
                         st.rerun()
@@ -4139,7 +4162,7 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(29,218,96,0.12);font-size:17p
                     st.session_state["_view_inv_no"] = inv_no
                     st.session_state['latest_inv_type_sel'] = "ارجاع"
                     st.session_state["_success_msg"] = f"✅ تم إنشاء فاتورة الارجاع رقم **{inv_no}** بنجاح!"
-                    _dest = "my_invoices" if role in ("مدير نظام","مسؤول المستودعات") else "my_invoices_personal"
+                    _dest = "invoices_archive_admin"
                     st.session_state.page = _dest; st.query_params["_pg"] = _dest
                     if st.session_state.get("user_info"): st.query_params["_u"] = st.session_state.user_info.get("username","")
                     st.rerun()
@@ -4778,7 +4801,7 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(29,218,96,0.12);font-size:17p
                         st.session_state["_view_inv_no"] = trans_inv_no_final
                         st.session_state['latest_inv_type_sel'] = "نقل"
                         st.session_state["_success_msg"] = f"✅ تم إنشاء فاتورة النقل رقم **{trans_inv_no_final}** بنجاح!"
-                        _dest = "my_invoices" if role in ("مدير نظام","مسؤول المستودعات") else "my_invoices_personal"
+                        _dest = "invoices_archive_admin"
                         st.session_state.page = _dest; st.query_params["_pg"] = _dest
                         if st.session_state.get("user_info"): st.query_params["_u"] = st.session_state.user_info.get("username","")
                         st.rerun()
@@ -5189,169 +5212,6 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(29,218,96,0.12);font-size:17p
     # ---------------------------------------------------------
     # صفحة: فواتيري (للمستخدمين المحدودين — موجه البلاغات وأمين مستودع المقاول)
     # ---------------------------------------------------------
-    elif st.session_state.page == "my_invoices_personal":
-        page_header("📄", "فواتيري", "الفواتير التي أنشأتها بواسطتك", "#004a99")
-
-        # ── تنبيه نجاح إنشاء الفاتورة ──
-        _smsg = st.session_state.pop("_success_msg", None)
-        if _smsg:
-            st.markdown(f"""
-            <div style='background:linear-gradient(135deg,rgba(0,40,15,0.60),rgba(0,35,12,0.50));border:2px solid #1daa60;
-                border-radius:14px;padding:18px 24px;direction:rtl;text-align:center;
-                box-shadow:0 4px 16px rgba(29,170,96,0.2);margin-bottom:20px;'>
-                <span style='font-size:32px;'>✅</span>
-                <div style='font-size:17px;font-weight:900;color:#1dda70;margin-top:6px;'>{_smsg}</div>
-            </div>""", unsafe_allow_html=True)
-
-        # ── عرض مباشر إذا قادم من تصدير فاتورة ──
-        _direct_inv_no = st.session_state.get("_view_inv_no", "")
-        if _direct_inv_no:
-            _direct_row = pd.read_sql(
-                "SELECT * FROM archived_invoices WHERE invoice_no=? ORDER BY id DESC LIMIT 1",
-                conn, params=(_direct_inv_no,))
-            if not _direct_row.empty:
-                _dr = dict(_direct_row.iloc[0])
-                _dr_color = {"صرف":"#e65100","ارجاع":"#2e7d32","نقل":"#1a237e"}.get(str(_dr.get('invoice_type','')),"#004a99")
-                _dr_wh  = str(_dr.get('warehouse_from','') or '')
-                _dr_con = str(_dr.get('contractor','') or '')
-                _dr_boq = str(_dr.get('boq','') or '')
-                st.markdown(
-                    f"<div style='background:rgba(3,10,28,0.75);border:2px solid {_dr_color};border-radius:10px;"
-                    f"padding:12px 18px;margin:10px 0 16px 0;direction:rtl;'>"
-                    f"<b>فاتورة <span style='color:{_dr_color};'>{str(_dr.get('invoice_type',''))}</span></b>"
-                    f" — رقم: <span style='color:red;font-weight:900;font-size:17px;'>{str(_dr['invoice_no'])}</span>"
-                    f" | 📅 {str(_dr['timestamp'])[:10]}"
-                    + (f" | 📍 {_dr_wh}" if _dr_wh else "")
-                    + (f" | 🏗️ {_dr_con}" if _dr_con else "")
-                    + (f" | 📋 BOQ: {_dr_boq}" if _dr_boq else "")
-                    + "</div>", unsafe_allow_html=True)
-                components.html(str(_dr.get('html_content','')), height=950, scrolling=True)
-                if st.button("🔙 الرجوع لقائمة فواتيري", key="back_personal_direct"):
-                    st.session_state["_view_inv_no"] = ""
-                    st.rerun()
-                st.stop()
-
-        # ── آخر فاتورة لكل نوع ──
-        _inv_types_p = [("صرف","#e65100","🛒"),("ارجاع","#2e7d32","🔄"),("نقل","#1a237e","🚛")]
-        _latest_p = {}
-        for _t,_c,_ic in _inv_types_p:
-            _df_p = pd.read_sql(
-                "SELECT * FROM archived_invoices WHERE employee=? AND invoice_type=? ORDER BY id DESC LIMIT 1",
-                conn, params=(u['full_name'], _t))
-            if not _df_p.empty:
-                _latest_p[_t] = (_df_p.iloc[0], _c, _ic)
-
-        if _latest_p:
-            st.markdown("""<div style='display:flex;align-items:center;gap:10px;margin:12px 0 16px 0;direction:rtl;'>
-                <div style='flex:1;height:3px;background:linear-gradient(to left,#004a99,transparent);border-radius:2px;'></div>
-                <span style='background:#004a99;color:white;border-radius:20px;padding:6px 20px;font-size:18px;font-weight:900;'>🆕 آخر فاتورة</span>
-                <div style='flex:1;height:3px;background:linear-gradient(to right,#004a99,transparent);border-radius:2px;'></div>
-            </div>""", unsafe_allow_html=True)
-            _avail_p = list(_latest_p.keys())
-            if 'latest_inv_type_sel' not in st.session_state or st.session_state['latest_inv_type_sel'] not in _avail_p:
-                st.session_state['latest_inv_type_sel'] = _avail_p[0]
-            _tcols = st.columns(len(_avail_p))
-            for _ci,_t in enumerate(_avail_p):
-                _is_sel = st.session_state['latest_inv_type_sel'] == _t
-                if _tcols[_ci].button(f"{_latest_p[_t][2]} {_t}", key=f"ltp_btn_{_t}",
-                        use_container_width=True, type="primary" if _is_sel else "secondary"):
-                    st.session_state['latest_inv_type_sel'] = _t; st.rerun()
-            _sel = st.session_state['latest_inv_type_sel']
-            if _sel in _latest_p:
-                _lr,_lc,_li = _latest_p[_sel]
-                _lr = dict(_lr); _lid = int(_lr['id'])
-                _lrwh = str(_lr.get('warehouse_from','') or ''); _lrcon = str(_lr.get('contractor','') or '')
-                _lrboq = str(_lr.get('boq','') or '')
-                st.markdown(
-                    f"<div style='background:rgba(3,10,28,0.75);border:2px solid {_lc};border-radius:10px;"
-                    f"padding:12px 18px;margin:8px 0;direction:rtl;'>"
-                    f"{_li} رقم: <span style='color:red;font-weight:900;font-size:17px;'>{str(_lr['invoice_no'])}</span>"
-                    f" | 📅 {str(_lr['timestamp'])[:10]}"
-                    + (f" | 📍 {_lrwh}" if _lrwh else "")
-                    + (f" | 🏗️ {_lrcon}" if _lrcon else "")
-                    + (f" | 📋 {_lrboq}" if _lrboq else "")
-                    + "</div>", unsafe_allow_html=True)
-                _sk = f"show_lp_{_lid}"
-                if _sk not in st.session_state: st.session_state[_sk] = True
-                if st.session_state[_sk]:
-                    components.html(_lr['html_content'], height=950, scrolling=True)
-                    if st.button("🔒 إغلاق", key=f"close_lp_{_sel}", use_container_width=True):
-                        st.session_state[_sk] = False; st.rerun()
-                else:
-                    if st.button(f"👁️ عرض آخر فاتورة {_sel}", key=f"open_lp_{_sel}", use_container_width=True):
-                        st.session_state[_sk] = True; st.rerun()
-
-        # ── إحصائيات مواقف الفواتير (لأمين مستودع المقاول) ──
-        if role == "أمين مستودع المقاول":
-            _cwk_stats = pd.read_sql("""
-                SELECT s.status, COUNT(*) as cnt
-                FROM signed_invoices s
-                JOIN archived_invoices a ON s.original_invoice_id = a.id
-                WHERE s.signed_by=?
-                GROUP BY s.status
-            """, conn, params=(u['full_name'],))
-            _cwk_unsigned = pd.read_sql("""
-                SELECT COUNT(*) as cnt FROM archived_invoices a
-                WHERE a.employee=?
-                AND NOT EXISTS (SELECT 1 FROM signed_invoices s WHERE s.original_invoice_id=a.id)
-                AND a.invoice_type IN ('صرف','ارجاع','نقل')
-            """, conn, params=(u['full_name'],))
-            _sm = {r['status']:int(r['cnt']) for _,r in _cwk_stats.iterrows()}
-            _s_notsigned = int(_cwk_unsigned.iloc[0]['cnt']) if not _cwk_unsigned.empty else 0
-            _s_pending   = _sm.get("بانتظار الاعتماد", 0)
-            _s_approved  = sum(v for k,v in _sm.items() if 'معتمد' in k)
-            _s_returned  = sum(v for k,v in _sm.items() if 'معادة' in k)
-            _s_rejected  = sum(v for k,v in _sm.items() if 'مرفوض' in k)
-            _s_total     = _s_notsigned + _s_pending + _s_approved + _s_returned + _s_rejected
-            st.markdown(f"""
-            <div style='direction:rtl;font-size:15px;color:#8aaac8;margin-bottom:8px;font-weight:700;'>
-                📊 مواقف فواتيري
-                <span style='color:#4db8ff;font-size:13px;margin-right:8px;'>({_s_total} فاتورة إجمالاً)</span>
-            </div>
-            <div style='display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:0 0 14px 0;direction:rtl;'>
-                <div style='background:rgba(60,0,0,0.40);border:2px solid #e53e3e;border-radius:10px;padding:12px;text-align:center;'>
-                    <div style='font-size:26px;font-weight:900;color:#ff6666;'>{_s_notsigned}</div>
-                    <div style='font-size:12px;color:#8aaac8;margin-top:4px;'>📝 تحتاج إرفاق</div>
-                </div>
-                <div style='background:rgba(0,30,80,0.50);border:2px solid #0288d1;border-radius:10px;padding:12px;text-align:center;'>
-                    <div style='font-size:26px;font-weight:900;color:#4db8ff;'>{_s_pending}</div>
-                    <div style='font-size:12px;color:#8aaac8;margin-top:4px;'>🔄 بانتظار</div>
-                </div>
-                <div style='background:rgba(60,20,0,0.45);border:2px solid #e65100;border-radius:10px;padding:12px;text-align:center;'>
-                    <div style='font-size:26px;font-weight:900;color:#ffaa66;'>{_s_returned}</div>
-                    <div style='font-size:12px;color:#8aaac8;margin-top:4px;'>🔴 مُعادة</div>
-                </div>
-                <div style='background:rgba(0,50,20,0.45);border:2px solid #1daa60;border-radius:10px;padding:12px;text-align:center;'>
-                    <div style='font-size:26px;font-weight:900;color:#1dda70;'>{_s_approved}</div>
-                    <div style='font-size:12px;color:#8aaac8;margin-top:4px;'>✅ معتمدة</div>
-                </div>
-                <div style='background:rgba(80,0,0,0.40);border:2px solid #c62828;border-radius:10px;padding:12px;text-align:center;'>
-                    <div style='font-size:26px;font-weight:900;color:#ff4444;'>{_s_rejected}</div>
-                    <div style='font-size:12px;color:#8aaac8;margin-top:4px;'>❌ مرفوضة</div>
-                </div>
-            </div>""", unsafe_allow_html=True)
-
-        # ── قائمة الفواتير السابقة ──
-        st.markdown("""<div style='display:flex;align-items:center;gap:10px;margin:22px 0 16px 0;direction:rtl;'>
-            <div style='flex:1;height:3px;background:linear-gradient(to left,#555,transparent);border-radius:2px;'></div>
-            <span style='background:#555;color:white;border-radius:20px;padding:6px 20px;font-size:18px;font-weight:900;'>📋 جميع الفواتير السابقة</span>
-            <div style='flex:1;height:3px;background:linear-gradient(to right,#555,transparent);border-radius:2px;'></div>
-        </div>""", unsafe_allow_html=True)
-        _pf1, _pf2, _pf3 = st.columns([1,1,1.2])
-        _p_type = _pf1.selectbox("نوع:", ["الكل","صرف","ارجاع","نقل"], key="p_type")
-        _p_no   = _pf2.text_input("رقم الفاتورة:", key="p_no").strip()
-        _p_date = _pf3.date_input("التاريخ:", value=None, key="p_date")
-        _excl_p = [int(_latest_p[_t][0]['id']) for _t in _latest_p]
-        _pq = "SELECT * FROM archived_invoices WHERE employee=?"
-        _pp = [u['full_name']]
-        if _excl_p: _pq += f" AND id NOT IN ({','.join(str(i) for i in _excl_p)})"
-        if _p_type!="الكل": _pq += f" AND invoice_type='{_p_type}'"
-        if _p_no:            _pq += f" AND invoice_no LIKE '%{_p_no}%'"
-        if _p_date:          _pq += f" AND timestamp LIKE '{_p_date.strftime('%Y-%m-%d')}%'"
-        _pq += " ORDER BY id DESC"
-        df_p = pd.read_sql(_pq, conn, params=_pp)
-        if df_p.empty:
-            st.info("ℹ️ لا توجد فواتير سابقة.")
         else:
             st.caption(f"📦 {len(df_p)} فاتورة")
             for _,_pr in df_p.iterrows():
@@ -7073,345 +6933,6 @@ tbody tr:hover td{{color:#1dda70!important;}}
                     </div>
                     """, unsafe_allow_html=True)
 
-    # ---------------------------------------------------------
-    # صفحة: فواتير أمين مستودع المقاول السابقة (حسب النوع)
-    # ---------------------------------------------------------
-    # ---------------------------------------------------------
-    # صفحة: فواتير مُعادة للتعديل — أمين مستودع المقاول
-    # ---------------------------------------------------------
-    elif st.session_state.page == "cwk_returned_invoices":
-        if role != "أمين مستودع المقاول":
-            st.error("❌ غير مصرح لك.")
-        else:
-            page_header("🔴", "فواتير مُعادة للتعديل",
-                        "الفواتير التي طلب مسؤول المستودع إعادة إرفاقها مع التصحيح", "#e65100")
-
-            # إحصائية سريعة
-            try:
-                _ret_counts = pd.read_sql(
-                    "SELECT invoice_type, COUNT(*) as cnt FROM signed_invoices "
-                    "WHERE status='مُعادة' GROUP BY invoice_type", conn)
-                _rc1, _rc2, _rc3 = st.columns(3)
-                for _rct in [("صرف", _rc1, "#e53e3e"), ("ارجاع", _rc2, "#2b6cb0"), ("نقل", _rc3, "#276749")]:
-                    _rct_val = 0
-                    if not _ret_counts.empty:
-                        _rct_row = _ret_counts[_ret_counts['invoice_type'] == _rct[0]]
-                        if not _rct_row.empty:
-                            _rct_val = int(_rct_row.iloc[0]['cnt'])
-                    _rct[1].markdown(f"""
-                    <div style='background:rgba(3,10,28,0.82);border:2px solid {_rct[2]};border-radius:10px;
-                        padding:12px;text-align:center;direction:rtl;'>
-                        <div style='font-size:22px;font-weight:900;color:{_rct[2]};'>{_rct_val}</div>
-                        <div style='font-size:20px;color:#8aaac8;'>فاتورة {_rct[0]} مُعادة</div>
-                    </div>""", unsafe_allow_html=True)
-            except Exception:
-                pass
-
-            st.divider()
-
-            # فلاتر
-            _cwkr_f1, _cwkr_f2 = st.columns([1.5, 2])
-            _cwkr_type = _cwkr_f1.selectbox("نوع الفاتورة:", ["الكل", "صرف", "ارجاع", "نقل"], key="cwkr_type_filter")
-            _cwkr_search = _cwkr_f2.text_input("🔍 رقم الفاتورة:", key="cwkr_search").strip()
-
-            # جلب الفواتير المُعادة
-            _cwkr_q = (
-                "SELECT s.id, s.invoice_no, s.invoice_type, s.signed_by, s.signed_at, "
-                "s.admin_notes, s.status, a.contractor, a.warehouse_from, a.boq, a.id as arch_id "
-                "FROM signed_invoices s LEFT JOIN archived_invoices a ON s.original_invoice_id=a.id "
-                "WHERE s.status='مُعادة'"
-            )
-            if _cwkr_type != "الكل":
-                _cwkr_q += f" AND s.invoice_type='{_cwkr_type}'"
-            if _cwkr_search:
-                _cwkr_q += f" AND s.invoice_no LIKE '%{_cwkr_search}%'"
-            _cwkr_q += " ORDER BY s.id DESC"
-
-            df_cwkr = pd.read_sql(_cwkr_q, conn)
-
-            if df_cwkr.empty:
-                st.markdown("""
-                <div style='background:rgba(0,50,20,0.35);border:2px dashed rgba(29,218,112,0.45);border-radius:14px;
-                    padding:40px;text-align:center;direction:rtl;margin-top:20px;'>
-                    <div style='font-size:48px;margin-bottom:12px;'>✅</div>
-                    <div style='font-size:17px;font-weight:900;color:#1dda70;'>لا توجد فواتير تحتاج تعديل</div>
-                    <div style='font-size:17px;color:#7aaac8;margin-top:6px;'>جميع الفواتير المُرفقة اجتازت المراجعة بنجاح.</div>
-                </div>""", unsafe_allow_html=True)
-            else:
-                st.warning(f"⚠️ يوجد **{len(df_cwkr)}** فاتورة تحتاج إعادة إرفاق بعد التصحيح.")
-                st.markdown("<br>", unsafe_allow_html=True)
-
-                for _, rtr_raw in df_cwkr.iterrows():
-                    rtr = rtr_raw.to_dict()  # تحويل لـ dict لضمان قيم نقية في HTML
-                    _rtr_id = int(rtr['id'])
-                    _rtr_tc = {"صرف": "#e53e3e", "ارجاع": "#2b6cb0", "نقل": "#276749"}.get(str(rtr['invoice_type']), "#e65100")
-
-                    with st.expander(
-                        f"🔴 {rtr['invoice_type']} | رقم: {rtr['invoice_no']} | {str(rtr['signed_at'])[:16]}",
-                        expanded=True):
-
-                        # بطاقة تفاصيل الفاتورة — نبني HTML كاملاً في Python ثم نمرره مرة واحدة
-                        _rtr_boq_part  = f"📋 <b>BOQ:</b> {rtr.get('boq','')} &nbsp;&nbsp;<br>" if str(rtr.get('boq','')).strip() else ""
-                        _rtr_note_part = ""
-                        if str(rtr.get('admin_notes','')).strip():
-                            _nt = str(rtr.get('admin_notes','')).replace("'", "&#39;").replace('"', "&quot;")
-                            _rtr_note_part = (
-                                "<div style='background:rgba(80,50,0,0.45);border:1px solid #f9a825;"
-                                "border-radius:8px;padding:10px 14px;margin-top:10px;direction:rtl;'>"
-                                "📝 <b>ملاحظة مسؤول المستودع:</b><br>"
-                                f"<span style='color:#ffaa66;font-weight:bold;font-size:19px;'>{_nt}</span>"
-                                "</div>"
-                            )
-                        _rtr_card_html = (
-                            "<div style='background:linear-gradient(135deg,rgba(40,10,0,0.60),rgba(30,8,0,0.50));"
-                            f"border:2px solid #e65100;border-radius:12px;"
-                            "padding:16px 20px;direction:rtl;font-size:18px;margin-bottom:12px;'>"
-                            "<div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;'>"
-                            f"<span style='font-size:18px;font-weight:900;color:#ff6666;'>رقم: {rtr['invoice_no']}</span>"
-                            f"<span style='background:{_rtr_tc};color:white;border-radius:8px;"
-                            f"padding:3px 14px;font-size:20px;font-weight:bold;'>{rtr['invoice_type']}</span>"
-                            "</div>"
-                            "<div style='border-top:1px solid #f0d0c0;padding-top:10px;line-height:2.2;'>"
-                            f"🏗️ <b>المقاول:</b> {str(rtr.get('contractor','—') or '—')} &nbsp;&nbsp;"
-                            f"📍 <b>المستودع:</b> {str(rtr.get('warehouse_from','—') or '—')}<br>"
-                            f"{_rtr_boq_part}"
-                            f"✍️ <b>آخر إرفاق بواسطة:</b> "
-                            f"<span style='color:#7aaac8;font-weight:bold;'>{str(rtr['signed_by'])}</span>"
-                            f" &nbsp;|&nbsp; 📅 {str(rtr['signed_at'])[:16]}"
-                            "</div>"
-                            f"{_rtr_note_part}"
-                            "</div>"
-                        )
-                        st.markdown(_rtr_card_html, unsafe_allow_html=True)
-
-                        # عرض الفاتورتين جنباً لجنب
-                        _col_r_orig, _col_r_sign = st.columns([1, 1])
-
-                        with _col_r_orig:
-                            st.markdown("**📄 الفاتورة الأصلية**")
-                            _rtr_vk = f"cwkr_v_{_rtr_id}"
-                            if st.button("👁️ عرض الفاتورة الأصلية", key=f"cwkr_vbtn_{_rtr_id}",
-                                         use_container_width=True):
-                                st.session_state[_rtr_vk] = not st.session_state.get(_rtr_vk, False)
-                            if st.session_state.get(_rtr_vk, False) and rtr.get('arch_id'):
-                                _rtr_html = pd.read_sql(
-                                    "SELECT html_content FROM archived_invoices WHERE id=?",
-                                    conn, params=(int(rtr['arch_id']),))
-                                if not _rtr_html.empty:
-                                    components.html(str(_rtr_html.iloc[0]['html_content']), height=460, scrolling=True)
-
-                        with _col_r_sign:
-                            st.markdown("**📎 الفاتورة الموقعة السابقة**")
-                            _rtr_img_vk = f"cwkr_img_{_rtr_id}"
-                            if st.button("🖼️ عرض الفاتورة الموقعة", key=f"cwkr_imgbtn_{_rtr_id}",
-                                         use_container_width=True):
-                                st.session_state[_rtr_img_vk] = not st.session_state.get(_rtr_img_vk, False)
-                            if st.session_state.get(_rtr_img_vk, False):
-                                _rtr_sig = pd.read_sql(
-                                    "SELECT signed_image_base64 FROM signed_invoices WHERE id=?",
-                                    conn, params=(_rtr_id,))
-                                if not _rtr_sig.empty and _rtr_sig.iloc[0]['signed_image_base64']:
-                                    st.markdown(
-                                        f'<img src="data:image/jpeg;base64,{_rtr_sig.iloc[0]["signed_image_base64"]}" '
-                                        f'style="max-width:100%;border:2px solid #e65100;border-radius:8px;">',
-                                        unsafe_allow_html=True)
-                                else:
-                                    st.info("لا توجد صورة مرفقة سابقاً.")
-
-                        st.divider()
-
-                        # ══════════════════════════════════════════════════
-                        # قسم التعديل والإرفاق مباشرة من هذه الصفحة
-                        # ══════════════════════════════════════════════════
-                        section_card("✏️ تعديل وإعادة إرفاق الفاتورة", "#e65100")
-                        st.info("ℹ️ ارفع صورة الفاتورة الموقعة المصحّحة، عدّل BOQ إن لزم، ثم أرسل للاعتماد مجدداً.")
-
-                        _inv_type_rtr = str(rtr['invoice_type'])
-                        _arch_id_rtr  = int(rtr['arch_id']) if rtr.get('arch_id') else 0
-
-                        # BOQ — لا يُدخله أمين مستودع المقاول
-                        _cur_boq = str(rtr.get('boq','') or '')
-                        if _inv_type_rtr != "نقل" and role != "أمين مستودع المقاول":
-                            _new_boq_key = f"rtr_boq_{_rtr_id}"
-                            _new_boq = st.text_input(
-                                "📋 BOQ الحالة *",
-                                value=_cur_boq,
-                                placeholder="BoQ/Zone2/2026/...",
-                                key=_new_boq_key).strip()
-                        else:
-                            _new_boq = _cur_boq  # يُبقي القيمة الحالية بدون تعديل
-
-                        # رفع صورة الفاتورة الموقعة الجديدة
-                        _up_key_rtr = f"rtr_upload_{_rtr_id}"
-                        _uploaded_rtr = st.file_uploader(
-                            "📤 ارفع صورة الفاتورة الموقعة المصحّحة *",
-                            type=["jpg","jpeg","png","pdf"],
-                            key=_up_key_rtr)
-
-                        if _uploaded_rtr is not None:
-                            _img_b64_rtr = base64.b64encode(_uploaded_rtr.read()).decode()
-
-                            # معاينة الصورة
-                            st.markdown(
-                                f'<img src="data:image/jpeg;base64,{_img_b64_rtr}" '
-                                f'style="max-width:55%;border:2px solid #e65100;border-radius:8px;margin:6px 0;">',
-                                unsafe_allow_html=True)
-
-                            st.markdown(
-                                f"<div style='background:rgba(0,30,80,0.50);border:1px solid #0288d1;border-radius:8px;"
-                                f"padding:10px 14px;direction:rtl;font-size:17px;margin:8px 0;'>"
-                                f"📌 سيُسجَّل الإرفاق باسم: <b>{u['full_name']}</b><br>"
-                                f"📅 الوقت: <b>{now_mecca().strftime('%Y-%m-%d %H:%M')}</b><br>"
-                                f"🔄 ستُرسل للاعتماد مجدداً بعد الحفظ."
-                                f"</div>",
-                                unsafe_allow_html=True)
-
-                            _send_key = f"rtr_send_{_rtr_id}"
-                            _conf_key = f"rtr_conf_{_rtr_id}"
-
-                            if st.button("📨 إرسال للاعتماد", key=_send_key,
-                                         type="primary", use_container_width=True):
-                                if _inv_type_rtr != "نقل" and not _new_boq and role != "أمين مستودع المقاول":
-                                    st.error("❌ يجب إدخال رقم BOQ قبل الإرسال.")
-                                else:
-                                    st.session_state[_conf_key] = True
-
-                            if st.session_state.get(_conf_key):
-                                st.warning(f"⚠️ هل أنت متأكد من إعادة إرسال الفاتورة **{rtr['invoice_no']}** للاعتماد؟")
-                                _cy, _cn = st.columns(2)
-                                if _cy.button("✅ نعم، أرسل", key=f"rtr_yes_{_rtr_id}"):
-                                    _ts_rtr = now_mecca().strftime("%Y-%m-%d %H:%M:%S")
-
-                                    # ── تحديث BOQ في HTML الفاتورة الأصلية إن تغيّر ──
-                                    if _new_boq and _arch_id_rtr:
-                                        _old_html_rtr = pd.read_sql(
-                                            "SELECT html_content FROM archived_invoices WHERE id=?",
-                                            conn, params=(_arch_id_rtr,))
-                                        if not _old_html_rtr.empty:
-                                            _html_rtr = str(_old_html_rtr.iloc[0]['html_content'])
-                                            _boq_tag = f"<div style='font-size:17px;color:#ddeeff;font-weight:bold;margin-top:4px;'>BOQ الحالة: {_new_boq}</div>"
-                                            import re as _re
-                                            if "BOQ الحالة:" in _html_rtr:
-                                                _html_rtr = _re.sub(r"BOQ الحالة: [^<]*", f"BOQ الحالة: {_new_boq}", _html_rtr)
-                                            else:
-                                                _html_rtr = _html_rtr.replace(
-                                                    f"<span style=\"color:red;font-weight:bold;font-size:20px;\">{rtr['invoice_no']}</span>",
-                                                    f"<span style=\"color:red;font-weight:bold;font-size:20px;\">{rtr['invoice_no']}</span>{_boq_tag}"
-                                                )
-                                            c.execute("UPDATE archived_invoices SET html_content=?, boq=? WHERE id=?",
-                                                      (_html_rtr, _new_boq, _arch_id_rtr))
-
-                                    # ── حذف الإرفاق القديم وإضافة الجديد ──
-                                    c.execute("DELETE FROM signed_invoices WHERE id=?", (_rtr_id,))
-                                    c.execute(
-                                        "INSERT INTO signed_invoices "
-                                        "(invoice_no,invoice_type,original_invoice_id,signed_by,"
-                                        "signed_image_base64,signed_at,deducted,status,"
-                                        "admin_notes,reviewed_by,reviewed_at,boq) "
-                                        "VALUES (?,?,?,?,?,?,0,'بانتظار الاعتماد','','',?,?)",
-                                        (rtr['invoice_no'], _inv_type_rtr, _arch_id_rtr,
-                                         u['full_name'], _img_b64_rtr, _ts_rtr, _ts_rtr, _new_boq))
-                                    save_log("إعادة إرفاق فاتورة مُعادة", rtr['invoice_no'], 0,
-                                             f"فاتورة {_inv_type_rtr} {rtr['invoice_no']} أُعيد إرفاقها | BOQ:{_new_boq} | بواسطة: {u['full_name']}",
-                                             u['full_name'])
-                                    conn.commit()
-                                    st.session_state.pop(_conf_key, None)
-                                    st.success(f"✅ تم إرسال الفاتورة {rtr['invoice_no']} للاعتماد مجدداً!")
-                                    st.rerun()
-                                if _cn.button("❌ إلغاء", key=f"rtr_no_{_rtr_id}"):
-                                    st.session_state.pop(_conf_key, None); st.rerun()
-                        else:
-                            st.caption("⬆️ يرجى رفع صورة الفاتورة الموقعة المصحّحة للمتابعة.")
-
-                        st.markdown("<hr style='margin:12px 0 0 0;border-color:#f0d0c0;'>", unsafe_allow_html=True)
-
-    elif st.session_state.page == "cwk_my_invoices":
-        if role != "أمين مستودع المقاول":
-            st.error("❌ غير مصرح لك.")
-        else:
-            _cwk_inv_type = st.session_state.get('cwk_my_inv_type', 'صرف')
-            _type_icon = {"صرف": "🛒", "ارجاع": "🔄", "نقل": "🚛"}.get(_cwk_inv_type, "📄")
-            _type_color = {"صرف": "#e53e3e", "ارجاع": "#2b6cb0", "نقل": "#276749"}.get(_cwk_inv_type, "#004a99")
-
-            page_header(_type_icon, f"فواتير {_cwk_inv_type}",
-                        f"جميع فواتير {_cwk_inv_type} في النظام مع المرفقات", _type_color)
-
-            # أحدث فاتورة مُرفقة
-            _latest_cwk = pd.read_sql(
-                "SELECT s.*, a.contractor, a.warehouse_from, a.boq "
-                "FROM signed_invoices s LEFT JOIN archived_invoices a ON s.original_invoice_id=a.id "
-                "WHERE s.invoice_type=? ORDER BY s.id DESC LIMIT 1",
-                conn, params=(_cwk_inv_type,))
-            if not _latest_cwk.empty:
-                _lr = _latest_cwk.iloc[0]
-                _lsc = {"معتمد": "#1daa60", "مرفوض": "#d32f2f", "مُعادة": "#e65100",
-                        "بانتظار الاعتماد": "#0288d1"}.get(str(_lr['status']), "#9e9e9e")
-                st.markdown(f"""
-                <div style='background:linear-gradient(135deg,#f0f7ff,#e8f4ff);border:2px solid {_type_color};
-                    border-radius:12px;padding:16px 20px;direction:rtl;margin-bottom:16px;'>
-                    <div style='font-size:17px;font-weight:900;color:{_type_color};margin-bottom:6px;'>🆕 آخر فاتورة {_cwk_inv_type} مُرفقة</div>
-                    <div style='font-size:20px;font-weight:900;color:#ff6666;'>رقم: {_lr['invoice_no']}</div>
-                    <div style='font-size:17px;color:#8aaac8;margin-top:4px;'>
-                        📅 {str(_lr['signed_at'])[:16]} &nbsp;|&nbsp;
-                        <span style='background:{_lsc};color:white;border-radius:6px;padding:2px 10px;font-size:20px;'>{_lr['status']}</span>
-                        {f" &nbsp;|&nbsp; 🏗️ {_lr.get('contractor','')}" if _lr.get('contractor') else ""}
-                    </div>
-                </div>""", unsafe_allow_html=True)
-                _latest_cwk_vk = f"cwk_latest_v_{int(_lr['id'])}"
-                if st.button("👁️ عرض آخر فاتورة", key="cwk_view_latest", use_container_width=True):
-                    st.session_state[_latest_cwk_vk] = not st.session_state.get(_latest_cwk_vk, False)
-                if st.session_state.get(_latest_cwk_vk, False):
-                    _lh = pd.read_sql("SELECT html_content FROM archived_invoices WHERE id=?",
-                                      conn, params=(int(_lr.get('original_invoice_id') or 0),))
-                    if not _lh.empty:
-                        components.html(str(_lh.iloc[0]['html_content']), height=950, scrolling=True)
-                    if _lr.get('signed_image_base64'):
-                        st.markdown(f'<img src="data:image/jpeg;base64,{_lr["signed_image_base64"]}" style="max-width:100%;border-radius:8px;margin-top:8px;">', unsafe_allow_html=True)
-                st.divider()
-
-            section_card(f"📋 جميع فواتير {_cwk_inv_type}", _type_color)
-            _cwk_all = pd.read_sql(
-                "SELECT s.id, s.invoice_no, s.invoice_type, s.signed_by, s.signed_at, s.status, "
-                "a.contractor, a.warehouse_from, a.boq, a.id as arch_id "
-                "FROM signed_invoices s LEFT JOIN archived_invoices a ON s.original_invoice_id = a.id "
-                "WHERE s.invoice_type=? ORDER BY s.id DESC LIMIT 100",
-                conn, params=(_cwk_inv_type,))
-            if _cwk_all.empty:
-                st.info(f"ℹ️ لا توجد فواتير {_cwk_inv_type} مُرفقة حتى الآن.")
-            else:
-                st.caption(f"📋 {len(_cwk_all)} فاتورة")
-                for _, cr in _cwk_all.iterrows():
-                    cr = cr.to_dict()  # تحويل لـ dict لضمان عرض HTML صحيح
-                    _csc = {"معتمد": "#1daa60", "مرفوض": "#d32f2f", "مُعادة": "#e65100",
-                            "بانتظار الاعتماد": "#0288d1"}.get(str(cr['status']), "#9e9e9e")
-                    with st.expander(f"📄 {cr['invoice_no']} | {str(cr['signed_at'])[:16]} | {cr['status']}"):
-                        st.markdown(f"""
-                        <div style='background:rgba(3,10,28,0.70);border-right:4px solid {_csc};border-radius:8px;
-                            padding:10px 14px;direction:rtl;font-size:17px;'>
-                            🧾 <b>رقم الفاتورة:</b> {cr['invoice_no']}<br>
-                            🏗️ <b>المقاول:</b> {cr.get('contractor','—') or '—'} &nbsp;|&nbsp;
-                            📍 <b>المستودع:</b> {cr.get('warehouse_from','—') or '—'}<br>
-                            {f"📋 <b>BOQ:</b> {cr.get('boq','')} &nbsp;|&nbsp;" if cr.get('boq') else ""}
-                            ✍️ <b>أرفقها:</b> {cr['signed_by']}<br>
-                            <span style='background:{_csc};color:white;border-radius:6px;padding:2px 10px;font-size:20px;'>{cr['status']}</span>
-                        </div>""", unsafe_allow_html=True)
-                        _cwk_vk = f"cwk_all_v_{int(cr['id'])}"
-                        if st.button("👁️ عرض الفاتورة", key=f"cwk_all_vbtn_{int(cr['id'])}"):
-                            st.session_state[_cwk_vk] = not st.session_state.get(_cwk_vk, False)
-                        if st.session_state.get(_cwk_vk, False):
-                            if cr.get('arch_id'):
-                                _cwk_html = pd.read_sql("SELECT html_content FROM archived_invoices WHERE id=?",
-                                                         conn, params=(int(cr['arch_id']),))
-                                if not _cwk_html.empty:
-                                    components.html(str(_cwk_html.iloc[0]['html_content']), height=950, scrolling=True)
-                            _sig_img = pd.read_sql("SELECT signed_image_base64 FROM signed_invoices WHERE id=?",
-                                                   conn, params=(int(cr['id']),))
-                            if not _sig_img.empty and _sig_img.iloc[0]['signed_image_base64']:
-                                st.markdown("**📎 الفاتورة الموقعة:**")
-                                st.markdown(f'<img src="data:image/jpeg;base64,{_sig_img.iloc[0]["signed_image_base64"]}" style="max-width:100%;border-radius:8px;">', unsafe_allow_html=True)
-    # ---------------------------------------------------------
-    # صفحة: إدارة النسخ الاحتياطية (مدير النظام فقط)
-    # ---------------------------------------------------------
     elif st.session_state.page == "backup_page":
         if u['role'] != "مدير نظام":
             st.error("❌ هذه الصفحة متاحة لمدير النظام فقط.")
@@ -7895,107 +7416,6 @@ tbody tr:hover td{{color:#1dda70!important;}}
                                 st.session_state.view_archived_html[f"ca_{cr['id']}"] = not st.session_state.view_archived_html.get(f"ca_{cr['id']}", False)
                             if st.session_state.view_archived_html.get(f"ca_{cr['id']}", False):
                                 components.html(_inv_html_ca, height=950, scrolling=True)
-
-    # ---------------------------------------------------------
-    elif st.session_state.page == "contractor_inventory":
-        if u['role'] != "أمين مستودع المقاول":
-            st.error("❌ غير مصرح لك بالوصول لهذه الصفحة.")
-        else:
-            page_header("📊", "رصيد المستودعات المصرح بها", "عرض المواد المتوفرة في مستودعاتك", "#004a99")
-            _cwp = pd.read_sql(
-                "SELECT warehouse FROM contractor_warehouse_permissions WHERE username=?",
-                conn, params=(u['username'],))
-            _allowed_wh = _cwp['warehouse'].tolist()
-            if not _allowed_wh:
-                st.warning("⚠️ لا توجد مستودعات مصرح لك برؤيتها. يرجى التواصل مع مدير النظام.")
-            else:
-                st.markdown(
-                    f"<div style='background:rgba(0,30,80,0.50);border:1px solid rgba(0,140,255,0.25);"
-                    f"border-radius:10px;padding:10px 16px;direction:rtl;margin-bottom:12px;'>"
-                    f"<span style='font-size:17px;color:#4db8ff;font-weight:700;'>🏢 المستودعات المصرح بها:</span> "
-                    f"<span style='color:#ddeeff;font-size:16px;'>{', '.join(_allowed_wh)}</span></div>",
-                    unsafe_allow_html=True)
-
-                # ── فلاتر ──
-                col_s1, col_s2, col_s3 = st.columns([2, 1.5, 1])
-                search_txt_cwk = col_s1.text_input("🔍 ابحث بكود المادة أو اسمها", key="cwk_inv_search")
-                # فلتر المستودع
-                _wh_opts = ["الكل"] + _allowed_wh
-                _wh_sel  = col_s2.selectbox("🏢 المستودع:", _wh_opts, key="cwk_inv_wh")
-                cat_filter_cwk = col_s3.selectbox("📂 الفئة:", ["عرض الكل"] + list_categories, key="cwk_inv_cat")
-
-                if _wh_sel == "الكل":
-                    wh_placeholder = "','".join(_allowed_wh)
-                    wh_cond = f"i.warehouse IN ('{wh_placeholder}')"
-                else:
-                    wh_cond = f"i.warehouse = '{_wh_sel}'"
-
-                query_cwk = f"""SELECT i.item_code as 'كود المادة', m.item_name as 'اسم المادة',
-                           m.description as 'وصف المادة',
-                           i.warehouse as 'المستودع', SUM(i.qty) as 'الرصيد المتاح'
-                           FROM inventory i JOIN material_definitions m ON i.item_code = m.item_code
-                           WHERE {wh_cond}"""
-                if cat_filter_cwk != "عرض الكل":
-                    query_cwk += f" AND i.category='{cat_filter_cwk}'"
-                query_cwk += " GROUP BY i.item_code, i.warehouse HAVING SUM(i.qty) > 0"
-                df_cwk_inv = pd.read_sql(query_cwk, conn)
-                if search_txt_cwk:
-                    df_cwk_inv = df_cwk_inv[
-                        df_cwk_inv['اسم المادة'].str.contains(search_txt_cwk, na=False) |
-                        df_cwk_inv['كود المادة'].str.contains(search_txt_cwk, na=False)]
-                if not df_cwk_inv.empty:
-                    rows_html_cwk = ""
-                    for _, row in df_cwk_inv.iterrows():
-                        qty  = int(row['الرصيد المتاح'])
-                        desc = str(row.get('وصف المادة') or '').strip()
-                        if qty <= 5:    badge_bg="#d32f2f"; badge_fg="white"
-                        elif qty <= 15: badge_bg="#f9a825"; badge_fg="#333"
-                        else:           badge_bg="#004a99"; badge_fg="white"
-                        rows_html_cwk += (
-                            f"<tr>"
-                            f"<td style='font-weight:900;color:#7aaac8;font-size:20px;padding:9px 12px;border-bottom:1px solid rgba(0,140,255,0.10);white-space:nowrap;'>{row['كود المادة']}</td>"
-                            f"<td style='padding:9px 12px;border-bottom:1px solid rgba(0,140,255,0.10);font-size:17px;color:#ddeeff;font-weight:700;'>{row['اسم المادة']}</td>"
-                            f"<td style='padding:9px 12px;border-bottom:1px solid rgba(0,140,255,0.10);font-size:15px;color:#8aaac8;'>{desc if desc else '—'}</td>"
-                            f"<td style='padding:9px 12px;border-bottom:1px solid rgba(0,140,255,0.10);text-align:center;'>"
-                            f"<span style='display:inline-block;background:{badge_bg};color:{badge_fg};border-radius:20px;padding:3px 14px;font-weight:900;font-size:17px;min-width:36px;text-align:center;'>{qty}</span>"
-                            f"</td></tr>"
-                        )
-                    table_h = min(120 + len(df_cwk_inv)*52, 700)
-                    components.html(f"""<html><head><meta charset="utf-8">
-<style>
-*{{box-sizing:border-box;}}
-body{{margin:0;padding:8px;font-family:'Tajawal',Arial,sans-serif;direction:rtl;background:transparent;}}
-.wrap{{border-radius:12px;overflow:hidden;box-shadow:0 2px 14px rgba(0,74,153,0.25);border:1px solid rgba(0,140,255,0.25);}}
-table{{width:100%;border-collapse:collapse;}}
-thead tr{{background:linear-gradient(90deg,#003580,#004a99,#003580);color:white;font-weight:900;font-size:16px;}}
-thead th{{padding:12px 14px;text-align:right;font-weight:900;}}
-tbody td{{color:#ddeeff;font-size:16px;}}
-tbody tr{{background:rgba(3,10,28,0.75);transition:background 0.2s,box-shadow 0.2s;}}
-tbody tr:nth-child(even){{background:rgba(0,20,60,0.65);}}
-tbody tr:hover{{background:rgba(0,180,80,0.18)!important;box-shadow:inset 0 0 20px rgba(29,218,96,0.25);animation:rp 1.2s ease-in-out infinite;}}
-tbody tr:hover td{{color:#1dda70!important;}}
-@keyframes rp{{0%{{box-shadow:inset 0 0 10px rgba(29,218,96,0.15);}}50%{{box-shadow:inset 0 0 28px rgba(29,218,96,0.40);}}100%{{box-shadow:inset 0 0 10px rgba(29,218,96,0.15);}}}}
-.info-bar{{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(0,20,60,0.90);border-bottom:1px solid rgba(0,140,255,0.25);font-size:16px;color:#8aaac8;direction:rtl;border-radius:12px 12px 0 0;}}
-</style></head><body>
-<div class="info-bar">
-<span>📦 إجمالي الأصناف: <b style="color:#1dda70;font-size:18px;">{len(df_cwk_inv)}</b></span>
-<span style="font-size:15px;">🔴 حرج ≤5 &nbsp; 🟡 تنبيه ≤15 &nbsp; 🔵 آمن</span>
-</div>
-<div class="wrap"><table>
-<thead><tr>
-<th style="width:15%;padding:12px 14px;">كود المادة</th>
-<th style="width:30%;padding:12px 14px;">اسم المادة</th>
-<th style="width:40%;padding:12px 14px;">وصف المادة</th>
-<th style="width:15%;padding:12px 14px;text-align:center;">الكمية</th>
-</tr></thead>
-<tbody>{rows_html_cwk}</tbody></table></div>
-</body></html>""", height=table_h, scrolling=True)
-                else:
-                    st.warning("⚠️ لا توجد مواد في المستودعات المصرح بها.")
-
-    # ---------------------------------------------------------
-    # صفحات أمين مستودع المقاول — عرض الفواتير مع التوقيع والإرفاق
-    # ---------------------------------------------------------
     elif st.session_state.page in ("cwk_dispatch_invoices", "cwk_return_invoices",
                                     "cwk_transfer_invoices", "cwk_emg_dispatch",
                                     "cwk_emg_return", "cwk_emg_transfer"):
