@@ -3023,9 +3023,9 @@ tick();setInterval(tick,1000);
             if st.session_state.get("user_info"): st.query_params["_u"] = st.session_state.user_info.get("username","")
             st.markdown("</div>", unsafe_allow_html=True)
 
-            # ═══ قسم: الطلبات ═══
+            # ═══ قسم: الطلبات والاعتمادات ═══
             st.divider()
-            st.sidebar.markdown("<div class='sb-section-requests'>📋 الطلبات</div>", unsafe_allow_html=True)
+            st.sidebar.markdown("<div class='sb-section-requests'>📋 الطلبات والاعتمادات</div>", unsafe_allow_html=True)
             st.markdown("<div class='sb-btn-requests'>", unsafe_allow_html=True)
 
             pending_ret_wh = int(pd.read_sql("SELECT COUNT(*) as cnt FROM return_requests WHERE status='معلق'", conn).iloc[0]['cnt'])
@@ -3035,19 +3035,17 @@ tick();setInterval(tick,1000);
                 st.markdown(f"<div class='ret-btn-wrap'><span class='ret-badge'>{pending_ret_wh}</span></div>", unsafe_allow_html=True)
 
             pending_cancel_wh = int(pd.read_sql("SELECT COUNT(*) as cnt FROM cancel_invoice_requests WHERE status='معلق'", conn).iloc[0]['cnt'])
-            if st.button("🚫 طلبات إلغاء الفواتير", key="sb_cancel_wh"): st.session_state.page = "cancel_invoice_admin"; st.query_params["_pg"] = "cancel_invoice_admin"
-            if st.session_state.get("user_info"): st.query_params["_u"] = st.session_state.user_info.get("username","")
-            if pending_cancel_wh > 0:
-                st.markdown(f"<div class='ret-btn-wrap'><span class='ret-badge'>{pending_cancel_wh}</span></div>", unsafe_allow_html=True)
-
             try:
                 _pend_signed_wh = int(pd.read_sql("SELECT COUNT(*) as cnt FROM signed_invoices WHERE status='بانتظار الاعتماد'", conn).iloc[0]['cnt'])
             except Exception:
                 _pend_signed_wh = 0
-            if st.button("✍️ اعتماد فواتير المستودعات", key="sb_approve_wh"): st.session_state.page = "approve_signed_invoices"; st.query_params["_pg"] = "approve_signed_invoices"
+
+            if st.button("✍️ اعتماد فواتير الصرف والإرجاع وطلبات الإلغاء", key="sb_approve_wh"):
+                st.session_state.page = "approve_signed_invoices"; st.query_params["_pg"] = "approve_signed_invoices"
             if st.session_state.get("user_info"): st.query_params["_u"] = st.session_state.user_info.get("username","")
-            if _pend_signed_wh > 0:
-                st.markdown(f"<div class='ret-btn-wrap'><span class='ret-badge'>{_pend_signed_wh}</span></div>", unsafe_allow_html=True)
+            _total_wh = _pend_signed_wh + pending_cancel_wh
+            if _total_wh > 0:
+                st.markdown(f"<div class='ret-btn-wrap'><span class='ret-badge'>{_total_wh}</span></div>", unsafe_allow_html=True)
             st.markdown("</div>", unsafe_allow_html=True)
 
             st.divider()
@@ -3096,104 +3094,15 @@ tick();setInterval(tick,1000);
 
         # ── أمين مستودع المقاول: صلاحيات محدودة ──
         elif role == "أمين مستودع المقاول":
-            # المستودعات المصرح له برؤيتها
+            # ── أمين مستودع المقاول: رصيد المستودعات فقط ──
             _cwp = pd.read_sql(
                 "SELECT warehouse FROM contractor_warehouse_permissions WHERE username=?",
                 conn, params=(u['username'],))
             _allowed_wh = _cwp['warehouse'].tolist()
 
-            # حساب الفواتير المعلقة (لم تُرفق بعد أو مُعادة) لكل نوع
-            def _pending_count(inv_type):
-                try:
-                    _total = int(pd.read_sql(
-                        f"SELECT COUNT(*) as cnt FROM archived_invoices WHERE invoice_type='{inv_type}'", conn
-                    ).iloc[0]['cnt'])
-                    _done = int(pd.read_sql(
-                        f"SELECT COUNT(*) as cnt FROM signed_invoices WHERE invoice_type='{inv_type}' AND status IN ('معتمد','بانتظار الاعتماد')", conn
-                    ).iloc[0]['cnt'])
-                    return max(0, _total - _done)
-                except Exception:
-                    return 0
-
-            def _returned_count(inv_type):
-                try:
-                    return int(pd.read_sql(
-                        f"SELECT COUNT(*) as cnt FROM signed_invoices WHERE invoice_type='{inv_type}' AND status='مُعادة'", conn
-                    ).iloc[0]['cnt'])
-                except Exception:
-                    return 0
-
-            _pend_dispatch  = _pending_count("صرف")   + _returned_count("صرف")
-            _pend_return    = _pending_count("ارجاع") + _returned_count("ارجاع")
-            _pend_transfer  = _pending_count("نقل")   + _returned_count("نقل")
-            _pend_total     = _pend_dispatch + _pend_return + _pend_transfer
-
-            # فواتير مُعادة للتعديل
-            try:
-                _pend_returned_all = int(pd.read_sql("SELECT COUNT(*) as cnt FROM signed_invoices WHERE status='مُعادة'", conn).iloc[0]['cnt'])
-            except Exception:
-                _pend_returned_all = 0
-
-            # ── رصيد المستودعات المصرح بها ──
             if st.button("📊 رصيد المستودعات (المصرح بها)", key="cwk_inv_btn"):
                 st.session_state.page = "contractor_inventory"; st.query_params["_pg"] = "contractor_inventory"
                 if st.session_state.get("user_info"): st.query_params["_u"] = st.session_state.user_info.get("username","")
-
-            # بطاقة إجمالي المعلقة
-            if _pend_total > 0:
-                st.markdown(f"""
-                <div style='background:rgba(80,50,0,0.45);border:2px solid #f9a825;border-radius:10px;
-                    padding:8px 14px;text-align:center;margin:6px 0;direction:rtl;'>
-                    ⏳ <b style='color:#ffaa66;font-size:19px;'>{_pend_total}</b>
-                    <span style='font-size:20px;color:#8aaac8;'> فاتورة بانتظار إرفاقك</span>
-                </div>""", unsafe_allow_html=True)
-
-            # ── قسم: الطوارئ (إرفاق الفواتير) ──
-            st.divider()
-            st.sidebar.markdown("<div class='sb-section-emergency'>🚨 إرفاق فواتير الطوارئ</div>", unsafe_allow_html=True)
-            st.markdown("<div class='sb-btn-emergency'>", unsafe_allow_html=True)
-            if st.button("🚨 فواتير صرف واردة", key="cwk_emg_dispatch"):
-                st.session_state.page = "cwk_emg_dispatch"; st.query_params["_pg"] = "cwk_emg_dispatch"
-                if st.session_state.get("user_info"): st.query_params["_u"] = st.session_state.user_info.get("username","")
-            if _pend_dispatch > 0:
-                st.markdown(f"<div class='ret-btn-wrap'><span class='ret-badge'>{_pend_dispatch}</span></div>", unsafe_allow_html=True)
-            if st.button("↩️ فواتير ارجاع واردة", key="cwk_emg_return"):
-                st.session_state.page = "cwk_emg_return"; st.query_params["_pg"] = "cwk_emg_return"
-                if st.session_state.get("user_info"): st.query_params["_u"] = st.session_state.user_info.get("username","")
-            if _pend_return > 0:
-                st.markdown(f"<div class='ret-btn-wrap'><span class='ret-badge'>{_pend_return}</span></div>", unsafe_allow_html=True)
-            if st.button("🔁 فواتير نقل واردة", key="cwk_emg_transfer"):
-                st.session_state.page = "cwk_emg_transfer"; st.query_params["_pg"] = "cwk_emg_transfer"
-                if st.session_state.get("user_info"): st.query_params["_u"] = st.session_state.user_info.get("username","")
-            if _pend_transfer > 0:
-                st.markdown(f"<div class='ret-btn-wrap'><span class='ret-badge'>{_pend_transfer}</span></div>", unsafe_allow_html=True)
-            st.markdown("</div>", unsafe_allow_html=True)
-
-            # ── قسم: الفواتير المُعادة للتعديل — يظهر دائماً ──
-            st.divider()
-            st.sidebar.markdown("<div class='sb-section-requests'>🔴 فواتير تحتاج تعديل</div>", unsafe_allow_html=True)
-            st.markdown("<div class='sb-btn-requests'>", unsafe_allow_html=True)
-            if st.button("🔴 فواتير مُعادة للتعديل", key="cwk_returned_inv"):
-                st.session_state.page = "cwk_returned_invoices"; st.query_params["_pg"] = "cwk_returned_invoices"
-                if st.session_state.get("user_info"): st.query_params["_u"] = st.session_state.user_info.get("username","")
-            if _pend_returned_all > 0:
-                st.markdown(f"<div class='ret-btn-wrap'><span class='ret-badge'>{_pend_returned_all}</span></div>", unsafe_allow_html=True)
-            st.markdown("</div>", unsafe_allow_html=True)
-
-            # ── قسم: فواتيري السابقة ──
-            st.divider()
-            st.sidebar.markdown("<div class='sb-section-invoices'>📑 فواتيري السابقة</div>", unsafe_allow_html=True)
-            st.markdown("<div class='sb-btn-invoices'>", unsafe_allow_html=True)
-            if st.button("🛒 فواتير الصرف السابقة", key="cwk_hist_dispatch"):
-                st.session_state.page = "cwk_my_invoices"; st.session_state['cwk_my_inv_type'] = "صرف"; st.query_params["_pg"] = "cwk_my_invoices"
-                if st.session_state.get("user_info"): st.query_params["_u"] = st.session_state.user_info.get("username","")
-            if st.button("🔄 فواتير الارجاع السابقة", key="cwk_hist_return"):
-                st.session_state.page = "cwk_my_invoices"; st.session_state['cwk_my_inv_type'] = "ارجاع"; st.query_params["_pg"] = "cwk_my_invoices"
-                if st.session_state.get("user_info"): st.query_params["_u"] = st.session_state.user_info.get("username","")
-            if st.button("🚛 فواتير النقل السابقة", key="cwk_hist_transfer"):
-                st.session_state.page = "cwk_my_invoices"; st.session_state['cwk_my_inv_type'] = "نقل"; st.query_params["_pg"] = "cwk_my_invoices"
-                if st.session_state.get("user_info"): st.query_params["_u"] = st.session_state.user_info.get("username","")
-            st.markdown("</div>", unsafe_allow_html=True)
 
         # ── مدير النظام: صلاحيات كاملة ──
         else:
@@ -3219,9 +3128,9 @@ tick();setInterval(tick,1000);
             if st.session_state.get("user_info"): st.query_params["_u"] = st.session_state.user_info.get("username","")
             st.markdown("</div>", unsafe_allow_html=True)
 
-            # ═══ قسم: الطلبات ═══
+            # ═══ قسم: الطلبات والاعتمادات ═══
             st.divider()
-            st.sidebar.markdown("<div class='sb-section-requests'>📋 الطلبات</div>", unsafe_allow_html=True)
+            st.sidebar.markdown("<div class='sb-section-requests'>📋 الطلبات والاعتمادات</div>", unsafe_allow_html=True)
             st.markdown("<div class='sb-btn-requests'>", unsafe_allow_html=True)
 
             pending_ret_adm = int(pd.read_sql("SELECT COUNT(*) as cnt FROM return_requests WHERE status='معلق'", conn).iloc[0]['cnt'])
@@ -3230,20 +3139,19 @@ tick();setInterval(tick,1000);
             if pending_ret_adm > 0:
                 st.markdown(f"<div class='ret-btn-wrap'><span class='ret-badge'>{pending_ret_adm}</span></div>", unsafe_allow_html=True)
 
-            pending_cancel_adm = int(pd.read_sql("SELECT COUNT(*) as cnt FROM cancel_invoice_requests WHERE status='معلق'", conn).iloc[0]['cnt'])
-            if st.button("🚫 طلبات إلغاء الفواتير", key="sb_cancel_adm"): st.session_state.page = "cancel_invoice_admin"; st.query_params["_pg"] = "cancel_invoice_admin"
-            if st.session_state.get("user_info"): st.query_params["_u"] = st.session_state.user_info.get("username","")
-            if pending_cancel_adm > 0:
-                st.markdown(f"<div class='ret-btn-wrap'><span class='ret-badge'>{pending_cancel_adm}</span></div>", unsafe_allow_html=True)
-
             try:
                 _pend_signed_adm = int(pd.read_sql("SELECT COUNT(*) as cnt FROM signed_invoices WHERE status='بانتظار الاعتماد'", conn).iloc[0]['cnt'])
             except Exception:
                 _pend_signed_adm = 0
-            if st.button("✍️ اعتماد فواتير المستودعات", key="sb_approve_adm"): st.session_state.page = "approve_signed_invoices"; st.query_params["_pg"] = "approve_signed_invoices"
+
+            pending_cancel_adm = int(pd.read_sql("SELECT COUNT(*) as cnt FROM cancel_invoice_requests WHERE status='معلق'", conn).iloc[0]['cnt'])
+
+            if st.button("✍️ اعتماد فواتير الصرف والإرجاع وطلبات الإلغاء", key="sb_approve_adm"):
+                st.session_state.page = "approve_signed_invoices"; st.query_params["_pg"] = "approve_signed_invoices"
             if st.session_state.get("user_info"): st.query_params["_u"] = st.session_state.user_info.get("username","")
-            if _pend_signed_adm > 0:
-                st.markdown(f"<div class='ret-btn-wrap'><span class='ret-badge'>{_pend_signed_adm}</span></div>", unsafe_allow_html=True)
+            _total_pending_adm = _pend_signed_adm + pending_cancel_adm
+            if _total_pending_adm > 0:
+                st.markdown(f"<div class='ret-btn-wrap'><span class='ret-badge'>{_total_pending_adm}</span></div>", unsafe_allow_html=True)
             st.markdown("</div>", unsafe_allow_html=True)
 
             st.divider()
@@ -8782,396 +8690,511 @@ tbody tr:hover td{{color:#1dda70!important;}}
             st.error("❌ غير مصرح لك بالوصول لهذه الصفحة.")
         else:
             import base64
-            page_header("✍️", "اعتماد فواتير المستودعات", "مراجعة الفواتير المُرفقة واعتمادها أو ردها", "#1daa60")
+            page_header("✍️", "اعتماد فواتير الصرف والإرجاع وطلبات الإلغاء", "مراجعة الفواتير واعتمادها أو ردها", "#1daa60")
 
-            # ── إحصائية عامة ──
-            try:
-                _agg = pd.read_sql("SELECT status, COUNT(*) as cnt FROM signed_invoices GROUP BY status", conn)
-                _agg_map = {r['status']: int(r['cnt']) for _, r in _agg.iterrows()}
-            except Exception:
-                _agg_map = {}
+            _tab_stock, _tab_return_inv, _tab_cancel = st.tabs([
+                "🛒 اعتماد فواتير الصرف",
+                "↩️ اعتماد فواتير الإرجاع",
+                "🚫 طلبات إلغاء الفواتير"
+            ])
 
-            # الفواتير التي لم تُرفق بعد
-            try:
-                _unsigned_cnt = int(pd.read_sql(
-                    "SELECT COUNT(*) as cnt FROM archived_invoices a "
-                    "WHERE NOT EXISTS (SELECT 1 FROM signed_invoices s WHERE s.original_invoice_id=a.id) "
-                    "AND a.invoice_type IN ('صرف','ارجاع','نقل')", conn).iloc[0]['cnt'])
-            except:
-                _unsigned_cnt = 0
+            # ══════════════════════════════════════════
+            # تبويب ١: اعتماد فواتير الصرف
+            # ══════════════════════════════════════════
+            with _tab_stock:
+                # ── إحصائية عامة ──
+                try:
+                    _agg = pd.read_sql("SELECT status, COUNT(*) as cnt FROM signed_invoices GROUP BY status", conn)
+                    _agg_map = {r['status']: int(r['cnt']) for _, r in _agg.iterrows()}
+                except Exception:
+                    _agg_map = {}
 
-            _cnt_pending  = _agg_map.get("بانتظار الاعتماد", 0)
-            _cnt_approved = sum(v for k,v in _agg_map.items() if 'معتمد' in k)
-            _cnt_rejected = sum(v for k,v in _agg_map.items() if 'مرفوض' in k)
-            _cnt_returned = sum(v for k,v in _agg_map.items() if 'معادة' in k or 'مُعادة' in k)
-            _cnt_total    = _unsigned_cnt + _cnt_pending + _cnt_approved + _cnt_rejected + _cnt_returned
-
-            st.markdown(f"""
-            <div style='direction:rtl;font-size:15px;color:#8aaac8;margin-bottom:8px;font-weight:700;'>
-                📊 إحصائيات فواتير جميع أمناء المستودعات
-                <span style='color:#4db8ff;font-size:13px;margin-right:8px;'>({_cnt_total} فاتورة إجمالاً)</span>
-            </div>
-            <div style='display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:0 0 14px 0;direction:rtl;'>
-                <div style='background:rgba(60,0,0,0.40);border:2px solid #e53e3e;border-radius:10px;padding:14px;text-align:center;'>
-                    <div style='font-size:30px;font-weight:900;color:#ff6666;'>{_unsigned_cnt}</div>
-                    <div style='font-size:13px;color:#8aaac8;margin-top:4px;'>📝 لم تُرفق بعد</div>
-                </div>
-                <div style='background:rgba(0,30,80,0.50);border:2px solid #0288d1;border-radius:10px;padding:14px;text-align:center;'>
-                    <div style='font-size:30px;font-weight:900;color:#4db8ff;'>{_cnt_pending}</div>
-                    <div style='font-size:13px;color:#8aaac8;margin-top:4px;'>🔄 بانتظار الاعتماد</div>
-                </div>
-                <div style='background:rgba(60,20,0,0.45);border:2px solid #e65100;border-radius:10px;padding:14px;text-align:center;'>
-                    <div style='font-size:30px;font-weight:900;color:#ffaa66;'>{_cnt_returned}</div>
-                    <div style='font-size:13px;color:#8aaac8;margin-top:4px;'>🔴 مُعادة</div>
-                </div>
-                <div style='background:rgba(0,50,20,0.45);border:2px solid #1daa60;border-radius:10px;padding:14px;text-align:center;'>
-                    <div style='font-size:30px;font-weight:900;color:#1dda70;'>{_cnt_approved}</div>
-                    <div style='font-size:13px;color:#8aaac8;margin-top:4px;'>✅ معتمدة</div>
-                </div>
-                <div style='background:rgba(80,0,0,0.40);border:2px solid #c62828;border-radius:10px;padding:14px;text-align:center;'>
-                    <div style='font-size:30px;font-weight:900;color:#ff4444;'>{_cnt_rejected}</div>
-                    <div style='font-size:13px;color:#8aaac8;margin-top:4px;'>❌ مرفوضة</div>
-                </div>
-            </div>""", unsafe_allow_html=True)
-
-            # ── تفصيل حسب أمين المستودع ──
-            try:
-                _cwk_users = pd.read_sql(
-                    "SELECT username, full_name FROM users WHERE role='أمين مستودع المقاول' ORDER BY full_name", conn)
-            except:
-                _cwk_users = pd.DataFrame()
-
-            if not _cwk_users.empty:
-                _cwk_rows = ""
-                for _, _cu in _cwk_users.iterrows():
-                    _cname = str(_cu['full_name'])
-                    _c_unsigned = int(pd.read_sql(
+                # الفواتير التي لم تُرفق بعد
+                try:
+                    _unsigned_cnt = int(pd.read_sql(
                         "SELECT COUNT(*) as cnt FROM archived_invoices a "
-                        "WHERE a.employee=? AND NOT EXISTS (SELECT 1 FROM signed_invoices s WHERE s.original_invoice_id=a.id) "
-                        "AND a.invoice_type IN ('صرف','ارجاع','نقل')", conn, params=(_cname,)).iloc[0]['cnt'])
-                    _c_stat = pd.read_sql(
-                        "SELECT s.status, COUNT(*) as cnt FROM signed_invoices s "
-                        "WHERE s.signed_by=? GROUP BY s.status", conn, params=(_cname,))
-                    _csm = {r['status']:int(r['cnt']) for _,r in _c_stat.iterrows()}
-                    _c_p  = _csm.get("بانتظار الاعتماد", 0)
-                    _c_a  = sum(v for k,v in _csm.items() if 'معتمد' in k)
-                    _c_rt = sum(v for k,v in _csm.items() if 'معادة' in k)
-                    _c_rj = sum(v for k,v in _csm.items() if 'مرفوض' in k)
-                    _cwk_rows += (
-                        f"<tr>"
-                        f"<td style='padding:9px 14px;border-bottom:1px solid rgba(0,140,255,0.10);color:#ddeeff;font-weight:700;'>👤 {_cname}</td>"
-                        f"<td style='padding:9px 14px;border-bottom:1px solid rgba(0,140,255,0.10);text-align:center;'><span style='color:#ff6666;font-weight:900;font-size:16px;'>{_c_unsigned}</span></td>"
-                        f"<td style='padding:9px 14px;border-bottom:1px solid rgba(0,140,255,0.10);text-align:center;'><span style='color:#4db8ff;font-weight:900;font-size:16px;'>{_c_p}</span></td>"
-                        f"<td style='padding:9px 14px;border-bottom:1px solid rgba(0,140,255,0.10);text-align:center;'><span style='color:#1dda70;font-weight:900;font-size:16px;'>{_c_a}</span></td>"
-                        f"<td style='padding:9px 14px;border-bottom:1px solid rgba(0,140,255,0.10);text-align:center;'><span style='color:#ffaa66;font-weight:900;font-size:16px;'>{_c_rt}</span></td>"
-                        f"<td style='padding:9px 14px;border-bottom:1px solid rgba(0,140,255,0.10);text-align:center;'><span style='color:#ff4444;font-weight:900;font-size:16px;'>{_c_rj}</span></td>"
-                        f"</tr>"
-                    )
-                components.html(f"""<!DOCTYPE html><html><head><meta charset="utf-8">
-<style>
-*{{box-sizing:border-box;}}
-body{{margin:0;padding:6px;font-family:'Tajawal',Arial,sans-serif;direction:rtl;background:transparent;}}
-table{{width:100%;border-collapse:collapse;border-radius:10px;overflow:hidden;border:1px solid rgba(0,140,255,0.20);}}
-thead tr{{background:linear-gradient(90deg,#003580,#004a99,#003580);color:white;font-size:14px;font-weight:900;}}
-thead th{{padding:11px 14px;text-align:right;}}
-tbody tr{{background:rgba(3,10,28,0.75);}}
-tbody tr:nth-child(even){{background:rgba(0,20,60,0.65);}}
-</style></head><body>
-<table>
-<thead><tr>
-<th>👤 أمين المستودع</th>
-<th style="text-align:center;">📝 لم تُرفق</th>
-<th style="text-align:center;">🔄 بانتظار</th>
-<th style="text-align:center;">✅ معتمدة</th>
-<th style="text-align:center;">🔴 معادة</th>
-<th style="text-align:center;">❌ مرفوضة</th>
-</tr></thead>
-<tbody>{_cwk_rows}</tbody>
-</table>
-</body></html>
-""", height=min(60 + len(_cwk_users)*48, 400), scrolling=True)
-            st.divider()
+                        "WHERE NOT EXISTS (SELECT 1 FROM signed_invoices s WHERE s.original_invoice_id=a.id) "
+                        "AND a.invoice_type IN ('صرف','ارجاع','نقل')", conn).iloc[0]['cnt'])
+                except:
+                    _unsigned_cnt = 0
 
-            # ── فلاتر القائمة ──
-            _af1, _af2, _af3, _af4 = st.columns([1.5, 1.2, 1.2, 1])
-            _af_type   = _af1.selectbox("نوع الفاتورة:", ["الكل","صرف","ارجاع","نقل"], key="af_type")
-            _af_wh_ap  = _af2.selectbox("🏢 المستودع:", ["الكل"] + list_warehouses, key="af_wh_ap")
-            _status_opts = ["بانتظار الاعتماد","معتمد","مرفوض","مُعادة","الكل"]
-            _af_status_default = st.session_state.pop("_af_status_pending", None) or "بانتظار الاعتماد"
-            _af_status_idx = _status_opts.index(_af_status_default) if _af_status_default in _status_opts else 0
-            _af_status = _af3.selectbox("الحالة:", _status_opts, index=_af_status_idx, key="af_status")
-            _af_search = _af4.text_input("🔍 رقم الفاتورة:", key="af_search").strip()
+                _cnt_pending  = _agg_map.get("بانتظار الاعتماد", 0)
+                _cnt_approved = sum(v for k,v in _agg_map.items() if 'معتمد' in k)
+                _cnt_rejected = sum(v for k,v in _agg_map.items() if 'مرفوض' in k)
+                _cnt_returned = sum(v for k,v in _agg_map.items() if 'معادة' in k or 'مُعادة' in k)
+                _cnt_total    = _unsigned_cnt + _cnt_pending + _cnt_approved + _cnt_rejected + _cnt_returned
 
-            _aq = """SELECT s.id, s.invoice_no, s.invoice_type, s.signed_by, s.signed_at,
-                            s.status, s.admin_notes, s.reviewed_by, s.reviewed_at, s.boq,
-                            s.original_invoice_id,
-                            a.items_json, a.warehouse_from, a.warehouse_to,
-                            a.contractor, a.html_content, a.employee as creator
-                     FROM signed_invoices s
-                     LEFT JOIN archived_invoices a ON s.original_invoice_id = a.id
-                     WHERE 1=1"""
-            if _af_type   != "الكل": _aq += f" AND s.invoice_type='{_af_type}'"
-            if _af_wh_ap  != "الكل": _aq += f" AND (a.warehouse_from='{_af_wh_ap}' OR a.warehouse_to='{_af_wh_ap}')"
-            if _af_status != "الكل": _aq += f" AND s.status='{_af_status}'"
-            if _af_search:            _aq += f" AND s.invoice_no LIKE '%{_af_search}%'"
-            _aq += " ORDER BY s.id DESC"
+                st.markdown(f"""
+                <div style='direction:rtl;font-size:15px;color:#8aaac8;margin-bottom:8px;font-weight:700;'>
+                    📊 إحصائيات فواتير جميع أمناء المستودعات
+                    <span style='color:#4db8ff;font-size:13px;margin-right:8px;'>({_cnt_total} فاتورة إجمالاً)</span>
+                </div>
+                <div style='display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:0 0 14px 0;direction:rtl;'>
+                    <div style='background:rgba(60,0,0,0.40);border:2px solid #e53e3e;border-radius:10px;padding:14px;text-align:center;'>
+                        <div style='font-size:30px;font-weight:900;color:#ff6666;'>{_unsigned_cnt}</div>
+                        <div style='font-size:13px;color:#8aaac8;margin-top:4px;'>📝 لم تُرفق بعد</div>
+                    </div>
+                    <div style='background:rgba(0,30,80,0.50);border:2px solid #0288d1;border-radius:10px;padding:14px;text-align:center;'>
+                        <div style='font-size:30px;font-weight:900;color:#4db8ff;'>{_cnt_pending}</div>
+                        <div style='font-size:13px;color:#8aaac8;margin-top:4px;'>🔄 بانتظار الاعتماد</div>
+                    </div>
+                    <div style='background:rgba(60,20,0,0.45);border:2px solid #e65100;border-radius:10px;padding:14px;text-align:center;'>
+                        <div style='font-size:30px;font-weight:900;color:#ffaa66;'>{_cnt_returned}</div>
+                        <div style='font-size:13px;color:#8aaac8;margin-top:4px;'>🔴 مُعادة</div>
+                    </div>
+                    <div style='background:rgba(0,50,20,0.45);border:2px solid #1daa60;border-radius:10px;padding:14px;text-align:center;'>
+                        <div style='font-size:30px;font-weight:900;color:#1dda70;'>{_cnt_approved}</div>
+                        <div style='font-size:13px;color:#8aaac8;margin-top:4px;'>✅ معتمدة</div>
+                    </div>
+                    <div style='background:rgba(80,0,0,0.40);border:2px solid #c62828;border-radius:10px;padding:14px;text-align:center;'>
+                        <div style='font-size:30px;font-weight:900;color:#ff4444;'>{_cnt_rejected}</div>
+                        <div style='font-size:13px;color:#8aaac8;margin-top:4px;'>❌ مرفوضة</div>
+                    </div>
+                </div>""", unsafe_allow_html=True)
 
-            df_approve = pd.read_sql(_aq, conn)
+                # ── تفصيل حسب أمين المستودع ──
+                try:
+                    _cwk_users = pd.read_sql(
+                        "SELECT username, full_name FROM users WHERE role='أمين مستودع المقاول' ORDER BY full_name", conn)
+                except:
+                    _cwk_users = pd.DataFrame()
 
-            if df_approve.empty:
-                st.info("ℹ️ لا توجد فواتير تطابق الفلاتر المحددة.")
-            else:
-                st.caption(f"📋 {len(df_approve)} فاتورة")
-                st.markdown("<br>", unsafe_allow_html=True)
+                if not _cwk_users.empty:
+                    _cwk_rows = ""
+                    for _, _cu in _cwk_users.iterrows():
+                        _cname = str(_cu['full_name'])
+                        _c_unsigned = int(pd.read_sql(
+                            "SELECT COUNT(*) as cnt FROM archived_invoices a "
+                            "WHERE a.employee=? AND NOT EXISTS (SELECT 1 FROM signed_invoices s WHERE s.original_invoice_id=a.id) "
+                            "AND a.invoice_type IN ('صرف','ارجاع','نقل')", conn, params=(_cname,)).iloc[0]['cnt'])
+                        _c_stat = pd.read_sql(
+                            "SELECT s.status, COUNT(*) as cnt FROM signed_invoices s "
+                            "WHERE s.signed_by=? GROUP BY s.status", conn, params=(_cname,))
+                        _csm = {r['status']:int(r['cnt']) for _,r in _c_stat.iterrows()}
+                        _c_p  = _csm.get("بانتظار الاعتماد", 0)
+                        _c_a  = sum(v for k,v in _csm.items() if 'معتمد' in k)
+                        _c_rt = sum(v for k,v in _csm.items() if 'معادة' in k)
+                        _c_rj = sum(v for k,v in _csm.items() if 'مرفوض' in k)
+                        _cwk_rows += (
+                            f"<tr>"
+                            f"<td style='padding:9px 14px;border-bottom:1px solid rgba(0,140,255,0.10);color:#ddeeff;font-weight:700;'>👤 {_cname}</td>"
+                            f"<td style='padding:9px 14px;border-bottom:1px solid rgba(0,140,255,0.10);text-align:center;'><span style='color:#ff6666;font-weight:900;font-size:16px;'>{_c_unsigned}</span></td>"
+                            f"<td style='padding:9px 14px;border-bottom:1px solid rgba(0,140,255,0.10);text-align:center;'><span style='color:#4db8ff;font-weight:900;font-size:16px;'>{_c_p}</span></td>"
+                            f"<td style='padding:9px 14px;border-bottom:1px solid rgba(0,140,255,0.10);text-align:center;'><span style='color:#1dda70;font-weight:900;font-size:16px;'>{_c_a}</span></td>"
+                            f"<td style='padding:9px 14px;border-bottom:1px solid rgba(0,140,255,0.10);text-align:center;'><span style='color:#ffaa66;font-weight:900;font-size:16px;'>{_c_rt}</span></td>"
+                            f"<td style='padding:9px 14px;border-bottom:1px solid rgba(0,140,255,0.10);text-align:center;'><span style='color:#ff4444;font-weight:900;font-size:16px;'>{_c_rj}</span></td>"
+                            f"</tr>"
+                        )
+                    components.html(f"""<!DOCTYPE html><html><head><meta charset="utf-8">
+    <style>
+    *{{box-sizing:border-box;}}
+    body{{margin:0;padding:6px;font-family:'Tajawal',Arial,sans-serif;direction:rtl;background:transparent;}}
+    table{{width:100%;border-collapse:collapse;border-radius:10px;overflow:hidden;border:1px solid rgba(0,140,255,0.20);}}
+    thead tr{{background:linear-gradient(90deg,#003580,#004a99,#003580);color:white;font-size:14px;font-weight:900;}}
+    thead th{{padding:11px 14px;text-align:right;}}
+    tbody tr{{background:rgba(3,10,28,0.75);}}
+    tbody tr:nth-child(even){{background:rgba(0,20,60,0.65);}}
+    </style></head><body>
+    <table>
+    <thead><tr>
+    <th>👤 أمين المستودع</th>
+    <th style="text-align:center;">📝 لم تُرفق</th>
+    <th style="text-align:center;">🔄 بانتظار</th>
+    <th style="text-align:center;">✅ معتمدة</th>
+    <th style="text-align:center;">🔴 معادة</th>
+    <th style="text-align:center;">❌ مرفوضة</th>
+    </tr></thead>
+    <tbody>{_cwk_rows}</tbody>
+    </table>
+    </body></html>
+    """, height=min(60 + len(_cwk_users)*48, 400), scrolling=True)
+                st.divider()
 
-                for _, ar in df_approve.iterrows():
-                    ar = ar.to_dict()  # تحويل لـ dict لضمان عرض HTML صحيح
-                    _ar_id     = int(ar['id'])
-                    _ar_invno  = str(ar['invoice_no'])
-                    _ar_type   = str(ar['invoice_type'])
-                    _ar_status = str(ar['status'])
-                    _ar_notes  = str(ar.get('admin_notes','') or '')
-                    _ar_by     = str(ar.get('signed_by',''))
-                    _ar_at     = str(ar.get('signed_at',''))
-                    _ar_rev_by = str(ar.get('reviewed_by','') or '')
-                    _ar_boq    = str(ar.get('boq','') or '')
-                    _badge_c   = {"بانتظار الاعتماد":"#0288d1","معتمد":"#1daa60","مرفوض":"#d32f2f","مُعادة":"#e65100"}.get(_ar_status,"#9e9e9e")
-                    _type_c    = {"صرف":"#e53e3e","ارجاع":"#2b6cb0","نقل":"#276749"}.get(_ar_type,"#555")
+                # ── فلاتر القائمة ──
+                _af1, _af2, _af3, _af4 = st.columns([1.5, 1.2, 1.2, 1])
+                _af_type   = _af1.selectbox("نوع الفاتورة:", ["الكل","صرف","ارجاع","نقل"], key="af_type")
+                _af_wh_ap  = _af2.selectbox("🏢 المستودع:", ["الكل"] + list_warehouses, key="af_wh_ap")
+                _status_opts = ["بانتظار الاعتماد","معتمد","مرفوض","مُعادة","الكل"]
+                _af_status_default = st.session_state.pop("_af_status_pending", None) or "بانتظار الاعتماد"
+                _af_status_idx = _status_opts.index(_af_status_default) if _af_status_default in _status_opts else 0
+                _af_status = _af3.selectbox("الحالة:", _status_opts, index=_af_status_idx, key="af_status")
+                _af_search = _af4.text_input("🔍 رقم الفاتورة:", key="af_search").strip()
 
-                    with st.expander(
-                        f"📄 {_ar_type} | رقم: {_ar_invno} | ✍️ {_ar_by} | {_ar_at[:16]}",
-                        expanded=(_ar_status == "بانتظار الاعتماد")):
+                _aq = """SELECT s.id, s.invoice_no, s.invoice_type, s.signed_by, s.signed_at,
+                                s.status, s.admin_notes, s.reviewed_by, s.reviewed_at, s.boq,
+                                s.original_invoice_id,
+                                a.items_json, a.warehouse_from, a.warehouse_to,
+                                a.contractor, a.html_content, a.employee as creator
+                         FROM signed_invoices s
+                         LEFT JOIN archived_invoices a ON s.original_invoice_id = a.id
+                         WHERE 1=1"""
+                if _af_type   != "الكل": _aq += f" AND s.invoice_type='{_af_type}'"
+                if _af_wh_ap  != "الكل": _aq += f" AND (a.warehouse_from='{_af_wh_ap}' OR a.warehouse_to='{_af_wh_ap}')"
+                if _af_status != "الكل": _aq += f" AND s.status='{_af_status}'"
+                if _af_search:            _aq += f" AND s.invoice_no LIKE '%{_af_search}%'"
+                _aq += " ORDER BY s.id DESC"
 
-                        # ── عرض جانبي: الفاتورة الأصلية | الفاتورة الموقعة ──
-                        _col_orig, _col_sign = st.columns([1, 1])
+                df_approve = pd.read_sql(_aq, conn)
 
-                        with _col_orig:
-                            _orig_boq_p  = f"📋 BOQ: <b style='color:#7aaac8;'>{_ar_boq}</b><br>" if _ar_boq else ""
-                            _orig_to_p   = f" ➡️ <b>{str(ar.get('warehouse_to',''))}</b>" if ar.get('warehouse_to') else ""
-                            _orig_con_p  = f"<br>🏗️ <b>{str(ar.get('contractor',''))}</b>" if ar.get('contractor') else ""
-                            _orig_card   = (
-                                f"<div style='background:rgba(0,20,60,0.60);border:2px solid #004a99;border-radius:10px;"
-                                f"padding:12px 16px;direction:rtl;margin-bottom:8px;'>"
-                                f"<b style='color:#7aaac8;'>📄 الفاتورة الأصلية</b>"
-                                f"<span style='background:{_type_c};color:white;border-radius:6px;"
-                                f"padding:1px 8px;font-size:19px;font-weight:bold;margin-right:6px;'>{_ar_type}</span><br>"
-                                f"<span style='font-size:17px;color:#c8dff4;line-height:2;'>"
-                                f"🔢 رقم: <b style='color:#ff6666;'>{_ar_invno}</b><br>"
-                                f"{_orig_boq_p}"
-                                f"📍 <b>{str(ar.get('warehouse_from','—'))}</b>"
-                                f"{_orig_to_p}{_orig_con_p}"
-                                f"<br>👤 أنشأها: <b>{str(ar.get('creator','—'))}</b>"
-                                f"</span></div>"
-                            )
-                            st.markdown(_orig_card, unsafe_allow_html=True)
-                            _vok = f"vappr_orig_{_ar_id}"
-                            if st.button("👁️ عرض محتوى الفاتورة", key=f"vappr_orig_btn_{_ar_id}", use_container_width=True):
-                                st.session_state[_vok] = not st.session_state.get(_vok, False)
-                            if st.session_state.get(_vok, False):
-                                _orig_html = str(ar.get('html_content','') or '')
-                                if _orig_html:
-                                    _orig_html = _orig_html.replace('background:rgba(3,10,28,0.82)','background:white').replace('background:rgba(3,10,28,0.88)','background:white').replace('background:rgba(3,10,28,0.80)','background:white')
-                                    if '<body' in _orig_html and 'background:#f0f4f8' not in _orig_html:
-                                        _orig_html = _orig_html.replace('<body>','<body style="background:#f0f4f8;">').replace('<body ','<body style="background:#f0f4f8;" ')
-                                    components.html(_orig_html, height=950, scrolling=True)
+                if df_approve.empty:
+                    st.info("ℹ️ لا توجد فواتير تطابق الفلاتر المحددة.")
+                else:
+                    st.caption(f"📋 {len(df_approve)} فاتورة")
+                    st.markdown("<br>", unsafe_allow_html=True)
 
-                        with _col_sign:
-                            _sign_rev_p  = f"<br>🔍 راجعها: <b>{_ar_rev_by}</b>" if _ar_rev_by else ""
-                            _sign_note_p = f"<br>💬 <b style='color:#ffaa66;'>{_ar_notes}</b>" if _ar_notes.strip() else ""
-                            _sign_card   = (
-                                f"<div style='background:rgba(3,10,28,0.70);border:2px solid {_badge_c};border-radius:10px;"
-                                f"padding:12px 16px;direction:rtl;margin-bottom:8px;'>"
-                                f"<b style='color:#c8dff4;'>📎 الفاتورة الموقعة</b>"
-                                f"<span style='background:{_badge_c};color:white;border-radius:8px;"
-                                f"padding:2px 10px;font-size:20px;font-weight:bold;margin-right:6px;'>{_ar_status}</span><br>"
-                                f"<span style='font-size:17px;color:#c8dff4;line-height:2;'>"
-                                f"✍️ أرفقها: <b>{_ar_by}</b><br>"
-                                f"📅 {_ar_at[:16]}"
-                                f"{_sign_rev_p}{_sign_note_p}"
-                                f"</span></div>"
-                            )
-                            st.markdown(_sign_card, unsafe_allow_html=True)
-                            _vik = f"vappr_img_{_ar_id}"
-                            if st.button("🖼️ عرض صورة الفاتورة الموقعة", key=f"vappr_img_btn_{_ar_id}", use_container_width=True):
-                                st.session_state[_vik] = not st.session_state.get(_vik, False)
-                            if st.session_state.get(_vik, False):
-                                _fsig2 = pd.read_sql("SELECT signed_image_base64 FROM signed_invoices WHERE id=?", conn, params=(_ar_id,))
-                                if not _fsig2.empty and _fsig2.iloc[0]['signed_image_base64']:
-                                    st.markdown(
-                                        f'<img src="data:image/jpeg;base64,{_fsig2.iloc[0]["signed_image_base64"]}" '
-                                        f'style="max-width:100%;border:2px solid {_badge_c};border-radius:8px;margin-top:6px;">',
-                                        unsafe_allow_html=True)
-                                else:
-                                    st.info("لا توجد صورة مرفقة.")
+                    for _, ar in df_approve.iterrows():
+                        ar = ar.to_dict()  # تحويل لـ dict لضمان عرض HTML صحيح
+                        _ar_id     = int(ar['id'])
+                        _ar_invno  = str(ar['invoice_no'])
+                        _ar_type   = str(ar['invoice_type'])
+                        _ar_status = str(ar['status'])
+                        _ar_notes  = str(ar.get('admin_notes','') or '')
+                        _ar_by     = str(ar.get('signed_by',''))
+                        _ar_at     = str(ar.get('signed_at',''))
+                        _ar_rev_by = str(ar.get('reviewed_by','') or '')
+                        _ar_boq    = str(ar.get('boq','') or '')
+                        _badge_c   = {"بانتظار الاعتماد":"#0288d1","معتمد":"#1daa60","مرفوض":"#d32f2f","مُعادة":"#e65100"}.get(_ar_status,"#9e9e9e")
+                        _type_c    = {"صرف":"#e53e3e","ارجاع":"#2b6cb0","نقل":"#276749"}.get(_ar_type,"#555")
 
-                        # ── منطقة الاعتماد (فقط للفواتير بانتظار الاعتماد) ──
-                        if _ar_status == "بانتظار الاعتماد":
-                            st.divider()
-                            section_card("📝 قرار الاعتماد", "#1a3a5c")
-                            _note_key  = f"appr_note_{_ar_id}"
-                            _appr_note = st.text_area(
-                                "💬 ملاحظة (اختيارية عند الاعتماد، إجبارية عند الرفض أو الإعادة):",
-                                placeholder="اكتب ملاحظتك هنا...",
-                                key=_note_key, height=80)
+                        with st.expander(
+                            f"📄 {_ar_type} | رقم: {_ar_invno} | ✍️ {_ar_by} | {_ar_at[:16]}",
+                            expanded=(_ar_status == "بانتظار الاعتماد")):
 
-                            _btn1, _btn2, _btn3 = st.columns(3)
+                            # ── عرض جانبي: الفاتورة الأصلية | الفاتورة الموقعة ──
+                            _col_orig, _col_sign = st.columns([1, 1])
+
+                            with _col_orig:
+                                _orig_boq_p  = f"📋 BOQ: <b style='color:#7aaac8;'>{_ar_boq}</b><br>" if _ar_boq else ""
+                                _orig_to_p   = f" ➡️ <b>{str(ar.get('warehouse_to',''))}</b>" if ar.get('warehouse_to') else ""
+                                _orig_con_p  = f"<br>🏗️ <b>{str(ar.get('contractor',''))}</b>" if ar.get('contractor') else ""
+                                _orig_card   = (
+                                    f"<div style='background:rgba(0,20,60,0.60);border:2px solid #004a99;border-radius:10px;"
+                                    f"padding:12px 16px;direction:rtl;margin-bottom:8px;'>"
+                                    f"<b style='color:#7aaac8;'>📄 الفاتورة الأصلية</b>"
+                                    f"<span style='background:{_type_c};color:white;border-radius:6px;"
+                                    f"padding:1px 8px;font-size:19px;font-weight:bold;margin-right:6px;'>{_ar_type}</span><br>"
+                                    f"<span style='font-size:17px;color:#c8dff4;line-height:2;'>"
+                                    f"🔢 رقم: <b style='color:#ff6666;'>{_ar_invno}</b><br>"
+                                    f"{_orig_boq_p}"
+                                    f"📍 <b>{str(ar.get('warehouse_from','—'))}</b>"
+                                    f"{_orig_to_p}{_orig_con_p}"
+                                    f"<br>👤 أنشأها: <b>{str(ar.get('creator','—'))}</b>"
+                                    f"</span></div>"
+                                )
+                                st.markdown(_orig_card, unsafe_allow_html=True)
+                                _vok = f"vappr_orig_{_ar_id}"
+                                if st.button("👁️ عرض محتوى الفاتورة", key=f"vappr_orig_btn_{_ar_id}", use_container_width=True):
+                                    st.session_state[_vok] = not st.session_state.get(_vok, False)
+                                if st.session_state.get(_vok, False):
+                                    _orig_html = str(ar.get('html_content','') or '')
+                                    if _orig_html:
+                                        _orig_html = _orig_html.replace('background:rgba(3,10,28,0.82)','background:white').replace('background:rgba(3,10,28,0.88)','background:white').replace('background:rgba(3,10,28,0.80)','background:white')
+                                        if '<body' in _orig_html and 'background:#f0f4f8' not in _orig_html:
+                                            _orig_html = _orig_html.replace('<body>','<body style="background:#f0f4f8;">').replace('<body ','<body style="background:#f0f4f8;" ')
+                                        components.html(_orig_html, height=950, scrolling=True)
+
+                            with _col_sign:
+                                _sign_rev_p  = f"<br>🔍 راجعها: <b>{_ar_rev_by}</b>" if _ar_rev_by else ""
+                                _sign_note_p = f"<br>💬 <b style='color:#ffaa66;'>{_ar_notes}</b>" if _ar_notes.strip() else ""
+                                _sign_card   = (
+                                    f"<div style='background:rgba(3,10,28,0.70);border:2px solid {_badge_c};border-radius:10px;"
+                                    f"padding:12px 16px;direction:rtl;margin-bottom:8px;'>"
+                                    f"<b style='color:#c8dff4;'>📎 الفاتورة الموقعة</b>"
+                                    f"<span style='background:{_badge_c};color:white;border-radius:8px;"
+                                    f"padding:2px 10px;font-size:20px;font-weight:bold;margin-right:6px;'>{_ar_status}</span><br>"
+                                    f"<span style='font-size:17px;color:#c8dff4;line-height:2;'>"
+                                    f"✍️ أرفقها: <b>{_ar_by}</b><br>"
+                                    f"📅 {_ar_at[:16]}"
+                                    f"{_sign_rev_p}{_sign_note_p}"
+                                    f"</span></div>"
+                                )
+                                st.markdown(_sign_card, unsafe_allow_html=True)
+                                _vik = f"vappr_img_{_ar_id}"
+                                if st.button("🖼️ عرض صورة الفاتورة الموقعة", key=f"vappr_img_btn_{_ar_id}", use_container_width=True):
+                                    st.session_state[_vik] = not st.session_state.get(_vik, False)
+                                if st.session_state.get(_vik, False):
+                                    _fsig2 = pd.read_sql("SELECT signed_image_base64 FROM signed_invoices WHERE id=?", conn, params=(_ar_id,))
+                                    if not _fsig2.empty and _fsig2.iloc[0]['signed_image_base64']:
+                                        st.markdown(
+                                            f'<img src="data:image/jpeg;base64,{_fsig2.iloc[0]["signed_image_base64"]}" '
+                                            f'style="max-width:100%;border:2px solid {_badge_c};border-radius:8px;margin-top:6px;">',
+                                            unsafe_allow_html=True)
+                                    else:
+                                        st.info("لا توجد صورة مرفقة.")
+
+                            # ── منطقة الاعتماد (فقط للفواتير بانتظار الاعتماد) ──
+                            if _ar_status == "بانتظار الاعتماد":
+                                st.divider()
+                                section_card("📝 قرار الاعتماد", "#1a3a5c")
+                                _note_key  = f"appr_note_{_ar_id}"
+                                _appr_note = st.text_area(
+                                    "💬 ملاحظة (اختيارية عند الاعتماد، إجبارية عند الرفض أو الإعادة):",
+                                    placeholder="اكتب ملاحظتك هنا...",
+                                    key=_note_key, height=80)
+
+                                _btn1, _btn2, _btn3 = st.columns(3)
+                                _ts_rev = now_mecca().strftime("%Y-%m-%d %H:%M:%S")
+
+                                # ── اعتماد ──
+                                with _btn1:
+                                    _conf_yes_k = f"conf_yes_{_ar_id}"
+                                    st.markdown("<div class='btn-success'>", unsafe_allow_html=True)
+                                    if st.button("✅ اعتماد وتنفيذ الخصم", key=f"appr_yes_{_ar_id}", use_container_width=True):
+                                        st.session_state[_conf_yes_k] = True
+                                    st.markdown("</div>", unsafe_allow_html=True)
+                                    if st.session_state.get(_conf_yes_k):
+                                        st.warning(f"⚠️ هل أنت متأكد من اعتماد الفاتورة **{_ar_invno}** وتنفيذ الخصم من المخزون؟")
+                                        _cy1, _cy2 = st.columns(2)
+                                        if _cy1.button("✅ نعم، اعتمد", key=f"conf_yes_ok_{_ar_id}"):
+                                            try: _items = json.loads(str(ar.get('items_json','[]') or '[]'))
+                                            except: _items = []
+                                            _wh_f = str(ar.get('warehouse_from',''))
+                                            _wh_t = str(ar.get('warehouse_to',''))
+                                            _cont = str(ar.get('contractor',''))
+                                            for _it in _items:
+                                                if _ar_type == "صرف":
+                                                    c.execute("INSERT INTO inventory (item_code,qty,warehouse,contractor,category) VALUES (?,?,?,?,?)",
+                                                              (_it['code'], -int(_it['qty']), _wh_f, _cont, _it.get('cat','')))
+                                                    save_log("خصم—اعتماد فاتورة مقاول", _it['code'], _it['qty'],
+                                                             f"فاتورة {_ar_invno} | اعتمدها: {u['full_name']}", u['full_name'])
+                                                elif _ar_type == "نقل":
+                                                    c.execute("INSERT INTO inventory (item_code,qty,warehouse,contractor,category) VALUES (?,?,?,?,?)",
+                                                              (_it['code'], -int(_it['qty']), _wh_f, '', _it.get('cat','')))
+                                                    c.execute("INSERT INTO inventory (item_code,qty,warehouse,contractor,category) VALUES (?,?,?,?,?)",
+                                                              (_it['code'], int(_it['qty']), _wh_t, '', _it.get('cat','')))
+                                                    save_log("نقل—اعتماد فاتورة مقاول", _it['code'], _it['qty'],
+                                                             f"فاتورة {_ar_invno} | اعتمدها: {u['full_name']}", u['full_name'])
+                                                elif _ar_type == "ارجاع":
+                                                    c.execute("INSERT INTO inventory (item_code,qty,warehouse,contractor,category) VALUES (?,?,?,?,?)",
+                                                              (_it['code'], int(_it['qty']), _wh_f, _cont, _it.get('cat','')))
+                                                    save_log("ارجاع—اعتماد فاتورة مقاول", _it['code'], _it['qty'],
+                                                             f"فاتورة {_ar_invno} | اعتمدها: {u['full_name']}", u['full_name'])
+                                            c.execute("UPDATE signed_invoices SET status='معتمد', deducted=1, admin_notes=?, reviewed_by=?, reviewed_at=? WHERE id=?",
+                                                      (_appr_note.strip(), u['full_name'], _ts_rev, _ar_id))
+                                            confirm_reservation(_ar_invno)
+                                            conn.commit()
+                                            st.session_state.pop(_conf_yes_k, None)
+                                            # انتقال لنفس الصفحة مع فلتر "معتمدة"
+                                            st.session_state["_af_status_pending"] = "معتمد"
+                                            st.success(f"✅ تم اعتماد الفاتورة ({_ar_invno}) وتنفيذ الخصم!")
+                                            st.rerun()
+                                        if _cy2.button("❌ إلغاء", key=f"conf_yes_cancel_{_ar_id}"):
+                                            st.session_state.pop(_conf_yes_k, None); st.rerun()
+
+                                # ── إعادة ──
+                                with _btn2:
+                                    _conf_ret_k = f"conf_ret_{_ar_id}"
+                                    if st.button("🔄 إعادة لأمين المستودع", key=f"appr_return_{_ar_id}", use_container_width=True):
+                                        if not _appr_note.strip():
+                                            st.error("❌ يجب كتابة ملاحظة توضح سبب الإعادة.")
+                                        else:
+                                            st.session_state[_conf_ret_k] = True
+                                    if st.session_state.get(_conf_ret_k):
+                                        st.warning(f"⚠️ هل أنت متأكد من إعادة الفاتورة **{_ar_invno}** إلى أمين المستودع؟")
+                                        _rr1, _rr2 = st.columns(2)
+                                        if _rr1.button("✅ نعم، أعد", key=f"conf_ret_ok_{_ar_id}"):
+                                            c.execute("UPDATE signed_invoices SET status='مُعادة', deducted=0, admin_notes=?, reviewed_by=?, reviewed_at=? WHERE id=?",
+                                                      (_appr_note.strip(), u['full_name'], _ts_rev, _ar_id))
+                                            release_reservation(_ar_invno)
+                                            conn.commit()
+                                            st.session_state.pop(_conf_ret_k, None)
+                                            st.warning(f"🔄 تم إعادة الفاتورة ({_ar_invno}) مع الملاحظة.")
+                                            st.rerun()
+                                        if _rr2.button("❌ إلغاء", key=f"conf_ret_cancel_{_ar_id}"):
+                                            st.session_state.pop(_conf_ret_k, None); st.rerun()
+
+                                # ── رفض ──
+                                with _btn3:
+                                    _conf_rej_k = f"conf_rej_{_ar_id}"
+                                    st.markdown("<div class='btn-danger'>", unsafe_allow_html=True)
+                                    if st.button("❌ رفض الفاتورة", key=f"appr_no_{_ar_id}", use_container_width=True):
+                                        if not _appr_note.strip():
+                                            st.error("❌ يجب كتابة سبب الرفض.")
+                                        else:
+                                            st.session_state[_conf_rej_k] = True
+                                    st.markdown("</div>", unsafe_allow_html=True)
+                                    if st.session_state.get(_conf_rej_k):
+                                        st.error(f"⛔ هل أنت متأكد من رفض الفاتورة **{_ar_invno}** نهائياً؟")
+                                        _jr1, _jr2 = st.columns(2)
+                                        if _jr1.button("✅ نعم، ارفض", key=f"conf_rej_ok_{_ar_id}"):
+                                            c.execute("UPDATE signed_invoices SET status='مرفوض', deducted=0, admin_notes=?, reviewed_by=?, reviewed_at=? WHERE id=?",
+                                                      (_appr_note.strip(), u['full_name'], _ts_rev, _ar_id))
+                                            release_reservation(_ar_invno)
+                                            conn.commit()
+                                            st.session_state.pop(_conf_rej_k, None)
+                                            st.error(f"❌ تم رفض الفاتورة ({_ar_invno}).")
+                                            st.rerun()
+                                        if _jr2.button("❌ إلغاء", key=f"conf_rej_cancel_{_ar_id}"):
+                                            st.session_state.pop(_conf_rej_k, None); st.rerun()
+
+                            st.markdown("<hr style='margin:10px 0;border-color:#e0e6f0;'>", unsafe_allow_html=True)
+
+                            # ── إعادة للتعديل للفواتير المعتمدة ──
+                            if _ar_status == "معتمد":
+                                st.divider()
+                                st.markdown(
+                                    "<div style='background:rgba(0,50,20,0.45);border-right:4px solid #1daa60;"
+                                    "border-radius:8px;padding:10px 14px;direction:rtl;font-size:17px;'>"
+                                    "✅ <b>هذه الفاتورة معتمدة وتم تنفيذ الخصم.</b> يمكنك إعادتها لأمين مستودع المقاول للتعديل إذا لزم."
+                                    "</div>",
+                                    unsafe_allow_html=True)
+                                _ret_appr_k = f"ret_appr_{_ar_id}"
+                                _ret_appr_note_k = f"ret_appr_note_{_ar_id}"
+                                if st.button("↩️ إعادة للتعديل", key=f"ret_appr_btn_{_ar_id}"):
+                                    st.session_state[_ret_appr_k] = True
+                                if st.session_state.get(_ret_appr_k):
+                                    _ret_appr_note = st.text_area(
+                                        "💬 ملاحظة سبب الإعادة (إجبارية):",
+                                        key=_ret_appr_note_k, height=70)
+                                    _ra1, _ra2 = st.columns(2)
+                                    if _ra1.button("✅ تأكيد الإعادة", key=f"ret_appr_ok_{_ar_id}"):
+                                        if not _ret_appr_note.strip():
+                                            st.error("❌ يجب كتابة سبب الإعادة.")
+                                        else:
+                                            _ts_ret_appr = now_mecca().strftime("%Y-%m-%d %H:%M:%S")
+                                            # عكس الخصم من المخزون
+                                            try:
+                                                _items_rev = json.loads(str(ar.get('items_json','[]') or '[]'))
+                                            except:
+                                                _items_rev = []
+                                            _wh_f2 = str(ar.get('warehouse_from',''))
+                                            _wh_t2 = str(ar.get('warehouse_to',''))
+                                            _cont2 = str(ar.get('contractor',''))
+                                            for _it2 in _items_rev:
+                                                if _ar_type == "صرف":
+                                                    c.execute("INSERT INTO inventory (item_code,qty,warehouse,contractor,category) VALUES (?,?,?,?,?)",
+                                                              (_it2['code'], int(_it2['qty']), _wh_f2, _cont2, _it2.get('cat','')))
+                                                    save_log("عكس خصم—إعادة فاتورة معتمدة للتعديل", _it2['code'], _it2['qty'],
+                                                             f"فاتورة {_ar_invno} أُعيدت للتعديل | بواسطة: {u['full_name']}", u['full_name'])
+                                                elif _ar_type == "نقل":
+                                                    c.execute("INSERT INTO inventory (item_code,qty,warehouse,contractor,category) VALUES (?,?,?,?,?)",
+                                                              (_it2['code'], int(_it2['qty']), _wh_f2, '', _it2.get('cat','')))
+                                                    c.execute("INSERT INTO inventory (item_code,qty,warehouse,contractor,category) VALUES (?,?,?,?,?)",
+                                                              (_it2['code'], -int(_it2['qty']), _wh_t2, '', _it2.get('cat','')))
+                                                    save_log("عكس نقل—إعادة فاتورة معتمدة للتعديل", _it2['code'], _it2['qty'],
+                                                             f"فاتورة {_ar_invno} أُعيدت للتعديل", u['full_name'])
+                                                elif _ar_type == "ارجاع":
+                                                    c.execute("INSERT INTO inventory (item_code,qty,warehouse,contractor,category) VALUES (?,?,?,?,?)",
+                                                              (_it2['code'], -int(_it2['qty']), _wh_f2, _cont2, _it2.get('cat','')))
+                                                    save_log("عكس ارجاع—إعادة فاتورة معتمدة للتعديل", _it2['code'], _it2['qty'],
+                                                             f"فاتورة {_ar_invno} أُعيدت للتعديل", u['full_name'])
+                                            c.execute("UPDATE signed_invoices SET status='مُعادة', deducted=0, admin_notes=?, reviewed_by=?, reviewed_at=? WHERE id=?",
+                                                      (_ret_appr_note.strip(), u['full_name'], _ts_ret_appr, _ar_id))
+                                            conn.commit()
+                                            st.session_state.pop(_ret_appr_k, None)
+                                            st.warning(f"↩️ تم إعادة الفاتورة ({_ar_invno}) لأمين المستودع للتعديل وعكس الخصم.")
+                                            st.rerun()
+                                    if _ra2.button("❌ إلغاء", key=f"ret_appr_cancel_{_ar_id}"):
+                                        st.session_state.pop(_ret_appr_k, None); st.rerun()
+
+                # ══════════════════════════════════════
+                # تبويب ١: البحث برقم الفاتورة
+                # ══════════════════════════════════════
+
+            # ══════════════════════════════════════
+            # تبويب ٢: اعتماد فواتير الإرجاع
+            # ══════════════════════════════════════
+            with _tab_return_inv:
+                st.markdown(f"<div style='direction:rtl;font-size:17px;font-weight:900;color:#4db8ff;margin-bottom:12px;'>↩️ فواتير الإرجاع المُرفقة — بانتظار الاعتماد</div>", unsafe_allow_html=True)
+                df_ret_signed = pd.read_sql(
+                    "SELECT s.*, a.invoice_no, a.warehouse_from, a.contractor, a.timestamp, a.employee "
+                    "FROM signed_invoices s JOIN archived_invoices a ON s.original_invoice_id=a.id "
+                    "WHERE a.invoice_type='ارجاع' AND s.status='بانتظار الاعتماد' ORDER BY s.id DESC",
+                    conn)
+                if df_ret_signed.empty:
+                    st.info("✅ لا توجد فواتير إرجاع بانتظار الاعتماد.")
+                else:
+                    for _, ar in df_ret_signed.iterrows():
+                        ar = ar.to_dict()
+                        _ar_id = int(ar['id']); _ar_invno = str(ar['invoice_no'])
+                        with st.expander(f"↩️ فاتورة إرجاع {_ar_invno} | {ar.get('contractor','')} | {str(ar.get('timestamp',''))[:16]}", expanded=True):
+                            _appr_note = st.text_area("ملاحظات المراجعة:", key=f"ret_note_{_ar_id}", height=60)
                             _ts_rev = now_mecca().strftime("%Y-%m-%d %H:%M:%S")
-
-                            # ── اعتماد ──
-                            with _btn1:
-                                _conf_yes_k = f"conf_yes_{_ar_id}"
-                                st.markdown("<div class='btn-success'>", unsafe_allow_html=True)
-                                if st.button("✅ اعتماد وتنفيذ الخصم", key=f"appr_yes_{_ar_id}", use_container_width=True):
-                                    st.session_state[_conf_yes_k] = True
-                                st.markdown("</div>", unsafe_allow_html=True)
-                                if st.session_state.get(_conf_yes_k):
-                                    st.warning(f"⚠️ هل أنت متأكد من اعتماد الفاتورة **{_ar_invno}** وتنفيذ الخصم من المخزون؟")
-                                    _cy1, _cy2 = st.columns(2)
-                                    if _cy1.button("✅ نعم، اعتمد", key=f"conf_yes_ok_{_ar_id}"):
-                                        try: _items = json.loads(str(ar.get('items_json','[]') or '[]'))
-                                        except: _items = []
-                                        _wh_f = str(ar.get('warehouse_from',''))
-                                        _wh_t = str(ar.get('warehouse_to',''))
-                                        _cont = str(ar.get('contractor',''))
-                                        for _it in _items:
-                                            if _ar_type == "صرف":
-                                                c.execute("INSERT INTO inventory (item_code,qty,warehouse,contractor,category) VALUES (?,?,?,?,?)",
-                                                          (_it['code'], -int(_it['qty']), _wh_f, _cont, _it.get('cat','')))
-                                                save_log("خصم—اعتماد فاتورة مقاول", _it['code'], _it['qty'],
-                                                         f"فاتورة {_ar_invno} | اعتمدها: {u['full_name']}", u['full_name'])
-                                            elif _ar_type == "نقل":
-                                                c.execute("INSERT INTO inventory (item_code,qty,warehouse,contractor,category) VALUES (?,?,?,?,?)",
-                                                          (_it['code'], -int(_it['qty']), _wh_f, '', _it.get('cat','')))
-                                                c.execute("INSERT INTO inventory (item_code,qty,warehouse,contractor,category) VALUES (?,?,?,?,?)",
-                                                          (_it['code'], int(_it['qty']), _wh_t, '', _it.get('cat','')))
-                                                save_log("نقل—اعتماد فاتورة مقاول", _it['code'], _it['qty'],
-                                                         f"فاتورة {_ar_invno} | اعتمدها: {u['full_name']}", u['full_name'])
-                                            elif _ar_type == "ارجاع":
-                                                c.execute("INSERT INTO inventory (item_code,qty,warehouse,contractor,category) VALUES (?,?,?,?,?)",
-                                                          (_it['code'], int(_it['qty']), _wh_f, _cont, _it.get('cat','')))
-                                                save_log("ارجاع—اعتماد فاتورة مقاول", _it['code'], _it['qty'],
-                                                         f"فاتورة {_ar_invno} | اعتمدها: {u['full_name']}", u['full_name'])
-                                        c.execute("UPDATE signed_invoices SET status='معتمد', deducted=1, admin_notes=?, reviewed_by=?, reviewed_at=? WHERE id=?",
-                                                  (_appr_note.strip(), u['full_name'], _ts_rev, _ar_id))
-                                        confirm_reservation(_ar_invno)
-                                        conn.commit()
-                                        st.session_state.pop(_conf_yes_k, None)
-                                        # انتقال لنفس الصفحة مع فلتر "معتمدة"
-                                        st.session_state["_af_status_pending"] = "معتمد"
-                                        st.success(f"✅ تم اعتماد الفاتورة ({_ar_invno}) وتنفيذ الخصم!")
-                                        st.rerun()
-                                    if _cy2.button("❌ إلغاء", key=f"conf_yes_cancel_{_ar_id}"):
-                                        st.session_state.pop(_conf_yes_k, None); st.rerun()
-
-                            # ── إعادة ──
-                            with _btn2:
-                                _conf_ret_k = f"conf_ret_{_ar_id}"
-                                if st.button("🔄 إعادة لأمين المستودع", key=f"appr_return_{_ar_id}", use_container_width=True):
-                                    if not _appr_note.strip():
-                                        st.error("❌ يجب كتابة ملاحظة توضح سبب الإعادة.")
-                                    else:
-                                        st.session_state[_conf_ret_k] = True
-                                if st.session_state.get(_conf_ret_k):
-                                    st.warning(f"⚠️ هل أنت متأكد من إعادة الفاتورة **{_ar_invno}** إلى أمين المستودع؟")
-                                    _rr1, _rr2 = st.columns(2)
-                                    if _rr1.button("✅ نعم، أعد", key=f"conf_ret_ok_{_ar_id}"):
-                                        c.execute("UPDATE signed_invoices SET status='مُعادة', deducted=0, admin_notes=?, reviewed_by=?, reviewed_at=? WHERE id=?",
-                                                  (_appr_note.strip(), u['full_name'], _ts_rev, _ar_id))
-                                        release_reservation(_ar_invno)
-                                        conn.commit()
-                                        st.session_state.pop(_conf_ret_k, None)
-                                        st.warning(f"🔄 تم إعادة الفاتورة ({_ar_invno}) مع الملاحظة.")
-                                        st.rerun()
-                                    if _rr2.button("❌ إلغاء", key=f"conf_ret_cancel_{_ar_id}"):
-                                        st.session_state.pop(_conf_ret_k, None); st.rerun()
-
-                            # ── رفض ──
-                            with _btn3:
-                                _conf_rej_k = f"conf_rej_{_ar_id}"
-                                st.markdown("<div class='btn-danger'>", unsafe_allow_html=True)
-                                if st.button("❌ رفض الفاتورة", key=f"appr_no_{_ar_id}", use_container_width=True):
-                                    if not _appr_note.strip():
-                                        st.error("❌ يجب كتابة سبب الرفض.")
-                                    else:
-                                        st.session_state[_conf_rej_k] = True
-                                st.markdown("</div>", unsafe_allow_html=True)
-                                if st.session_state.get(_conf_rej_k):
-                                    st.error(f"⛔ هل أنت متأكد من رفض الفاتورة **{_ar_invno}** نهائياً؟")
-                                    _jr1, _jr2 = st.columns(2)
-                                    if _jr1.button("✅ نعم، ارفض", key=f"conf_rej_ok_{_ar_id}"):
-                                        c.execute("UPDATE signed_invoices SET status='مرفوض', deducted=0, admin_notes=?, reviewed_by=?, reviewed_at=? WHERE id=?",
-                                                  (_appr_note.strip(), u['full_name'], _ts_rev, _ar_id))
-                                        release_reservation(_ar_invno)
-                                        conn.commit()
-                                        st.session_state.pop(_conf_rej_k, None)
-                                        st.error(f"❌ تم رفض الفاتورة ({_ar_invno}).")
-                                        st.rerun()
-                                    if _jr2.button("❌ إلغاء", key=f"conf_rej_cancel_{_ar_id}"):
-                                        st.session_state.pop(_conf_rej_k, None); st.rerun()
-
-                        st.markdown("<hr style='margin:10px 0;border-color:#e0e6f0;'>", unsafe_allow_html=True)
-
-                        # ── إعادة للتعديل للفواتير المعتمدة ──
-                        if _ar_status == "معتمد":
-                            st.divider()
-                            st.markdown(
-                                "<div style='background:rgba(0,50,20,0.45);border-right:4px solid #1daa60;"
-                                "border-radius:8px;padding:10px 14px;direction:rtl;font-size:17px;'>"
-                                "✅ <b>هذه الفاتورة معتمدة وتم تنفيذ الخصم.</b> يمكنك إعادتها لأمين مستودع المقاول للتعديل إذا لزم."
-                                "</div>",
-                                unsafe_allow_html=True)
-                            _ret_appr_k = f"ret_appr_{_ar_id}"
-                            _ret_appr_note_k = f"ret_appr_note_{_ar_id}"
-                            if st.button("↩️ إعادة للتعديل", key=f"ret_appr_btn_{_ar_id}"):
-                                st.session_state[_ret_appr_k] = True
-                            if st.session_state.get(_ret_appr_k):
-                                _ret_appr_note = st.text_area(
-                                    "💬 ملاحظة سبب الإعادة (إجبارية):",
-                                    key=_ret_appr_note_k, height=70)
-                                _ra1, _ra2 = st.columns(2)
-                                if _ra1.button("✅ تأكيد الإعادة", key=f"ret_appr_ok_{_ar_id}"):
-                                    if not _ret_appr_note.strip():
-                                        st.error("❌ يجب كتابة سبب الإعادة.")
-                                    else:
-                                        _ts_ret_appr = now_mecca().strftime("%Y-%m-%d %H:%M:%S")
-                                        # عكس الخصم من المخزون
-                                        try:
-                                            _items_rev = json.loads(str(ar.get('items_json','[]') or '[]'))
-                                        except:
-                                            _items_rev = []
-                                        _wh_f2 = str(ar.get('warehouse_from',''))
-                                        _wh_t2 = str(ar.get('warehouse_to',''))
-                                        _cont2 = str(ar.get('contractor',''))
-                                        for _it2 in _items_rev:
-                                            if _ar_type == "صرف":
-                                                c.execute("INSERT INTO inventory (item_code,qty,warehouse,contractor,category) VALUES (?,?,?,?,?)",
-                                                          (_it2['code'], int(_it2['qty']), _wh_f2, _cont2, _it2.get('cat','')))
-                                                save_log("عكس خصم—إعادة فاتورة معتمدة للتعديل", _it2['code'], _it2['qty'],
-                                                         f"فاتورة {_ar_invno} أُعيدت للتعديل | بواسطة: {u['full_name']}", u['full_name'])
-                                            elif _ar_type == "نقل":
-                                                c.execute("INSERT INTO inventory (item_code,qty,warehouse,contractor,category) VALUES (?,?,?,?,?)",
-                                                          (_it2['code'], int(_it2['qty']), _wh_f2, '', _it2.get('cat','')))
-                                                c.execute("INSERT INTO inventory (item_code,qty,warehouse,contractor,category) VALUES (?,?,?,?,?)",
-                                                          (_it2['code'], -int(_it2['qty']), _wh_t2, '', _it2.get('cat','')))
-                                                save_log("عكس نقل—إعادة فاتورة معتمدة للتعديل", _it2['code'], _it2['qty'],
-                                                         f"فاتورة {_ar_invno} أُعيدت للتعديل", u['full_name'])
-                                            elif _ar_type == "ارجاع":
-                                                c.execute("INSERT INTO inventory (item_code,qty,warehouse,contractor,category) VALUES (?,?,?,?,?)",
-                                                          (_it2['code'], -int(_it2['qty']), _wh_f2, _cont2, _it2.get('cat','')))
-                                                save_log("عكس ارجاع—إعادة فاتورة معتمدة للتعديل", _it2['code'], _it2['qty'],
-                                                         f"فاتورة {_ar_invno} أُعيدت للتعديل", u['full_name'])
-                                        c.execute("UPDATE signed_invoices SET status='مُعادة', deducted=0, admin_notes=?, reviewed_by=?, reviewed_at=? WHERE id=?",
-                                                  (_ret_appr_note.strip(), u['full_name'], _ts_ret_appr, _ar_id))
-                                        conn.commit()
-                                        st.session_state.pop(_ret_appr_k, None)
-                                        st.warning(f"↩️ تم إعادة الفاتورة ({_ar_invno}) لأمين المستودع للتعديل وعكس الخصم.")
-                                        st.rerun()
-                                if _ra2.button("❌ إلغاء", key=f"ret_appr_cancel_{_ar_id}"):
-                                    st.session_state.pop(_ret_appr_k, None); st.rerun()
+                            _vok2 = f"vret_{_ar_id}"
+                            if st.button("👁️ عرض الفاتورة", key=f"vret_btn_{_ar_id}"):
+                                st.session_state.view_archived_html[_vok2] = not st.session_state.view_archived_html.get(_vok2, False)
+                            if st.session_state.view_archived_html.get(_vok2, False):
+                                _rh = str(ar.get('html_content','') or '')
+                                _rh = _rh.replace('background:rgba(3,10,28,0.82)','background:white').replace('background:rgba(3,10,28,0.88)','background:white')
+                                if '<body' in _rh and 'background:#f0f4f8' not in _rh:
+                                    _rh = _rh.replace('<body>','<body style="background:#f0f4f8;">').replace('<body ','<body style="background:#f0f4f8;" ')
+                                components.html(_rh, height=950, scrolling=True)
+                            _r1, _r2 = st.columns(2)
+                            if _r1.button("✅ اعتماد فاتورة الإرجاع", key=f"ret_app_{_ar_id}"):
+                                c.execute("UPDATE signed_invoices SET status='معتمد',deducted=1,admin_notes=?,reviewed_by=?,reviewed_at=? WHERE id=?",
+                                          (_appr_note, u['full_name'], _ts_rev, _ar_id))
+                                conn.commit()
+                                st.success(f"✅ تم اعتماد فاتورة الإرجاع {_ar_invno}"); st.rerun()
+                            if _r2.button("🔴 إعادة للتعديل", key=f"ret_ret_{_ar_id}"):
+                                c.execute("UPDATE signed_invoices SET status='مُعادة',deducted=0,admin_notes=?,reviewed_by=?,reviewed_at=? WHERE id=?",
+                                          (_appr_note, u['full_name'], _ts_rev, _ar_id))
+                                conn.commit()
+                                st.warning(f"🔴 تم إعادة فاتورة الإرجاع {_ar_invno}"); st.rerun()
 
             # ══════════════════════════════════════
-            # تبويب ١: البحث برقم الفاتورة
+            # تبويب ٣: طلبات إلغاء الفواتير
             # ══════════════════════════════════════
+            with _tab_cancel:
+                import html as _hm3
+                page_header("🚫", "طلبات إلغاء الفواتير", "المراجعة والاعتماد أو الرفض", "#c62828")
+                # إعادة استخدام كود cancel_invoice_admin
+                _tab_cancel_pending3, _tab_cancel_all3 = st.tabs(["⏳ الطلبات المعلقة", "📋 جميع الطلبات"])
+                with _tab_cancel_pending3:
+                    df_cancel_p3 = pd.read_sql("SELECT * FROM cancel_invoice_requests WHERE status='معلق' ORDER BY id DESC", conn)
+                    if df_cancel_p3.empty:
+                        st.info("✅ لا توجد طلبات إلغاء معلقة.")
+                    else:
+                        for _, cr in df_cancel_p3.iterrows():
+                            cr = cr.to_dict()
+                            cr_items = json.loads(cr.get('items_json', '[]'))
+                            ca_confirm_key = f"ca_conf3_{cr['id']}"
+                            with st.expander(f"🚫 طلب {cr['request_no']} | فاتورة: {cr['invoice_no']} | {cr['requester']} | {str(cr.get('timestamp',''))[:16]}", expanded=True):
+                                st.markdown(f"""
+                                <div style='background:rgba(50,0,0,0.45);border:1px solid #c62828;border-radius:10px;padding:12px 16px;margin-bottom:10px;direction:rtl;color:#ddeeff;'>
+                                    📄 <b>{_hm3.escape(str(cr.get('invoice_type','')))} {_hm3.escape(str(cr['invoice_no']))}</b><br>
+                                    📍 {_hm3.escape(str(cr.get('warehouse_return','—')))} | 🏗️ {_hm3.escape(str(cr.get('contractor','—')))}<br>
+                                    📝 السبب: <span style='color:#ffaa66;'>{_hm3.escape(str(cr.get('cancel_reason','—')))}</span>
+                                </div>""", unsafe_allow_html=True)
+                                st.write("##### 📦 المواد التي ستُرجع للمستودع:")
+                                if cr_items:
+                                    df_cr_items3 = pd.DataFrame(cr_items)
+                                    _cr_cols3 = ['code','name','qty'] if 'code' in df_cr_items3.columns else df_cr_items3.columns.tolist()
+                                    html_table(df_cr_items3[_cr_cols3].rename(columns={'code':'كود المادة','name':'الاسم','qty':'الكمية'}), accent='#004a99')
+                                if cr.get('invoice_html'):
+                                    if st.button(f"👁️ معاينة", key=f"ca3_pv_{cr['id']}"):
+                                        st.session_state.view_archived_html[f"ca3_{cr['id']}"] = not st.session_state.view_archived_html.get(f"ca3_{cr['id']}", False)
+                                    if st.session_state.view_archived_html.get(f"ca3_{cr['id']}", False):
+                                        _ch = str(cr['invoice_html']).replace('background:rgba(3,10,28,0.82)','background:white').replace('background:rgba(3,10,28,0.88)','background:white')
+                                        components.html(_ch, height=950, scrolling=True)
+                                if not st.session_state.get(ca_confirm_key):
+                                    if st.button(f"✅ اعتماد الإلغاء", key=f"ca3_ok_{cr['id']}"):
+                                        st.session_state[ca_confirm_key] = True; st.rerun()
+                                else:
+                                    items_sum = "، ".join([f"{i.get('name','?')} ({i.get('qty',0)})" for i in cr_items])
+                                    st.warning(f"⚠️ تأكيد: سيتم ارجاع المواد لـ {cr['warehouse_return']}: {items_sum}")
+                                    cay3, can3 = st.columns(2)
+                                    if cay3.button(f"✅ نعم اعتماد", key=f"ca3_yes_{cr['id']}"):
+                                        ts_ca3 = now_mecca().strftime("%Y-%m-%d %H:%M:%S")
+                                        for fitem in cr_items:
+                                            c.execute("INSERT INTO inventory (item_code,qty,warehouse,contractor,category) VALUES (?,?,?,?,?)",
+                                                      (fitem.get('code',''), int(fitem.get('qty',0)), cr['warehouse_return'], cr.get('contractor',''), fitem.get('cat','')))
+                                        c.execute("UPDATE cancel_invoice_requests SET status='معتمد',approved_by=?,approved_at=? WHERE id=?",
+                                                  (u['full_name'], ts_ca3, int(cr['id'])))
+                                        conn.commit(); st.rerun()
+                                    if can3.button(f"❌ إلغاء", key=f"ca3_no_{cr['id']}"):
+                                        st.session_state[ca_confirm_key] = False; st.rerun()
+                with _tab_cancel_all3:
+                    df_cancel_all3 = pd.read_sql("SELECT * FROM cancel_invoice_requests ORDER BY id DESC", conn)
+                    if df_cancel_all3.empty:
+                        st.info("لا توجد طلبات إلغاء.")
+                    else:
+                        for _, cr in df_cancel_all3.iterrows():
+                            cr = cr.to_dict()
+                            sc = "#1daa60" if cr['status']=="معتمد" else ("#d32f2f" if cr['status']=="مرفوض" else "#f9a825")
+                            st.markdown(f"<div style='background:rgba(3,10,28,0.80);border:1px solid rgba(0,140,255,0.20);border-radius:10px;padding:10px 14px;direction:rtl;margin:4px 0;'>"
+                                        f"🚫 <b style='color:#ff6666;'>{cr['request_no']}</b> | {cr['invoice_no']} | {cr.get('requester','')} | "
+                                        f"<span style='color:{sc};font-weight:700;'>{cr['status']}</span></div>",
+                                        unsafe_allow_html=True)
 
     # ---------------------------------------------------------
     # صفحة: إدارة صلاحيات المستودعات لأمين مستودع المقاول (من داخل manage_staff)
