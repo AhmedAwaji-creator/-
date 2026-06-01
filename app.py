@@ -3946,8 +3946,8 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(0,140,255,0.10);font-size:17p
 </body></html>
 """, height=_cart_h, scrolling=len(st.session_state.cart)>7)
 
-                ya, na = st.columns(2)
                 st.markdown("<div class='btn-success'>", unsafe_allow_html=True)
+                ya, na = st.columns(2)
                 if ya.button("✅ تأكيد وإصدار الفاتورة", use_container_width=True):
                     final_errs = validate_cart_stock(st.session_state.cart, out_wh)
                     if final_errs:
@@ -4007,7 +4007,6 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(0,140,255,0.10);font-size:17p
                     _h = _h.replace('<body>','<body style="background:#f0f4f8;">').replace('<body ','<body style="background:#f0f4f8;" ')
                 components.html(_h, height=980, scrolling=True)
                 st.markdown("</div>", unsafe_allow_html=True)
-                st.markdown("<div class='btn-danger'>", unsafe_allow_html=True)
                 if na.button("❌ إلغاء والرجوع للتعديل", use_container_width=True):
                     st.session_state.confirm_out = False; st.rerun()
                 st.markdown("</div>", unsafe_allow_html=True)
@@ -8004,13 +8003,14 @@ tbody tr:hover td{{color:#1dda70!important;}}
                     _dc_ts = now_mecca().strftime("%Y-%m-%d %H:%M:%S")
                     _dc_req_no = "DCR" + now_mecca().strftime("%d%H%M")
                     c.execute("""INSERT INTO cancel_invoice_requests
-                        (request_no,invoice_no,invoice_type,warehouse_return,contractor,items_json,cancel_reason,requester,status,approved_by,approved_at,timestamp)
-                        VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""",
+                        (request_no,invoice_no,invoice_type,warehouse_return,contractor,items_json,cancel_reason,requester,status,approved_by,approved_at,invoice_html,timestamp)
+                        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                         (_dc_req_no, dc_row['invoice_no'], dc_row.get('invoice_type',''),
                          dc_return_wh, dc_row.get('contractor',''),
                          dc_row.get('items_json','[]'),
                          f"إلغاء مباشر بواسطة {u['full_name']}",
-                         u['full_name'], "معتمد", u['full_name'], _dc_ts))
+                         u['full_name'], "معتمد", u['full_name'], _dc_ts,
+                         dc_row.get('html_content',''), _dc_ts))
                     # إلغاء الحجوزات
                     release_reservation(dc_row['invoice_no'])
                     save_log("إلغاء فاتورة مباشر", "—", 0,
