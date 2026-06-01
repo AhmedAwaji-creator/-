@@ -5484,8 +5484,36 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(29,218,96,0.12);font-size:17p
 
             if not df_logs.empty:
                 df_display = df_logs.drop(columns=['id'])
-                st.markdown(f"<div style='direction:rtl;color:#8aaac8;font-size:14px;margin-bottom:4px;'>📋 إجمالي العمليات المعروضة: <b style='color:#4db8ff;'>{len(df_display)}</b></div>", unsafe_allow_html=True)
-                st.dataframe(df_display, use_container_width=True, height=min(600, 50 + len(df_display)*38))
+                # بناء جدول HTML داكن قابل للتمرير
+                _cols = list(df_display.columns)
+                _ths = "".join(f"<th style='padding:10px 12px;text-align:right;white-space:nowrap;'>{c}</th>" for c in _cols)
+                _rows_html = ""
+                for i, (_, row) in enumerate(df_display.iterrows()):
+                    _bg = "background:rgba(3,10,28,0.80);" if i%2==0 else "background:rgba(0,20,60,0.65);"
+                    _tds = ""
+                    for c in _cols:
+                        val = str(row[c]) if row[c] is not None else "—"
+                        _tds += f"<td style='padding:8px 12px;border-bottom:1px solid rgba(0,140,255,0.08);color:#ddeeff;font-size:14px;white-space:nowrap;'>{val}</td>"
+                    _rows_html += f"<tr style='{_bg}'>{_tds}</tr>"
+                _tbl_h = min(500, 60 + len(df_display)*38)
+                components.html(f"""<!DOCTYPE html><html><head><meta charset="utf-8">
+<style>
+*{{box-sizing:border-box;margin:0;padding:0;}}
+body{{font-family:'Tajawal',Arial,sans-serif;direction:rtl;background:transparent;}}
+.wrap{{overflow:auto;max-height:{_tbl_h}px;border:1px solid rgba(0,140,255,0.20);border-radius:10px;}}
+table{{width:100%;border-collapse:collapse;}}
+thead tr{{background:linear-gradient(90deg,#003580,#004a99,#003580);color:white;font-size:14px;font-weight:900;position:sticky;top:0;}}
+thead th{{padding:10px 12px;text-align:right;}}
+tbody tr:hover{{background:rgba(0,180,80,0.15)!important;}}
+tbody tr:hover td{{color:#1dda70!important;}}
+.info{{padding:8px 12px;font-size:13px;color:#8aaac8;background:rgba(0,20,60,0.70);border-bottom:1px solid rgba(0,140,255,0.15);}}
+</style></head><body>
+<div class="info">📋 إجمالي العمليات المعروضة: <b style="color:#4db8ff;">{len(df_display)}</b></div>
+<div class="wrap"><table>
+<thead><tr>{_ths}</tr></thead>
+<tbody>{_rows_html}</tbody>
+</table></div>
+</body></html>""", height=_tbl_h + 50, scrolling=True)
                 st.download_button(
                     "📥 تصدير السجل إلى Excel",
                     to_excel(df_display),
