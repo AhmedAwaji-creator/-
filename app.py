@@ -6990,25 +6990,22 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(29,218,96,0.12);font-size:17p
             # ══════════════════════════════════════
             with tab_boq_search:
                 section_card("🔍 البحث اليدوي برقم البلاغ (BOQ)", "#1a3a5c")
-                st.info("ℹ️ اكتب رقم BOQ أو جزءاً منه لعرض جميع الفواتير المرتبطة به مع اسم منشئ الفاتورة.")
+                st.info("ℹ️ اكتب رقم BOQ أو جزءاً منه لعرض جميع الفواتير المرتبطة به.")
 
                 _manual_boq = st.text_input("📋 رقم البلاغ (BOQ):", placeholder="مثال: BOQ-2026-001 أو Zone2...", key="manual_boq_input").strip()
 
                 if _manual_boq:
+                    # البحث في archived_invoices مباشرة (لا يحتاج توقيع)
                     _mq = """
-                        SELECT s.invoice_no      as 'رقم الفاتورة',
-                               s.invoice_type    as 'النوع',
-                               s.boq             as 'رقم BOQ',
-                               a.employee        as 'منشئ الفاتورة',
-                               a.contractor      as 'المقاول',
-                               a.warehouse_from  as 'المستودع',
-                               s.signed_by       as 'أرفقها',
-                               s.status          as 'الحالة',
-                               s.signed_at       as 'تاريخ الإرفاق'
-                        FROM signed_invoices s
-                        LEFT JOIN archived_invoices a ON s.original_invoice_id = a.id
-                        WHERE s.boq LIKE ?
-                        ORDER BY s.id DESC
+                        SELECT a.id, a.invoice_no, a.invoice_type, a.boq,
+                               a.employee as 'منشئ الفاتورة',
+                               a.contractor as 'المقاول',
+                               a.warehouse_from as 'المستودع',
+                               a.timestamp as 'التاريخ',
+                               a.html_content
+                        FROM archived_invoices a
+                        WHERE a.boq LIKE ?
+                        ORDER BY a.id DESC
                     """
                     df_manual = pd.read_sql(_mq, conn, params=(f"%{_manual_boq}%",))
 
@@ -7016,79 +7013,35 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(29,218,96,0.12);font-size:17p
                         st.warning(f"⚠️ لا توجد فواتير برقم BOQ يحتوي على: '{_manual_boq}'")
                     else:
                         st.success(f"✅ وُجد {len(df_manual)} فاتورة مرتبطة بـ BOQ: '{_manual_boq}'")
-                        html_table(
-                            df_manual, accent="#004a99",
-                            info_label="📋 النتائج: ",
-                            badge_col="الحالة",
-                            badge_map={
-                                "معتمد":             ("#1daa60", "white"),
-                                "مرفوض":             ("#d32f2f", "white"),
-                                "مُعادة":            ("#e65100", "white"),
-                                "بانتظار الاعتماد":  ("#0288d1", "white"),
-                            }
-                        )
 
-                        # عرض تفصيلي للفواتير المطابقة
-                        st.markdown("---")
-                        section_card("📄 التفاصيل الكاملة", "#004a99")
-                        _mq2 = """
-                            SELECT s.id as sig_id, s.invoice_no, s.invoice_type, s.boq,
-                                   a.id as arch_id, a.employee as created_by,
-                                   a.contractor, a.warehouse_from, a.timestamp as created_at,
-                                   s.signed_by, s.signed_at, s.status
-                            FROM signed_invoices s
-                            LEFT JOIN archived_invoices a ON s.original_invoice_id = a.id
-                            WHERE s.boq LIKE ?
-                            ORDER BY s.id DESC
-                        """
-                        df_manual2 = pd.read_sql(_mq2, conn, params=(f"%{_manual_boq}%",))
-                        for _, mr in df_manual2.iterrows():
-                            mr = mr.to_dict()  # تحويل لـ dict لضمان عرض HTML صحيح
-                            _msc = {"معتمد":"#1daa60","مرفوض":"#d32f2f","مُعادة":"#e65100","بانتظار الاعتماد":"#0288d1"}.get(str(mr['status']),"#9e9e9e")
-                            with st.expander(f"📄 {mr['invoice_type']} | رقم: {mr['invoice_no']} | BOQ: {mr['boq']}"):
+                        for _, mr in df_manual.iterrows():
+                            mr = mr.to_dict()
+                            with st.expander(f"📄 {mr['invoice_type']} | رقم: {mr['invoice_no']} | 👤 {mr['منشئ الفاتورة']} | 📅 {str(mr['التاريخ'])[:16]}", expanded=False):
                                 st.markdown(f"""
-                                <div style='background:rgba(3,10,28,0.70);border-right:4px solid {_msc};border-radius:8px;padding:12px 16px;direction:rtl;font-size:17px;'>
-                                    📋 <b>رقم BOQ:</b> <span style='color:#7aaac8;font-size:19px;font-weight:900;'>{mr['boq']}</span><br>
-                                    👤 <b>منشئ الفاتورة:</b> <span style='color:#7aaac8;font-weight:bold;'>{mr.get('created_by','—')}</span><br>
-                                    📅 <b>تاريخ الإنشاء:</b> {str(mr.get('created_at',''))[:16]}<br>
-                                    🏗️ <b>المقاول:</b> {mr.get('contractor','—') or '—'} &nbsp;|&nbsp;
-                                    📍 <b>المستودع:</b> {mr.get('warehouse_from','—')}<br>
-                                    ✍️ <b>أرفقها:</b> <span style='color:#1dda70;font-weight:bold;'>{mr['signed_by']}</span> &nbsp;|&nbsp;
-                                    📅 {str(mr['signed_at'])[:16]}<br>
-                                    <span style='background:{_msc};color:white;border-radius:6px;padding:2px 10px;font-size:20px;'>{mr['status']}</span>
+                                <div style='background:rgba(3,10,28,0.75);border:1px solid rgba(0,140,255,0.15);
+                                    border-radius:8px;padding:12px 16px;direction:rtl;color:#ddeeff;font-size:15px;'>
+                                    📋 <b>BOQ:</b> <span style='color:#7aaac8;font-weight:900;'>{mr['boq']}</span><br>
+                                    👤 <b>منشئ الفاتورة:</b> {mr['منشئ الفاتورة']}<br>
+                                    🏗️ <b>المقاول:</b> {mr.get('المقاول','—')} | 📍 <b>المستودع:</b> {mr.get('المستودع','—')}<br>
+                                    📅 <b>التاريخ:</b> {str(mr['التاريخ'])[:16]}
                                 </div>""", unsafe_allow_html=True)
 
-                                mc1, mc2 = st.columns(2)
-                                _mvk1 = f"m_orig_{int(mr['sig_id'])}"
-                                _mvk2 = f"m_sign_{int(mr['sig_id'])}"
-                                with mc1:
-                                    if st.button("👁️ الفاتورة الأصلية", key=f"m_orig_btn_{int(mr['sig_id'])}"):
-                                        st.session_state[_mvk1] = not st.session_state.get(_mvk1, False)
-                                    if st.session_state.get(_mvk1, False) and mr['arch_id']:
-                                        _oh2 = pd.read_sql("SELECT html_content FROM archived_invoices WHERE id=?",
-                                                           conn, params=(int(mr['arch_id']),))
-                                        if not _oh2.empty:
-                                            components.html(str(_oh2.iloc[0]['html_content']), height=480, scrolling=True)
-                                with mc2:
-                                    if st.button("📎 الفاتورة الموقعة", key=f"m_sign_btn_{int(mr['sig_id'])}"):
-                                        st.session_state[_mvk2] = not st.session_state.get(_mvk2, False)
-                                    if st.session_state.get(_mvk2, False):
-                                        _sh2 = pd.read_sql("SELECT signed_image_base64 FROM signed_invoices WHERE id=?",
-                                                           conn, params=(int(mr['sig_id']),))
-                                        if not _sh2.empty and _sh2.iloc[0]['signed_image_base64']:
-                                            st.markdown(
-                                                f'<img src="data:image/jpeg;base64,{_sh2.iloc[0]["signed_image_base64"]}" '
-                                                f'style="max-width:100%;border:2px solid {_msc};border-radius:8px;">',
-                                                unsafe_allow_html=True)
-                                        else:
-                                            st.warning("⚠️ لا توجد صورة مرفقة.")
+                                _mvk = f"boq_view_{mr['id']}"
+                                if st.button("👁️ معاينة الفاتورة الأصلية", key=f"boq_vbtn_{mr['id']}"):
+                                    st.session_state[_mvk] = not st.session_state.get(_mvk, False)
+                                if st.session_state.get(_mvk, False):
+                                    _html = str(mr.get('html_content',''))
+                                    _html = _html.replace('background:rgba(3,10,28,0.82)','background:white').replace('background:rgba(3,10,28,0.88)','background:white')
+                                    if '<body' in _html and 'background:#f0f4f8' not in _html:
+                                        _html = _html.replace('<body>','<body style="background:#f0f4f8;">').replace('<body ','<body style="background:#f0f4f8;" ')
+                                    components.html(_html, height=950, scrolling=True)
                 else:
                     st.markdown("""
                     <div style='background:rgba(0,20,60,0.60);border:2px dashed #004a99;border-radius:12px;padding:30px;
                         text-align:center;direction:rtl;color:#8aaac8;'>
                         <div style='font-size:40px;margin-bottom:12px;'>📋</div>
                         <div style='font-size:19px;font-weight:700;color:#7aaac8;'>اكتب رقم BOQ للبحث</div>
-                        <div style='font-size:17px;margin-top:6px;'>سيظهر لك اسم منشئ الفاتورة والفاتورة قبل وبعد التوقيع</div>
+                        <div style='font-size:17px;margin-top:6px;'>سيظهر لك جميع الفواتير المرتبطة بهذا البلاغ مع إمكانية المعاينة</div>
                     </div>
                     """, unsafe_allow_html=True)
 
