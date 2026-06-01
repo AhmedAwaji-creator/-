@@ -97,19 +97,13 @@ def cleanup_old_invoices():
     """حذف الفواتير التي مر عليها أكثر من 6 أشهر من جميع أجزاء النظام"""
     from datetime import datetime, timedelta
     cutoff = (now_mecca() - timedelta(days=180)).strftime("%Y-%m-%d")
-
-    # جمع أرقام الفواتير القديمة
     old_invs = pd.read_sql(
         "SELECT id, invoice_no FROM archived_invoices WHERE timestamp < ?",
         conn, params=(cutoff,))
-
     if old_invs.empty:
         return 0
-
-    old_ids  = [int(r['id'])       for _,r in old_invs.iterrows()]
-    old_nos  = [str(r['invoice_no']) for _,r in old_invs.iterrows()]
-
-    # حذف من جميع الجداول المرتبطة
+    old_ids = [int(r['id'])        for _,r in old_invs.iterrows()]
+    old_nos = [str(r['invoice_no']) for _,r in old_invs.iterrows()]
     for inv_no in old_nos:
         try: c.execute("DELETE FROM signed_invoices WHERE invoice_no=?", (inv_no,))
         except: pass
@@ -117,13 +111,38 @@ def cleanup_old_invoices():
         except: pass
         try: c.execute("DELETE FROM inventory_reservations WHERE invoice_no=?", (inv_no,))
         except: pass
-
     for inv_id in old_ids:
         try: c.execute("DELETE FROM archived_invoices WHERE id=?", (inv_id,))
         except: pass
-
     conn.commit()
     return len(old_ids)
+
+def reserve_cart(invoice_no, cart, warehouse, reserved_by):
+    """حجز كميات السلة عند إصدار الفاتورة (لموجه البلاغات)"""
+    ts = now_mecca().strftime("%Y-%m-%d %H:%M:%S")
+    for item in cart:
+        try:
+            c.execute("INSERT INTO inventory_reservations (invoice_no,item_code,warehouse,qty,reserved_by,reserved_at,status) VALUES (?,?,?,?,?,?,'محجوز')",
+                      (invoice_no, item['code'], warehouse, int(item['qty']), reserved_by, ts))
+        except Exception:
+            pass
+    conn.commit()
+
+def release_reservation(invoice_no):
+    """إلغاء الحجز"""
+    try:
+        c.execute("UPDATE inventory_reservations SET status='ملغي' WHERE invoice_no=?", (invoice_no,))
+        conn.commit()
+    except Exception:
+        pass
+
+def confirm_reservation(invoice_no):
+    """تأكيد الحجز عند الاعتماد"""
+    try:
+        c.execute("UPDATE inventory_reservations SET status='مؤكد' WHERE invoice_no=?", (invoice_no,))
+        conn.commit()
+    except Exception:
+        pass
 
 # ── تشغيل تنظيف الفواتير القديمة عند كل بدء ──
 try:
