@@ -3975,10 +3975,17 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(0,140,255,0.10);font-size:17p
                         archive_invoice("صرف", inv_no, out_wh, "", out_contractor, u["full_name"], json.dumps(st.session_state.cart), html_inv, _final_boq)
 
                         if role in ("مدير نظام", "مسؤول المستودعات"):
-                            # خصم فوري من المخزون
+                            # خصم فوري من المخزون — يطرح من الصفوف بالترتيب
                             for item in st.session_state.cart:
-                                c.execute("UPDATE inventory SET qty = qty - ? WHERE item_code=? AND warehouse=?",
-                                          (int(item['qty']), item['code'], out_wh))
+                                remaining = int(item['qty'])
+                                rows = pd.read_sql(
+                                    "SELECT id, qty FROM inventory WHERE item_code=? AND warehouse=? AND qty>0 ORDER BY id",
+                                    conn, params=(item['code'], out_wh))
+                                for _, row in rows.iterrows():
+                                    if remaining <= 0: break
+                                    take = min(remaining, int(row['qty']))
+                                    c.execute("UPDATE inventory SET qty = qty - ? WHERE id=?", (take, int(row['id'])))
+                                    remaining -= take
                             conn.commit()
                             release_reservation(inv_no)
                             save_log("صرف مواد (مباشر)", "-", 0,
