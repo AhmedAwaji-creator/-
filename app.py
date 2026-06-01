@@ -1517,13 +1517,13 @@ st.markdown("""
     }
 
     /* ══ بادجات ══ */
-    .ret-btn-wrap { position: relative; display: block; width: 100%; margin-bottom: 2px; }
+    .ret-btn-wrap { position: relative; display: block; width: 100%; margin-bottom: 2px; margin-top: -8px; }
     .ret-btn-wrap .ret-badge {
-        position: absolute; top: -10px; left: 8px;
+        position: absolute; top: -14px; left: 8px;
         background: #d32f2f; color: white; border-radius: 50%;
-        min-width: 22px; height: 22px; font-size: 13px; font-weight: 900;
+        min-width: 22px; height: 22px; font-size: 12px; font-weight: 900;
         display: flex; align-items: center; justify-content: center;
-        padding: 0 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+        padding: 0 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.6);
         z-index: 9999; pointer-events: none;
         border: 2px solid rgba(3,10,28,0.95); line-height: 1;
     }
@@ -1732,12 +1732,13 @@ section[data-testid="stMain"] {
 [data-testid="stSidebar"] .sb-badge-num,
 [data-testid="stSidebar"] .ret-btn-wrap {
     overflow: visible !important;
+    margin-top: -8px !important;
 }
 [data-testid="stSidebar"] .ret-badge {
     font-size: 12px !important;
     min-width: 20px !important;
     height: 20px !important;
-    top: -8px !important;
+    top: -14px !important;
     left: 6px !important;
 }
 
