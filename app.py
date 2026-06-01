@@ -3975,19 +3975,22 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(0,140,255,0.10);font-size:17p
                         archive_invoice("صرف", inv_no, out_wh, "", out_contractor, u["full_name"], json.dumps(st.session_state.cart), html_inv, _final_boq)
 
                         if role in ("مدير نظام", "مسؤول المستودعات"):
+                            import sqlite3 as _sq3
+                            _plain_conn = _sq3.connect(DB_NAME, check_same_thread=False, timeout=30)
                             for item in st.session_state.cart:
                                 _code = str(item['code']).replace("'","''")
-                                _wh   = str(out_wh).replace("'","''")
+                                _wh2  = str(out_wh).replace("'","''")
                                 _need = int(item['qty'])
-                                _inv_rows = pd.read_sql(
-                                    f"SELECT id, qty FROM inventory WHERE item_code='{_code}' AND warehouse='{_wh}' AND qty>0 ORDER BY id",
-                                    conn)
-                                for _, _ir in _inv_rows.iterrows():
+                                _plain_cur = _plain_conn.execute(
+                                    f"SELECT id, qty FROM inventory WHERE item_code='{_code}' AND warehouse='{_wh2}' AND qty>0 ORDER BY id"
+                                )
+                                for _row in _plain_cur.fetchall():
                                     if _need <= 0: break
-                                    _take = min(_need, int(_ir['qty']))
-                                    conn.execute(f"UPDATE inventory SET qty = qty - {_take} WHERE id={int(_ir['id'])}")
+                                    _take = min(_need, int(_row[1]))
+                                    _plain_conn.execute(f"UPDATE inventory SET qty = qty - {_take} WHERE id = {int(_row[0])}")
                                     _need -= _take
-                            conn.commit()
+                            _plain_conn.commit()
+                            _plain_conn.close()
                             release_reservation(inv_no)
                             save_log("صرف مواد (مباشر)", "-", 0,
                                      f"صرف مباشر للمقاول [{out_contractor}] من [{out_wh}] | {inv_no} | BOQ:{_final_boq}", u["full_name"])
