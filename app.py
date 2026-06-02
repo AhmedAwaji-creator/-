@@ -938,19 +938,22 @@ def get_available_qty(item_code, warehouse, exclude_invoice_no=None):
 
 def validate_cart_stock(cart, warehouse):
     """يتحقق من كفاية الرصيد المتاح لكل صنف في السلة."""
+    import sqlite3 as _sq3v
     errors = []
     code_totals = {}
     for item in cart:
         code_totals[item['code']] = code_totals.get(item['code'], 0) + int(item['qty'])
+    _vc = _sq3v.connect(DB_NAME, check_same_thread=False, timeout=30)
     for code, needed in code_totals.items():
-        actual_r = pd.read_sql(
-            "SELECT COALESCE(SUM(qty),0) as t FROM inventory WHERE item_code=? AND warehouse=?",
-            conn, params=(code, warehouse))
-        actual = int(actual_r.iloc[0]['t']) if not actual_r.empty else 0
+        _wh_safe = str(warehouse).replace("'","''")
+        _code_safe = str(code).replace("'","''")
+        _res = _vc.execute(f"SELECT COALESCE(SUM(qty),0) FROM inventory WHERE item_code='{_code_safe}' AND warehouse='{_wh_safe}'").fetchone()
+        actual = int(_res[0]) if _res else 0
         if needed > actual:
-            name_r = pd.read_sql("SELECT item_name FROM material_definitions WHERE item_code=?", conn, params=(code,))
-            name = name_r.iloc[0]['item_name'] if not name_r.empty else code
+            _nm = _vc.execute(f"SELECT item_name FROM material_definitions WHERE item_code='{_code_safe}'").fetchone()
+            name = _nm[0] if _nm else code
             errors.append(f"❌ <b>{name}</b> — مطلوب: <b>{needed}</b> | متوفر: <b>{actual}</b>")
+    _vc.close()
     return errors
 
 def save_log(log_type, item_code, qty, details, user_name):
