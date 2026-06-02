@@ -6579,6 +6579,57 @@ tbody tr:hover td{{color:#1dda70!important;}}
     # ---------------------------------------------------------
     # صفحة: أرشيف الفواتير الشامل (مدير النظام + مسؤول المستودع)
     # ---------------------------------------------------------
+    elif st.session_state.page == "my_invoices_personal":
+        page_header("📄", "فواتيري", "الفواتير التي قمت بإصدارها", "#004a99")
+
+        df_my = pd.read_sql(
+            "SELECT id, invoice_no, invoice_type, warehouse_from, contractor, timestamp, boq "
+            "FROM archived_invoices WHERE employee=? ORDER BY id DESC",
+            conn, params=(u['full_name'],))
+
+        if df_my.empty:
+            st.info("ℹ️ لا توجد فواتير بعد.")
+        else:
+            # آخر فاتورة مميزة
+            last_id = int(df_my.iloc[0]['id'])
+            for i, (_, row) in enumerate(df_my.iterrows()):
+                row = row.to_dict()
+                _is_last = (int(row['id']) == last_id)
+                _tc = {"صرف":"#e53e3e","ارجاع":"#2b6cb0","نقل":"#276749"}.get(row['invoice_type'],"#555")
+                _border = "2px solid #f9a825" if _is_last else "1px solid rgba(0,140,255,0.15)"
+                _bg = "rgba(60,40,0,0.40)" if _is_last else "rgba(3,10,28,0.75)"
+                _last_badge = " <span style='background:#f9a825;color:#111;border-radius:6px;padding:1px 8px;font-size:13px;'>⭐ آخر فاتورة</span>" if _is_last else ""
+
+                st.markdown(f"""
+                <div style='background:{_bg};border:{_border};border-radius:10px;
+                    padding:12px 16px;direction:rtl;margin:6px 0;'>
+                    <div style='display:flex;justify-content:space-between;align-items:center;'>
+                        <span>
+                            <span style='background:{_tc};color:white;border-radius:4px;padding:1px 8px;font-size:14px;font-weight:bold;'>{row['invoice_type']}</span>
+                            &nbsp;<b style='font-size:16px;color:#ddeeff;'>{row['invoice_no']}</b>
+                            {_last_badge}
+                        </span>
+                        <span style='color:#6898c0;font-size:14px;'>📅 {str(row['timestamp'])[:16]}</span>
+                    </div>
+                    <div style='font-size:14px;color:#8aaac8;margin-top:4px;'>
+                        📍 {row.get('warehouse_from','—')} | 🏗️ {row.get('contractor','—')}
+                        {"| 📋 BOQ: "+str(row['boq']) if row.get('boq') else ""}
+                    </div>
+                </div>""", unsafe_allow_html=True)
+
+                _vk = f"myprev_{row['id']}"
+                if st.button("👁️ معاينة الفاتورة", key=f"mypv_{row['id']}"):
+                    st.session_state[_vk] = not st.session_state.get(_vk, False)
+                if st.session_state.get(_vk, False):
+                    _mh = pd.read_sql("SELECT html_content FROM archived_invoices WHERE id=?",
+                                      conn, params=(int(row['id']),))
+                    if not _mh.empty:
+                        _mh_str = str(_mh.iloc[0]['html_content'])
+                        _mh_str = _mh_str.replace('background:rgba(3,10,28,0.82)','background:white').replace('background:rgba(3,10,28,0.88)','background:white')
+                        if '<body' in _mh_str and 'background:#f0f4f8' not in _mh_str:
+                            _mh_str = _mh_str.replace('<body>','<body style="background:#f0f4f8;">').replace('<body ','<body style="background:#f0f4f8;" ')
+                        components.html(_mh_str, height=950, scrolling=True)
+
     elif st.session_state.page == "invoices_archive_admin":
         if role not in ("مدير نظام", "مسؤول المستودعات"):
             st.error("❌ غير مصرح لك.")
