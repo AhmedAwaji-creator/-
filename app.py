@@ -5263,34 +5263,6 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(29,218,96,0.12);font-size:17p
             efh1, efh2 = st.columns([4,1])
             if efh2.button("✖️ إخفاء", key="close_ef"): st.session_state['ef_result_html'] = None; st.rerun()
             components.html(st.session_state['ef_result_html'], height=950, scrolling=True)
-    # ---------------------------------------------------------
-    # ---------------------------------------------------------
-    # صفحة: فواتيري (للمستخدمين المحدودين — موجه البلاغات وأمين مستودع المقاول)
-    # ---------------------------------------------------------
-        else:
-            st.caption(f"📦 {len(df_p)} فاتورة")
-            for _,_pr in df_p.iterrows():
-                _pr = dict(_pr)
-                _ptc = {"صرف":"#e53e3e","ارجاع":"#2b6cb0","نقل":"#276749"}.get(str(_pr.get('invoice_type','')),"#555")
-                st.markdown(
-                    f"<div style='background:rgba(3,10,28,0.70);border-right:4px solid {_ptc};border-radius:8px;"
-                    f"padding:10px 14px;direction:rtl;font-size:17px;'>"
-                    f"<span style='background:{_ptc};color:white;border-radius:4px;padding:1px 6px;font-size:19px;'>{str(_pr.get('invoice_type',''))}</span>"
-                    f" <b>رقم: <span style='color:#ff6666;'>{str(_pr.get('invoice_no',''))}</span></b>"
-                    f" | 📅 {str(_pr.get('timestamp',''))[:16]}"
-                    f" | 📍 {str(_pr.get('warehouse_from','') or 'N/A')}"
-                    + (f" | 🏗️ {str(_pr.get('contractor',''))}" if _pr.get('contractor') else "")
-                    + (f" | 📋 {str(_pr.get('boq',''))}" if _pr.get('boq') else "")
-                    + "</div>", unsafe_allow_html=True)
-                if st.button(f"👁️ عرض {_pr['invoice_no']}", key=f"pv_{_pr['id']}"):
-                    st.session_state.view_archived_html[_pr['invoice_no']] = not st.session_state.view_archived_html.get(_pr['invoice_no'], False)
-                if st.session_state.view_archived_html.get(_pr['invoice_no'], False):
-                    components.html(_pr['html_content'], height=950, scrolling=True)
-                st.markdown("<hr style='margin:4px 0;'>", unsafe_allow_html=True)
-
-    # ---------------------------------------------------------
-    # صفحة: فواتير منشأة من الموظفين (مدير النظام + أمين المستودع فقط)
-    # ---------------------------------------------------------
     elif st.session_state.page == "view_logs":
         st.markdown("<div class='main-title'>🛠️ سجل العمليات التفصيلي وأرشيف فواتير النظام</div>", unsafe_allow_html=True)
 
