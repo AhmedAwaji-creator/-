@@ -4966,13 +4966,6 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(29,218,96,0.12);font-size:17p
 
                 # صلاحية موجه البلاغات: تعديل المستودع والمقاول فقط
                 if role == "موجه بلاغات":
-                    st.markdown(f"""
-                    <div style='background:rgba(0,30,80,0.50);border:1px solid rgba(0,140,255,0.25);
-                        border-radius:10px;padding:14px 18px;direction:rtl;margin-bottom:12px;'>
-                        📄 <b style='color:#ddeeff;font-size:16px;'>فاتورة {row['invoice_type']} — {row['invoice_no']}</b><br>
-                        <span style='color:#8aaac8;'>يمكنك تعديل المستودع والمقاول فقط</span>
-                    </div>""", unsafe_allow_html=True)
-
                     _new_wh   = st.selectbox("📍 المستودع:", list_warehouses,
                                                 index=list_warehouses.index(row['warehouse_from']) if row['warehouse_from'] in list_warehouses else 0,
                                                 key="ef_wh_moujeh")
