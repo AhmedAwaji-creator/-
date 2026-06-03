@@ -5004,6 +5004,9 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(29,218,96,0.12);font-size:17p
                             st.session_state.pop(k, None)
                         st.rerun()
 
+                if role == "موجه بلاغات":
+                    st.stop()
+
                 else:  # مدير النظام / مسؤول المستودعات
                     # مدير النظام / مسؤول: تعديل كامل
                     from datetime import timedelta as _td72
