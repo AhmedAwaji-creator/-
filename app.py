@@ -4973,11 +4973,10 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(29,218,96,0.12);font-size:17p
                         <span style='color:#8aaac8;'>يمكنك تعديل المستودع والمقاول فقط</span>
                     </div>""", unsafe_allow_html=True)
 
-                    _ew1, _ew2 = st.columns(2)
-                    _new_wh   = _ew1.selectbox("📍 المستودع:", list_warehouses,
+                    _new_wh   = st.selectbox("📍 المستودع:", list_warehouses,
                                                 index=list_warehouses.index(row['warehouse_from']) if row['warehouse_from'] in list_warehouses else 0,
                                                 key="ef_wh_moujeh")
-                    _new_cont = _ew2.selectbox("🏗️ المقاول:", list_contractors,
+                    _new_cont = st.selectbox("🏗️ المقاول:", list_contractors,
                                                index=list_contractors.index(row['contractor']) if row['contractor'] in list_contractors else 0,
                                                key="ef_cont_moujeh")
 
@@ -5005,9 +5004,8 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(29,218,96,0.12);font-size:17p
                             st.session_state.pop(k, None)
                         st.rerun()
 
-                else:
+                else:  # مدير النظام / مسؤول المستودعات
                     # مدير النظام / مسؤول: تعديل كامل
-                    # فحص 168 ساعة للفواتير المعتمدة
                     from datetime import timedelta as _td72
                     _ef_signed = pd.read_sql(f"SELECT status, reviewed_at FROM signed_invoices WHERE invoice_no='{row['invoice_no']}' AND status='معتمد'", conn)
                     _ef_is_approved = not _ef_signed.empty
