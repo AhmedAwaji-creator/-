@@ -200,17 +200,7 @@ def _schedule_auto_backups():
         _time.sleep(30)
 
 def init_database():
-    """تهيئة قاعدة البيانات — تعمل مع SQLite و Supabase"""
-    # إذا كانت Supabase، الجداول مُنشأة مسبقاً عبر SQL Editor — نتجاوز
-    if _USE_SUPABASE:
-        # فقط تأكد من وجود المستخدم الافتراضي
-        try:
-            conn.execute("INSERT INTO users (username,password,full_name,role) VALUES (%s,%s,%s,%s) ON CONFLICT (username) DO NOTHING",
-                         ("0501104283","AaSs123456+++**","أحمد سعيد عواجي","مدير نظام"))
-            conn.commit()
-        except Exception:
-            pass
-        return
+    """تهيئة قاعدة البيانات"""
     # جدول تعريف المواد الأساسي
     c.execute('''CREATE TABLE IF NOT EXISTS material_definitions (
                     item_code TEXT PRIMARY KEY, 
