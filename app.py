@@ -4972,40 +4972,6 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(29,218,96,0.12);font-size:17p
             else:
                 row = df_inv.iloc[0]
 
-                # صلاحية موجه البلاغات: تعديل المستودع والمقاول فقط
-                if role == "موجه بلاغات":
-                    _new_wh   = st.selectbox("📍 المستودع:", list_warehouses,
-                                                index=list_warehouses.index(row['warehouse_from']) if row['warehouse_from'] in list_warehouses else 0,
-                                                key="ef_wh_moujeh")
-                    _new_cont = st.selectbox("🏗️ المقاول:", list_contractors,
-                                               index=list_contractors.index(row['contractor']) if row['contractor'] in list_contractors else 0,
-                                               key="ef_cont_moujeh")
-
-                    # معاينة الفاتورة
-                    _pv_ef = f"ef_prev_{row['invoice_no']}"
-                    if st.checkbox("👁️ معاينة الفاتورة الحالية", key=_pv_ef):
-                        _eh = str(row['html_content'])
-                        _eh = _eh.replace('background:rgba(3,10,28,0.82)','background:white').replace('background:rgba(3,10,28,0.88)','background:white')
-                        if '<body' in _eh and 'background:#f0f4f8' not in _eh:
-                            _eh = _eh.replace('<body>','<body style="background:#f0f4f8;">').replace('<body ','<body style="background:#f0f4f8;" ')
-                        components.html(_eh, height=950, scrolling=True)
-
-                    if st.button("💾 حفظ التعديل", key="ef_save_moujeh", type="primary", use_container_width=True):
-                        # أعد توليد HTML بالمعلومات الجديدة
-                        try: _items = json.loads(row['items_json'])
-                        except: _items = []
-                        _new_html = render_invoice_html("فاتورة صرف مواد طوارئ", _items, _new_wh, _new_cont,
-                                                        row['employee'], row['invoice_no'], boq=row.get('boq',''))
-                        c.execute("UPDATE archived_invoices SET warehouse_from=?, contractor=?, html_content=? WHERE invoice_no=?",
-                                  (_new_wh, _new_cont, _new_html, row['invoice_no']))
-                        save_log("تعديل فاتورة", "—", 0, f"تعديل [{row['invoice_no']}]: مستودع→{_new_wh} | مقاول→{_new_cont}", u['full_name'])
-                        conn.commit()
-                        st.success(f"✅ تم حفظ التعديل على الفاتورة {row['invoice_no']}")
-                        for k in ['ef_search','ef_items','ef_confirm','ef_type_sel']:
-                            st.session_state.pop(k, None)
-                        st.rerun()
-
-
                 if role != "موجه بلاغات":  # مدير النظام / مسؤول المستودعات
                     # مدير النظام / مسؤول: تعديل كامل
                     from datetime import timedelta as _td72
