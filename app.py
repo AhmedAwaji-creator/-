@@ -4870,66 +4870,170 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(29,218,96,0.12);font-size:17p
     # صفحة: تعديل فاتورة سابقة
     # ---------------------------------------------------------
     elif st.session_state.page == "edit_invoice":
-        st.markdown("<div class='main-title'>✏️ تعديل فاتورة سابقة</div>", unsafe_allow_html=True)
-        st.info("ℹ️ يمكنك تعديل الكميات والمقاول والمستودع وإضافة أصناف أو حذفها، ثم تصدير الفاتورة بنفس الرقم.")
+        page_header("✏️", "تعديل فاتورة سابقة", "اختر فاتورة لتعديل مستودعها أو مقاولها", "#f9a825")
 
-        col_ef1, col_ef2, col_ef3 = st.columns([1, 2, 0.7])
-        ef_type = col_ef1.selectbox("نوع الفاتورة:", ["صرف", "ارجاع", "تحويل"])
-        ef_no   = col_ef2.text_input("رقم الفاتورة:").strip()
-        if col_ef3.button("🔍 بحث", use_container_width=True):
-            st.session_state['ef_search']      = ef_no
-            st.session_state['ef_items']       = None
-            st.session_state['ef_confirm']     = False
-            st.session_state['ef_result_html'] = None
-            st.session_state['ef_contractor']  = None
-            st.session_state['ef_wh_from']     = None
-            st.session_state['ef_wh_to']       = None
-            st.rerun()
+        # ══════════════════════════════════════════
+        # موجه البلاغات: يرى فواتيره فقط
+        # مدير النظام / مسؤول المستودعات: فلتر
+        # ══════════════════════════════════════════
 
-        # زر إلغاء التعديل — يظهر فقط عند وجود فاتورة مفتوحة
+        if role == "موجه بلاغات":
+            # عرض فواتير الموجه
+            df_ef_list = pd.read_sql(
+                f"SELECT id, invoice_no, invoice_type, warehouse_from, contractor, timestamp, boq "
+                f"FROM archived_invoices WHERE employee='{u['full_name']}' ORDER BY id DESC",
+                conn)
+            if df_ef_list.empty:
+                st.info("ℹ️ لا توجد فواتير بعد.")
+            else:
+                st.markdown(f"<div style='direction:rtl;color:#8aaac8;margin-bottom:8px;'>📄 اختر الفاتورة التي تريد تعديل مستودعها أو مقاولها:</div>", unsafe_allow_html=True)
+                last_id = int(df_ef_list.iloc[0]['id'])
+                for _, row_ef in df_ef_list.iterrows():
+                    row_ef = row_ef.to_dict()
+                    _is_last = (int(row_ef['id']) == last_id)
+                    _tc = {"صرف":"#e53e3e","ارجاع":"#2b6cb0","نقل":"#276749"}.get(row_ef['invoice_type'],"#555")
+                    _border = "2px solid #f9a825" if _is_last else "1px solid rgba(0,140,255,0.15)"
+                    _bg = "rgba(60,40,0,0.40)" if _is_last else "rgba(3,10,28,0.75)"
+                    st.markdown(f"""
+                    <div style='background:{_bg};border:{_border};border-radius:10px;padding:10px 14px;direction:rtl;margin:4px 0;'>
+                        <span style='background:{_tc};color:white;border-radius:4px;padding:1px 7px;font-size:13px;'>{row_ef['invoice_type']}</span>
+                        &nbsp;<b style='color:#ddeeff;'>{row_ef['invoice_no']}</b>
+                        {"&nbsp;<span style='background:#f9a825;color:#111;border-radius:4px;padding:1px 7px;font-size:12px;'>⭐ آخر فاتورة</span>" if _is_last else ""}
+                        <span style='color:#6898c0;font-size:13px;float:left;'>📅 {str(row_ef['timestamp'])[:16]}</span><br>
+                        <span style='color:#8aaac8;font-size:13px;'>📍 {row_ef.get('warehouse_from','—')} | 🏗️ {row_ef.get('contractor','—')}</span>
+                    </div>""", unsafe_allow_html=True)
+                    if st.button(f"✏️ تعديل {row_ef['invoice_no']}", key=f"ef_sel_{row_ef['id']}"):
+                        st.session_state['ef_search'] = row_ef['invoice_no']
+                        st.session_state['ef_type_sel'] = row_ef['invoice_type']
+                        st.session_state['ef_items'] = None
+                        st.session_state['ef_confirm'] = False
+                        st.rerun()
+        else:
+            # مدير النظام / مسؤول المستودعات: فلتر متقدم
+            _ef_f1, _ef_f2, _ef_f3 = st.columns([2, 1.5, 1.5])
+            _ef_emps = ["الكل"] + list(pd.read_sql(
+                "SELECT DISTINCT employee FROM archived_invoices WHERE employee IN (SELECT full_name FROM users WHERE role='موجه بلاغات') ORDER BY employee",
+                conn)['employee'].tolist())
+            _ef_emp_sel  = _ef_f1.selectbox("👤 موجه البلاغات:", _ef_emps, key="ef_emp_sel")
+            _ef_date_sel = _ef_f2.date_input("📅 من تاريخ:", value=None, key="ef_date_sel")
+            _ef_no_sel   = _ef_f3.text_input("🔍 رقم الفاتورة:", key="ef_no_sel", placeholder="G1, G2...").strip()
+
+            _efq = "SELECT id, invoice_no, invoice_type, warehouse_from, contractor, employee, timestamp FROM archived_invoices WHERE 1=1"
+            if _ef_emp_sel != "الكل": _efq += f" AND employee='{_ef_emp_sel}'"
+            if _ef_date_sel: _efq += f" AND DATE(timestamp) >= '{_ef_date_sel.strftime('%Y-%m-%d')}'"
+            if _ef_no_sel:   _efq += f" AND invoice_no LIKE '%{_ef_no_sel}%'"
+            _efq += " ORDER BY id DESC LIMIT 100"
+            df_ef_list = pd.read_sql(_efq, conn)
+
+            if df_ef_list.empty:
+                st.info("لا توجد فواتير مطابقة.")
+            else:
+                st.markdown(f"<div style='direction:rtl;color:#8aaac8;margin-bottom:6px;'>وُجد <b style='color:#4db8ff;'>{len(df_ef_list)}</b> فاتورة</div>", unsafe_allow_html=True)
+                for _, row_ef in df_ef_list.iterrows():
+                    row_ef = row_ef.to_dict()
+                    _tc = {"صرف":"#e53e3e","ارجاع":"#2b6cb0","نقل":"#276749"}.get(row_ef['invoice_type'],"#555")
+                    st.markdown(f"""
+                    <div style='background:rgba(3,10,28,0.75);border:1px solid rgba(0,140,255,0.15);border-radius:10px;padding:10px 14px;direction:rtl;margin:4px 0;'>
+                        <span style='background:{_tc};color:white;border-radius:4px;padding:1px 7px;font-size:13px;'>{row_ef['invoice_type']}</span>
+                        &nbsp;<b style='color:#ddeeff;'>{row_ef['invoice_no']}</b>
+                        <span style='color:#6898c0;font-size:13px;float:left;'>📅 {str(row_ef['timestamp'])[:16]}</span><br>
+                        <span style='color:#8aaac8;font-size:13px;'>👤 {row_ef.get('employee','—')} | 📍 {row_ef.get('warehouse_from','—')} | 🏗️ {row_ef.get('contractor','—')}</span>
+                    </div>""", unsafe_allow_html=True)
+                    if st.button(f"✏️ تعديل {row_ef['invoice_no']}", key=f"ef_sel_{row_ef['id']}"):
+                        st.session_state['ef_search'] = row_ef['invoice_no']
+                        st.session_state['ef_type_sel'] = row_ef['invoice_type']
+                        st.session_state['ef_items'] = None
+                        st.session_state['ef_confirm'] = False
+                        st.rerun()
+
+        # ══════════════════════════════════════════
+        # شاشة التعديل بعد اختيار الفاتورة
+        # ══════════════════════════════════════════
         if st.session_state.get('ef_search'):
-            if st.button("✖️ إلغاء التعديل وإخفاء الفاتورة", key="ef_cancel_btn", type="secondary"):
-                st.session_state['ef_search']      = None
-                st.session_state['ef_items']       = None
-                st.session_state['ef_confirm']     = False
-                st.session_state['ef_result_html'] = None
-                st.session_state['ef_contractor']  = None
-                st.session_state['ef_wh_from']     = None
-                st.session_state['ef_wh_to']       = None
+            ef_type = st.session_state.get('ef_type_sel', 'صرف')
+
+            if st.button("✖️ إغلاق التعديل", key="ef_cancel_btn", type="secondary"):
+                for k in ['ef_search','ef_items','ef_confirm','ef_result_html','ef_contractor','ef_wh_from','ef_wh_to','ef_type_sel']:
+                    st.session_state.pop(k, None)
                 st.rerun()
 
-        if st.session_state.get('ef_search'):
             df_inv = pd.read_sql(
-                f"SELECT * FROM archived_invoices WHERE invoice_no='{st.session_state['ef_search']}' AND invoice_type='{ef_type}'", conn)
+                f"SELECT * FROM archived_invoices WHERE invoice_no='{st.session_state['ef_search']}'", conn)
             if df_inv.empty:
-                st.error(f"❌ لم يتم العثور على فاتورة {ef_type} برقم ({st.session_state['ef_search']}).")
+                st.error(f"❌ لم يتم العثور على الفاتورة.")
             else:
                 row = df_inv.iloc[0]
 
-                # ── فحص إذا كانت الفاتورة معتمدة — حد أسبوع (168 ساعة) ──
-                from datetime import timedelta as _td72
-                _ef_signed = pd.read_sql("SELECT status, reviewed_at FROM signed_invoices WHERE invoice_no=? AND status='معتمد'",
-                                         conn, params=(str(row['invoice_no']),))
-                _ef_is_approved = not _ef_signed.empty
-                _ef_can_edit = True
-                _ef_hours_since = None
+                # صلاحية موجه البلاغات: تعديل المستودع والمقاول فقط
+                if role == "موجه بلاغات":
+                    st.markdown(f"""
+                    <div style='background:rgba(0,30,80,0.50);border:1px solid rgba(0,140,255,0.25);
+                        border-radius:10px;padding:14px 18px;direction:rtl;margin-bottom:12px;'>
+                        📄 <b style='color:#ddeeff;font-size:16px;'>فاتورة {row['invoice_type']} — {row['invoice_no']}</b><br>
+                        <span style='color:#8aaac8;'>يمكنك تعديل المستودع والمقاول فقط</span>
+                    </div>""", unsafe_allow_html=True)
 
-                if _ef_is_approved:
-                    try:
-                        _reviewed_at = _ef_signed.iloc[0]['reviewed_at']
-                        _rev_dt = datetime.strptime(str(_reviewed_at)[:19], "%Y-%m-%d %H:%M:%S")
-                        _ef_hours_since = (now_mecca().replace(tzinfo=None) - _rev_dt).total_seconds() / 3600
-                        if _ef_hours_since > 168:
-                            _ef_can_edit = False
-                    except Exception:
-                        pass
+                    _ew1, _ew2 = st.columns(2)
+                    _new_wh   = _ew1.selectbox("📍 المستودع:", list_warehouses,
+                                                index=list_warehouses.index(row['warehouse_from']) if row['warehouse_from'] in list_warehouses else 0,
+                                                key="ef_wh_moujeh")
+                    _new_cont = _ew2.selectbox("🏗️ المقاول:", list_contractors,
+                                               index=list_contractors.index(row['contractor']) if row['contractor'] in list_contractors else 0,
+                                               key="ef_cont_moujeh")
 
-                if _ef_is_approved and not _ef_can_edit:
-                    st.error(f"❌ هذه الفاتورة معتمدة ومضى عليها أكثر من أسبوع (168 ساعة) — لا يمكن تعديلها.")
-                    st.stop()
+                    # معاينة الفاتورة
+                    _pv_ef = f"ef_prev_{row['invoice_no']}"
+                    if st.checkbox("👁️ معاينة الفاتورة الحالية", key=_pv_ef):
+                        _eh = str(row['html_content'])
+                        _eh = _eh.replace('background:rgba(3,10,28,0.82)','background:white').replace('background:rgba(3,10,28,0.88)','background:white')
+                        if '<body' in _eh and 'background:#f0f4f8' not in _eh:
+                            _eh = _eh.replace('<body>','<body style="background:#f0f4f8;">').replace('<body ','<body style="background:#f0f4f8;" ')
+                        components.html(_eh, height=950, scrolling=True)
 
-                if _ef_is_approved and _ef_can_edit:
-                    _hrs_left = max(0, round(168 - (_ef_hours_since or 0), 1))
+                    if st.button("💾 حفظ التعديل", key="ef_save_moujeh", type="primary", use_container_width=True):
+                        # أعد توليد HTML بالمعلومات الجديدة
+                        try: _items = json.loads(row['items_json'])
+                        except: _items = []
+                        _new_html = render_invoice_html("فاتورة صرف مواد طوارئ", _items, _new_wh, _new_cont,
+                                                        row['employee'], row['invoice_no'], boq=row.get('boq',''))
+                        c.execute("UPDATE archived_invoices SET warehouse_from=?, contractor=?, html_content=? WHERE invoice_no=?",
+                                  (_new_wh, _new_cont, _new_html, row['invoice_no']))
+                        save_log("تعديل فاتورة", "—", 0, f"تعديل [{row['invoice_no']}]: مستودع→{_new_wh} | مقاول→{_new_cont}", u['full_name'])
+                        conn.commit()
+                        st.success(f"✅ تم حفظ التعديل على الفاتورة {row['invoice_no']}")
+                        for k in ['ef_search','ef_items','ef_confirm','ef_type_sel']:
+                            st.session_state.pop(k, None)
+                        st.rerun()
+
+                else:
+                    # مدير النظام / مسؤول: تعديل كامل
+                    # فحص 168 ساعة للفواتير المعتمدة
+                    from datetime import timedelta as _td72
+                    _ef_signed = pd.read_sql(f"SELECT status, reviewed_at FROM signed_invoices WHERE invoice_no='{row['invoice_no']}' AND status='معتمد'", conn)
+                    _ef_is_approved = not _ef_signed.empty
+                    _ef_can_edit = True
+                    if _ef_is_approved:
+                        try:
+                            _rev_dt = datetime.strptime(str(_ef_signed.iloc[0]['reviewed_at'])[:19], "%Y-%m-%d %H:%M:%S")
+                            _hrs = (now_mecca().replace(tzinfo=None) - _rev_dt).total_seconds() / 3600
+                            if _hrs > 168: _ef_can_edit = False
+                        except: pass
+
+                    if _ef_is_approved and not _ef_can_edit:
+                        st.error("❌ هذه الفاتورة معتمدة ومضى عليها أكثر من أسبوع — لا يمكن تعديلها.")
+                        st.stop()
+
+                    if _ef_is_approved:
+                        st.markdown(f"<div style='background:rgba(60,40,0,0.50);border:2px solid #f9a825;border-radius:10px;padding:10px 14px;direction:rtl;'>⚠️ <b style='color:#ffaa66;'>فاتورة معتمدة</b> — بعد التعديل ستعود للاعتماد باسمك</div>", unsafe_allow_html=True)
+
+                    # معاينة الفاتورة الحالية
+                    _pv_ef2 = f"ef_prev2_{row['invoice_no']}"
+                    if st.checkbox("👁️ معاينة الفاتورة الحالية", key=_pv_ef2):
+                        _eh2 = str(row['html_content'])
+                        _eh2 = _eh2.replace('background:rgba(3,10,28,0.82)','background:white').replace('background:rgba(3,10,28,0.88)','background:white')
+                        if '<body' in _eh2 and 'background:#f0f4f8' not in _eh2:
+                            _eh2 = _eh2.replace('<body>','<body style="background:#f0f4f8;">').replace('<body ','<body style="background:#f0f4f8;" ')
+                        components.html(_eh2, height=950, scrolling=True)
                     st.markdown(f"""
                     <div style='background:rgba(60,40,0,0.50);border:2px solid #f9a825;border-radius:10px;
                         padding:12px 16px;direction:rtl;margin-bottom:10px;'>
@@ -4938,331 +5042,75 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(29,218,96,0.12);font-size:17p
                         <span style='color:#8aaac8;font-size:14px;'>بعد التعديل ستعود للاعتماد مجدداً وسيتم تسجيل اسمك.</span>
                     </div>""", unsafe_allow_html=True)
                 if st.session_state.get('ef_items') is None:
-                    st.session_state['ef_items'] = json.loads(row['items_json'])
-                if 'ef_confirm' not in st.session_state: st.session_state['ef_confirm'] = False
-                # تهيئة قيم المقاول والمستودع القابلة للتعديل
-                if st.session_state.get('ef_contractor') is None:
-                    st.session_state['ef_contractor'] = row['contractor'] or ""
-                if st.session_state.get('ef_wh_from') is None:
-                    st.session_state['ef_wh_from'] = row['warehouse_from'] or ""
-                if st.session_state.get('ef_wh_to') is None:
-                    st.session_state['ef_wh_to'] = row['warehouse_to'] or ""
+                    try: st.session_state['ef_items'] = json.loads(row['items_json'])
+                    except: st.session_state['ef_items'] = []
 
-                orig_contractor = row['contractor'] or ""
-                orig_wh_from    = row['warehouse_from'] or ""
-                orig_wh_to      = row['warehouse_to'] or ""
+                section_card("📋 تعديل بيانات الفاتورة", "#f9a825")
+                _ea1, _ea2 = st.columns(2)
+                _new_wh_adm = _ea1.selectbox("📍 المستودع:", list_warehouses,
+                    index=list_warehouses.index(row['warehouse_from']) if row['warehouse_from'] in list_warehouses else 0,
+                    key="ef_wh_adm")
+                _new_cont_adm = _ea2.selectbox("🏗️ المقاول:", list_contractors,
+                    index=list_contractors.index(row['contractor']) if row['contractor'] in list_contractors else 0,
+                    key="ef_cont_adm")
 
-                st.success(f"✅ فاتورة {ef_type} رقم ({row['invoice_no']}) | التاريخ: {row['timestamp']}")
+                st.markdown("**📦 المواد الحالية — تعديل الكميات أو حذف:**")
+                _new_items = []
+                for _ii, _it in enumerate(st.session_state['ef_items']):
+                    _ic1, _ic2, _ic3 = st.columns([3, 1, 0.5])
+                    _ic1.markdown(f"<span style='color:#ddeeff;font-size:14px;'><b style='color:#7aaac8;'>{_it.get('code','')}</b> — {_it.get('name','')}</span>", unsafe_allow_html=True)
+                    _new_q = _ic2.number_input("الكمية", min_value=0, value=int(_it.get('qty',1)), key=f"ef_q_{_ii}", label_visibility="collapsed")
+                    _del = _ic3.button("🗑️", key=f"ef_del_{_ii}", help="حذف هذه المادة")
+                    if not _del and _new_q > 0:
+                        _new_items.append({**_it, 'qty': _new_q})
 
-                # ── تعديل المقاول والمستودع ──
-                st.markdown("##### 🔧 تعديل بيانات الفاتورة:")
-                if ef_type in ("صرف", "ارجاع"):
-                    efc1, efc2 = st.columns([1, 1])
-                    # المستودع
-                    _wh_opts = list_warehouses
-                    _wh_idx  = _wh_opts.index(st.session_state['ef_wh_from']) if st.session_state['ef_wh_from'] in _wh_opts else 0
-                    new_ef_wh = efc1.selectbox(
-                        "📍 مستودع الصرف:" if ef_type=="صرف" else "📍 المستودع الذي يستلم المواد:",
-                        _wh_opts, index=_wh_idx, key="ef_wh_sel")
-                    if new_ef_wh != st.session_state['ef_wh_from']:
-                        st.session_state['ef_wh_from'] = new_ef_wh
-                    # المقاول
-                    _con_opts = list_contractors
-                    _con_idx  = _con_opts.index(st.session_state['ef_contractor']) if st.session_state['ef_contractor'] in _con_opts else 0
-                    new_ef_con = efc2.selectbox(
-                        "🏗️ المقاول المستلم للمواد:" if ef_type=="صرف" else "🏗️ المقاول المسلّم للمواد (المرجع):",
-                        _con_opts, index=_con_idx, key="ef_con_sel")
-                    if new_ef_con != st.session_state['ef_contractor']:
-                        st.session_state['ef_contractor'] = new_ef_con
-                    wh_from    = st.session_state['ef_wh_from']
-                    wh_to      = ""
-                    contractor = st.session_state['ef_contractor']
-                    # تنبيه عند تغيير المستودع
-                    if wh_from != orig_wh_from:
-                        st.warning(f"⚠️ تغيّر المستودع من **{orig_wh_from}** إلى **{wh_from}** — سيتم التحقق من الرصيد الكامل في المستودع الجديد بدون احتساب الكميات الأصلية.")
+                st.session_state['ef_items'] = _new_items
 
-                elif ef_type == "تحويل":
-                    efc1, efc2 = st.columns([1, 1])
-                    _wh_opts = list_warehouses
-                    _wf_idx  = _wh_opts.index(st.session_state['ef_wh_from']) if st.session_state['ef_wh_from'] in _wh_opts else 0
-                    _wt_idx  = _wh_opts.index(st.session_state['ef_wh_to'])   if st.session_state['ef_wh_to']   in _wh_opts else 0
-                    new_ef_wf = efc1.selectbox("📍 المستودع المصدر (المنقول منه):", _wh_opts, index=_wf_idx, key="ef_wf_sel")
-                    new_ef_wt = efc2.selectbox("📍 المستودع المستلم (المنقول إليه):", _wh_opts, index=_wt_idx, key="ef_wt_sel")
-                    if new_ef_wf != st.session_state['ef_wh_from']: st.session_state['ef_wh_from'] = new_ef_wf
-                    if new_ef_wt != st.session_state['ef_wh_to']:   st.session_state['ef_wh_to']   = new_ef_wt
-                    if new_ef_wf == new_ef_wt:
-                        st.error("❌ المستودع المصدر والمستلم لا يمكن أن يكونا نفس المستودع!")
-                    wh_from    = st.session_state['ef_wh_from']
-                    wh_to      = st.session_state['ef_wh_to']
-                    contractor = ""
-                else:
-                    wh_from = orig_wh_from; wh_to = orig_wh_to; contractor = orig_contractor
-
-                st.markdown("<hr style='margin:10px 0;'>", unsafe_allow_html=True)
-
-                # ── جدول الأصناف القابل للتعديل مع التحقق من الرصيد ──
-                st.write("##### ✏️ تعديل الأصناف:")
-                hh1, hh2, hh3, hh4 = st.columns([1.5, 3, 1.5, 0.8])
-                hh1.markdown("**كود المادة**"); hh2.markdown("**اسم المادة**")
-                hh3.markdown("**الكمية**"); hh4.markdown("**حذف**")
-                st.markdown("<hr style='margin:4px 0 8px 0;'>", unsafe_allow_html=True)
-
-                orig_items = json.loads(row['items_json'])
-                to_del = None
-                cart_has_stock_error = False
-
-                for i, item in enumerate(st.session_state['ef_items']):
-                    ec1, ec2, ec3, ec4 = st.columns([1.5, 3, 1.5, 0.8])
-                    ec1.write(item['code']); ec2.write(item['name'])
-
-                    # حساب الحد الأقصى المتاح بناءً على نوع الفاتورة والمستودع
-                    if ef_type == "صرف":
-                        avail_r = pd.read_sql(
-                            f"SELECT COALESCE(SUM(qty),0) as t FROM inventory WHERE item_code='{item['code']}' AND warehouse='{wh_from}'", conn)
-                        avail = int(avail_r.iloc[0]['t'] or 0)
-                        # إذا تغيّر المستودع: لا رصيد من الفاتورة الأصلية يُحتسب
-                        if wh_from != orig_wh_from:
-                            max_allowed = avail
+                # ── إضافة مادة جديدة ──
+                st.divider()
+                st.markdown("**➕ إضافة مادة جديدة:**")
+                _add1, _add2, _add3 = st.columns([2, 1, 1])
+                _add_code = _add1.text_input("كود المادة:", key="ef_add_code", placeholder="908514012").strip()
+                _add_qty  = _add2.number_input("الكمية:", min_value=1, value=1, key="ef_add_qty")
+                if _add3.button("➕ إضافة", key="ef_add_btn", use_container_width=True):
+                    if _add_code:
+                        # البحث عن اسم المادة
+                        _nm = pd.read_sql(f"SELECT item_name, description FROM material_definitions WHERE item_code='{_add_code}'", conn)
+                        _add_name = _nm.iloc[0]['item_name'] if not _nm.empty else _add_code
+                        _add_desc = _nm.iloc[0]['description'] if not _nm.empty else ""
+                        # التحقق من عدم التكرار
+                        _exists = any(i.get('code') == _add_code for i in st.session_state['ef_items'])
+                        if _exists:
+                            st.warning(f"⚠️ الكود {_add_code} موجود مسبقاً — عدّل كميته أعلاه.")
                         else:
-                            orig_qty = next((int(x['qty']) for x in orig_items if x['code']==item['code']), 0)
-                            max_allowed = avail + orig_qty
-                        new_q = ec3.number_input("", min_value=0, max_value=max(0, max_allowed),
-                                                  value=min(int(item['qty']), max(0, max_allowed)),
-                                                  step=1, key=f"ef_qty_{row['invoice_no']}_{i}",
-                                                  label_visibility="collapsed")
-                        if max_allowed <= 0 and int(item['qty']) > 0:
-                            ec3.markdown(f"<span style='color:red;font-size:19px;'>⚠️ غير متوفر</span>", unsafe_allow_html=True)
-                            cart_has_stock_error = True
-                    elif ef_type == "تحويل":
-                        avail_r = pd.read_sql(
-                            f"SELECT COALESCE(SUM(qty),0) as t FROM inventory WHERE item_code='{item['code']}' AND warehouse='{wh_from}'", conn)
-                        avail = int(avail_r.iloc[0]['t'] or 0)
-                        if wh_from != orig_wh_from:
-                            max_allowed = avail
-                        else:
-                            orig_qty = next((int(x['qty']) for x in orig_items if x['code']==item['code']), 0)
-                            max_allowed = avail + orig_qty
-                        new_q = ec3.number_input("", min_value=0, max_value=max(0, max_allowed),
-                                                  value=min(int(item['qty']), max(0, max_allowed)),
-                                                  step=1, key=f"ef_qty_{row['invoice_no']}_{i}",
-                                                  label_visibility="collapsed")
+                            st.session_state['ef_items'].append({
+                                'code': _add_code, 'name': _add_name,
+                                'qty': int(_add_qty), 'cat': ''
+                            })
+                            st.success(f"✅ تمت إضافة {_add_code}")
+                            st.rerun()
                     else:
-                        new_q = ec3.number_input("", min_value=0, value=int(item['qty']), step=1,
-                                                  key=f"ef_qty_{row['invoice_no']}_{i}",
-                                                  label_visibility="collapsed")
+                        st.error("❌ أدخل كود المادة.")
 
-                    if new_q != int(item['qty']):
-                        st.session_state['ef_items'][i]['qty'] = new_q
-                    if ec4.button("🗑️", key=f"ef_del_{i}", help="حذف هذا الصنف"):
-                        to_del = i
-
-                if to_del is not None:
-                    st.session_state['ef_items'].pop(to_del); st.rerun()
-
-                st.markdown("<hr style='margin:8px 0;'>", unsafe_allow_html=True)
-
-                # ── إضافة صنف جديد ──
-                with st.expander("➕ إضافة صنف جديد للفاتورة"):
-                    na1, na2, na3 = st.columns([1.5, 3, 1])
-                    new_code_ef = na1.text_input("كود المادة:", key="ef_new_code").strip()
-                    new_qty_ef  = na3.number_input("الكمية:", min_value=1, value=1, key="ef_new_qty")
-                    if na2.button("➕ إضافة للفاتورة", key="ef_add_btn"):
-                        if new_code_ef:
-                            mat_r = pd.read_sql(f"SELECT item_name, category FROM material_definitions WHERE item_code='{new_code_ef}'", conn)
-                            if mat_r.empty:
-                                st.error("❌ الكود غير معرف!")
-                            else:
-                                # تحقق من الرصيد عند الإضافة لفواتير الصرف والتحويل
-                                if ef_type in ("صرف", "تحويل"):
-                                    avail_new = pd.read_sql(
-                                        f"SELECT COALESCE(SUM(qty),0) as t FROM inventory WHERE item_code='{new_code_ef}' AND warehouse='{wh_from}'", conn)
-                                    avail_new_qty = int(avail_new.iloc[0]['t'] or 0)
-                                    already_in_cart = sum(x['qty'] for x in st.session_state['ef_items'] if x['code'] == new_code_ef)
-                                    # لا نحتسب الكمية الأصلية هنا لأنه صنف جديد أو مستودع تغيّر
-                                    if (new_qty_ef + already_in_cart) > avail_new_qty:
-                                        st.error(f"❌ رصيد غير كافٍ! المتاح في [{wh_from}]: {avail_new_qty} — المطلوب: {new_qty_ef + already_in_cart}")
-                                        st.stop()
-                                # تحقق من التكرار وأضف
-                                ex = [j for j,x in enumerate(st.session_state['ef_items']) if x['code'] == new_code_ef]
-                                if ex:
-                                    st.warning(f"⚠️ المادة [{new_code_ef}] موجودة مسبقاً — سيتم تجميع الكمية.")
-                                    st.session_state['ef_items'][ex[0]]['qty'] += new_qty_ef
-                                else:
-                                    st.session_state['ef_items'].append({
-                                        'code': new_code_ef,
-                                        'name': mat_r.iloc[0]['item_name'],
-                                        'qty':  new_qty_ef,
-                                        'cat':  mat_r.iloc[0]['category']
-                                    })
-                                st.rerun()
-
-                # ── تحقق نهائي صارم من الرصيد قبل التأكيد ──
-                new_items = st.session_state['ef_items']
-                if ef_type in ("صرف", "تحويل") and not cart_has_stock_error:
-                    real_errors = []
-                    _wh_changed = (wh_from != orig_wh_from)  # هل تغيّر المستودع؟
-
-                    for item in new_items:
-                        if int(item['qty']) == 0:
-                            continue
-                        # الرصيد الحالي في المستودع المختار (الجديد)
-                        avail_r = pd.read_sql(
-                            f"SELECT COALESCE(SUM(qty),0) as t FROM inventory WHERE item_code='{item['code']}' AND warehouse='{wh_from}'", conn)
-                        avail = int(avail_r.iloc[0]['t'] or 0)
-
-                        if _wh_changed:
-                            # تغيّر المستودع: لا يُحتسب أي رصيد من الفاتورة الأصلية
-                            # يجب أن يتوفر الرصيد الكامل في المستودع الجديد
-                            if int(item['qty']) > avail:
-                                real_errors.append(
-                                    f"❌ <b>{item['name']}</b> ({item['code']}) — "
-                                    f"المطلوب: {item['qty']} | المتوفر في [{wh_from}]: {avail}")
-                        else:
-                            # نفس المستودع: نحتسب الكمية الأصلية كرصيد محجوز
-                            orig_q = next((int(x['qty']) for x in orig_items if x['code'] == item['code']), 0)
-                            # الرصيد الفعلي المتاح = الرصيد الحالي + ما كان مخصوماً في الفاتورة الأصلية
-                            effective_avail = avail + orig_q
-                            if int(item['qty']) > effective_avail:
-                                real_errors.append(
-                                    f"❌ <b>{item['name']}</b> ({item['code']}) — "
-                                    f"المطلوب: {item['qty']} | المتوفر الفعلي: {effective_avail}")
-
-                    # التحقق من المواد الجديدة المضافة للفاتورة (غير موجودة في الأصل)
-                    for item in new_items:
-                        if int(item['qty']) == 0:
-                            continue
-                        _is_new_item = not any(x['code'] == item['code'] for x in orig_items)
-                        if _is_new_item:
-                            avail_r2 = pd.read_sql(
-                                f"SELECT COALESCE(SUM(qty),0) as t FROM inventory WHERE item_code='{item['code']}' AND warehouse='{wh_from}'", conn)
-                            avail2 = int(avail_r2.iloc[0]['t'] or 0)
-                            if int(item['qty']) > avail2:
-                                # تحقق أن هذا الخطأ لم يُضاف مسبقاً
-                                if not any(item['code'] in e for e in real_errors):
-                                    real_errors.append(
-                                        f"❌ <b>{item['name']}</b> ({item['code']}) [مادة جديدة] — "
-                                        f"المطلوب: {item['qty']} | المتوفر في [{wh_from}]: {avail2}")
-
-                    if real_errors:
-                        st.markdown(
-                            "<div style='background:rgba(80,0,0,0.40);border:2px solid #c62828;"
-                            "border-radius:10px;padding:14px 18px;margin:10px 0;direction:rtl;'>"
-                            "⛔ <b>لا يمكن حفظ الفاتورة — رصيد غير كافٍ للأصناف التالية:</b><br>"
-                            + "<br>".join(real_errors) + "</div>",
-                            unsafe_allow_html=True)
-                        st.session_state['ef_confirm'] = False
-                        st.stop()
-
-                # ── حساب التغييرات للعرض ──
-                changes = []
-                for old_i in orig_items:
-                    ni = next((x for x in new_items if x['code']==old_i['code']), None)
-                    diff = int(old_i['qty']) - (int(ni['qty']) if ni else int(old_i['qty']))
-                    if diff > 0:   changes.append(f"إعادة {diff} وحدة من [{old_i['name']}] إلى المستودع [{wh_from}]")
-                    elif diff < 0: changes.append(f"خصم {abs(diff)} وحدة إضافية من [{old_i['name']}] من المستودع [{wh_from}]")
-                for ni in new_items:
-                    if not any(x['code']==ni['code'] for x in orig_items):
-                        changes.append(f"إضافة صنف جديد [{ni['name']}] بكمية {ni['qty']}")
-                if contractor != orig_contractor:
-                    changes.append(f"تغيير المقاول من [{orig_contractor}] إلى [{contractor}]")
-                if wh_from != orig_wh_from:
-                    changes.append(f"تغيير المستودع من [{orig_wh_from}] إلى [{wh_from}]")
-
-                if not st.session_state.get('ef_confirm'):
-                    st.markdown("<div class='btn-success'>", unsafe_allow_html=True)
-                    if st.button("💾 تأكيد التعديل وتصدير الفاتورة المعدّلة"):
-                        # التحقق من وجود تعديلات فعلية قبل الإصدار
-                        has_changes = bool(changes)
-                        if not has_changes:
-                            st.warning("⚠️ لا يوجد تعديلات على الفاتورة. لم يتم إصدار فاتورة معدّلة.")
-                        else:
-                            st.session_state['ef_confirm'] = True; st.rerun()
-                    st.markdown("</div>", unsafe_allow_html=True)
-                else:
-                    ch_txt = "<br>".join([f"• {ch}" for ch in changes]) if changes else "• لا توجد تغييرات"
-                    st.markdown(f"""<div class='warn-box'>
-                    ⚠️ <b>هل أنت متأكد من تعديل الفاتورة ({row['invoice_no']})؟</b><br>
-                    ستترتب على هذا التعديل الإجراءات التالية:<br>{ch_txt}
-                    </div>""", unsafe_allow_html=True)
-                    col_yes, col_no = st.columns([1,1])
-                    if col_yes.button("✅ نعم، تأكيد التعديل والتصدير"):
-                        inv_type = row['invoice_type']
-                        # تطبيق الفروق على المخزون
-                        for old_i in orig_items:
-                            ni = next((x for x in new_items if x['code']==old_i['code']), {'qty':0})
-                            diff = int(old_i['qty']) - int(ni['qty'])
-                            if diff == 0: continue
-                            cat_r = pd.read_sql(f"SELECT category FROM material_definitions WHERE item_code='{old_i['code']}'", conn)
-                            cat = cat_r.iloc[0]['category'] if not cat_r.empty else old_i.get('cat','')
-                            if inv_type == "صرف":
-                                c.execute("INSERT INTO inventory (item_code,qty,warehouse,contractor,category) VALUES (?,?,?,?,?)",
-                                          (old_i['code'], diff, wh_from, contractor, cat))
-                                save_log("تعديل فاتورة صرف", old_i['code'], abs(diff),
-                                         f"تعديل ({row['invoice_no']}): {old_i['name']} {old_i['qty']}->{ni['qty']}", u['full_name'])
-                            elif inv_type == "ارجاع":
-                                c.execute("INSERT INTO inventory (item_code,qty,warehouse,contractor,category) VALUES (?,?,?,?,?)",
-                                          (old_i['code'], -diff, wh_from, contractor, cat))
-                                save_log("تعديل فاتورة ارجاع", old_i['code'], abs(diff),
-                                         f"تعديل ({row['invoice_no']}): {old_i['name']} {old_i['qty']}->{ni['qty']}", u['full_name'])
-                            elif inv_type == "تحويل":
-                                c.execute("INSERT INTO inventory (item_code,qty,warehouse,contractor,category) VALUES (?,?,?,?,?)",
-                                          (old_i['code'], diff, wh_from, "", cat))
-                                c.execute("INSERT INTO inventory (item_code,qty,warehouse,contractor,category) VALUES (?,?,?,?,?)",
-                                          (old_i['code'], -diff, wh_to, "", cat))
-                                save_log("تعديل فاتورة تحويل", old_i['code'], abs(diff),
-                                         f"تعديل ({row['invoice_no']}): {old_i['name']} {old_i['qty']}->{ni['qty']}", u['full_name'])
-                        # الأصناف الجديدة المضافة
-                        for ni in new_items:
-                            if not any(x['code']==ni['code'] for x in orig_items):
-                                cat_r = pd.read_sql(f"SELECT category FROM material_definitions WHERE item_code='{ni['code']}'", conn)
-                                cat = cat_r.iloc[0]['category'] if not cat_r.empty else ni.get('cat','')
-                                if inv_type == "صرف":
-                                    c.execute("INSERT INTO inventory (item_code,qty,warehouse,contractor,category) VALUES (?,?,?,?,?)",
-                                              (ni['code'], -int(ni['qty']), wh_from, contractor, cat))
-                                    save_log("تعديل فاتورة صرف - إضافة صنف", ni['code'], ni['qty'],
-                                             f"إضافة صنف [{ni['name']}] للفاتورة ({row['invoice_no']})", u['full_name'])
-                                elif inv_type == "ارجاع":
-                                    c.execute("INSERT INTO inventory (item_code,qty,warehouse,contractor,category) VALUES (?,?,?,?,?)",
-                                              (ni['code'], int(ni['qty']), wh_from, contractor, cat))
-                                    save_log("تعديل فاتورة ارجاع - إضافة صنف", ni['code'], ni['qty'],
-                                             f"إضافة صنف [{ni['name']}] للفاتورة ({row['invoice_no']})", u['full_name'])
-                        # إعادة توليد الفاتورة بنفس الرقم مع البيانات الجديدة
-                        filtered = [x for x in new_items if int(x['qty']) > 0]
-                        if inv_type == "صرف":
-                            new_html = render_invoice_html(f"فاتورة صرف مواد طوارئ (معدّل)", filtered, wh_from, contractor, u['full_name'], row['invoice_no'])
-                        elif inv_type == "ارجاع":
-                            new_html = render_return_invoice_html(f"فاتورة ارجاع مواد طوارئ (معدّل)", filtered, wh_from, contractor, u['full_name'], row['invoice_no'])
-                        else:
-                            new_html = render_transfer_invoice_html(f"فاتورة نقل مواد من مستودع إلى آخر (معدّل)", filtered, wh_from, wh_to, u['full_name'], row['invoice_no'])
-                        c.execute("UPDATE archived_invoices SET items_json=?, html_content=?, warehouse_from=?, warehouse_to=?, contractor=? WHERE id=?",
-                                  (json.dumps(new_items), new_html, wh_from, wh_to, contractor, int(row['id'])))
-
-                        # إذا كانت الفاتورة معتمدة سابقاً — أعدها للاعتماد وسجّل التنبيه
+                st.divider()
+                if st.button("💾 حفظ جميع التعديلات", key="ef_save_adm", type="primary", use_container_width=True):
+                    if not st.session_state['ef_items']:
+                        st.error("❌ لا يمكن حفظ فاتورة بدون مواد.")
+                    else:
+                        _new_html_adm = render_invoice_html("فاتورة صرف مواد طوارئ", st.session_state['ef_items'], _new_wh_adm, _new_cont_adm,
+                                                            row['employee'], row['invoice_no'], boq=row.get('boq',''))
+                        c.execute("UPDATE archived_invoices SET warehouse_from=?, contractor=?, items_json=?, html_content=? WHERE invoice_no=?",
+                                  (_new_wh_adm, _new_cont_adm, json.dumps(st.session_state['ef_items']), _new_html_adm, row['invoice_no']))
                         if _ef_is_approved:
-                            c.execute("UPDATE signed_invoices SET status='معدّلة-تحتاج اعتماد', deducted=0, admin_notes=? WHERE invoice_no=? AND status='معتمد'",
-                                      (f"⚠️ تم التعديل بواسطة: {u['full_name']} بتاريخ {now_mecca().strftime('%Y-%m-%d %H:%M')} — تحتاج اعتماداً جديداً",
-                                       str(row['invoice_no'])))
-                            save_log("⚠️ تعديل فاتورة معتمدة", "—", 0,
-                                     f"تم التعديل على الفاتورة المعتمدة [{row['invoice_no']}] بواسطة: {u['full_name']} — تحتاج اعتماداً جديداً",
-                                     u['full_name'])
-
+                            c.execute(f"UPDATE signed_invoices SET status='معدّلة-تحتاج اعتماد', admin_notes=? WHERE invoice_no=? AND status='معتمد'",
+                                      (f"⚠️ عدّلها: {u['full_name']} في {now_mecca().strftime('%Y-%m-%d %H:%M')}", row['invoice_no']))
+                        save_log("تعديل فاتورة", "—", 0, f"تعديل [{row['invoice_no']}]: مستودع→{_new_wh_adm} | مقاول→{_new_cont_adm} | عدد المواد:{len(st.session_state['ef_items'])}", u['full_name'])
                         conn.commit()
-                        st.session_state['ef_result_html'] = new_html
-                        st.session_state['ef_items']       = None
-                        st.session_state['ef_search']      = None
-                        st.session_state['ef_confirm']     = False
-                        st.session_state['ef_contractor']  = None
-                        st.session_state['ef_wh_from']     = None
-                        st.session_state['ef_wh_to']       = None
-                        st.success(f"✅ تم تعديل الفاتورة ({row['invoice_no']}) وتحديث الأرشيف والمخزون بنجاح!"); st.rerun()
-                    if col_no.button("❌ لا، إلغاء التعديل"):
-                        st.session_state['ef_confirm'] = False; st.rerun()
+                        st.success(f"✅ تم حفظ التعديل على الفاتورة {row['invoice_no']}")
+                        for k in ['ef_search','ef_items','ef_confirm','ef_type_sel']:
+                            st.session_state.pop(k, None)
+                        st.rerun()
 
-        if st.session_state.get('ef_result_html'):
-            st.write("### 📄 الفاتورة المعدّلة (جاهزة للطباعة):")
-            efh1, efh2 = st.columns([4,1])
-            if efh2.button("✖️ إخفاء", key="close_ef"): st.session_state['ef_result_html'] = None; st.rerun()
-            components.html(st.session_state['ef_result_html'], height=950, scrolling=True)
     elif st.session_state.page == "view_logs":
         st.markdown("<div class='main-title'>🛠️ سجل العمليات التفصيلي وأرشيف فواتير النظام</div>", unsafe_allow_html=True)
 
