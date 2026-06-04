@@ -4882,6 +4882,15 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(29,218,96,0.12);font-size:17p
             st.error("❌ غير مصرح."); st.stop()
         page_header("✏️","تعديل فاتورة سابقة","اختر فاتورة وعدّل بياناتها","#f9a825")
 
+        # ── تنبيه النجاح ──
+        _ef_msg = st.session_state.pop('ef_success_msg', None)
+        if _ef_msg:
+            st.markdown(f"""
+            <div style='background:rgba(0,60,20,0.65);border:2px solid #1daa60;border-radius:12px;
+                padding:16px 20px;direction:rtl;text-align:center;margin-bottom:14px;'>
+                <span style='font-size:20px;font-weight:900;color:#1dda70;'>{_ef_msg}</span>
+            </div>""", unsafe_allow_html=True)
+
         # ── قائمة الفواتير حسب الدور ──
         if role == "موجه بلاغات":
             _ef_df = pd.read_sql(
@@ -5049,7 +5058,8 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(29,218,96,0.12);font-size:17p
                         save_log("تعديل فاتورة","—",0,f"تعديل [{_inv_no}]→مستودع:{_nwh} مقاول:{_ncont}",u['full_name'])
                         conn.commit()
                         for k in ['ef_selected','ef_items','ef_compare','ef_new_wh','ef_new_cont']: st.session_state.pop(k,None)
-                        st.success(f"✅ تم حفظ التعديل على الفاتورة {_inv_no}")
+                        _inv_type_label = {"صرف":"الصرف","ارجاع":"الإرجاع","نقل":"النقل"}.get(_inv.get('invoice_type',''),'')
+                        st.session_state['ef_success_msg'] = f"✅ تم تعديل فاتورة {_inv_type_label} رقم **{_inv_no}** بنجاح!"
                         st.rerun()
                 if _b2.button("🔙 رجوع للتعديل",key="ef_backto",use_container_width=True):
                     st.session_state['ef_compare']=False; st.rerun()
