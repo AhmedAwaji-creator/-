@@ -4972,19 +4972,20 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(29,218,96,0.12);font-size:17p
             if df_inv.empty:
                 st.error(f"❌ لم يتم العثور على الفاتورة.")
             else:
-                row = df_inv.iloc[0]
+                row = dict(df_inv.iloc[0])
 
                 if role != "موجه بلاغات":  # مدير النظام / مسؤول المستودعات
-                    from datetime import timedelta as _td72
-                    _ef_signed = pd.read_sql(f"SELECT status, reviewed_at FROM signed_invoices WHERE invoice_no='{row['invoice_no']}' AND status='معتمد'", conn)
-                    _ef_is_approved = not _ef_signed.empty
+                    _ef_is_approved = False
                     _ef_can_edit = True
-                    if _ef_is_approved:
-                        try:
+                    from datetime import timedelta as _td72
+                    try:
+                        _ef_signed = pd.read_sql(f"SELECT status, reviewed_at FROM signed_invoices WHERE invoice_no='{row['invoice_no']}' AND status='معتمد'", conn)
+                        _ef_is_approved = not _ef_signed.empty
+                        if _ef_is_approved:
                             _rev_dt = datetime.strptime(str(_ef_signed.iloc[0]['reviewed_at'])[:19], "%Y-%m-%d %H:%M:%S")
                             _hrs = (now_mecca().replace(tzinfo=None) - _rev_dt).total_seconds() / 3600
                             if _hrs > 168: _ef_can_edit = False
-                        except: pass
+                    except: pass
 
                     if _ef_is_approved and not _ef_can_edit:
                         st.error("❌ هذه الفاتورة معتمدة ومضى عليها أكثر من أسبوع — لا يمكن تعديلها.")
