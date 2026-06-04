@@ -56,8 +56,17 @@ def get_connection():
     _conn.row_factory = sqlite3.Row
     return _conn
 
-conn = get_connection()
-c    = conn.cursor()
+@st.cache_resource
+def get_plain_connection():
+    """اتصال بدون row_factory — لاستخدام pd.read_sql مع params"""
+    _pc = sqlite3.connect(DB_NAME, check_same_thread=False, timeout=60)
+    _pc.execute("PRAGMA journal_mode=WAL")
+    _pc.execute("PRAGMA busy_timeout=60000")
+    return _pc
+
+conn  = get_connection()
+c     = conn.cursor()
+pconn = get_plain_connection()  # للاستخدام مع pd.read_sql
 
 def cleanup_for_launch():
     """تنظيف بيانات التجربة استعداداً للإطلاق: المواد + الكميات + الفواتير فقط"""
@@ -888,7 +897,7 @@ def render_editable_cart(cart_key, wh_ref=None):
         c1, c2, c3, c4, c5 = st.columns([1.2, 2.5, 1.8, 1.3, 0.8])
         c1.write(item['code']); c2.write(item['name']); c3.write(item.get('cat',''))
         if wh_ref:
-            avail_r = pd.read_sql(f"SELECT SUM(qty) as t FROM inventory WHERE item_code='{item['code']}' AND warehouse='{wh_ref}'", conn)
+            avail_r = pd.read_sql(f"SELECT SUM(qty) as t FROM inventory WHERE item_code='{item['code']}' AND warehouse='{wh_ref}'", pconn)
             avail = int(avail_r.iloc[0]['t'] or 0)
             others = sum(x['qty'] for j,x in enumerate(cart) if j!=i and x['code']==item['code'])
             max_qty = max(1, avail - others)
@@ -2987,13 +2996,13 @@ tick();setInterval(tick,1000);
             st.sidebar.markdown("<div class='sb-section-requests'>📋 الطلبات</div>", unsafe_allow_html=True)
             st.markdown("<div class='sb-btn-requests'>", unsafe_allow_html=True)
             # عدد طلبات الارجاع المعلقة
-            pending_ret_count = int(pd.read_sql("SELECT COUNT(*) as cnt FROM return_requests WHERE status='معلق'", conn).iloc[0]['cnt'])
+            pending_ret_count = int(pd.read_sql("SELECT COUNT(*) as cnt FROM return_requests WHERE status='معلق'", pconn).iloc[0]['cnt'])
             if pending_ret_count > 0:
                 st.markdown(f"<div class='ret-btn-wrap'><span class='ret-badge'>{pending_ret_count}</span></div>", unsafe_allow_html=True)
             if st.button("📤 طلب ارجاع مواد", key="ret_btn_user"): st.session_state.page = "return_requests_user"; st.query_params["_pg"] = "return_requests_user"
             if st.session_state.get("user_info"): st.query_params["_u"] = st.session_state.user_info.get("username","")
             # طلبات الغاء الفواتير
-            pending_cancel_count_user = int(pd.read_sql("SELECT COUNT(*) as cnt FROM cancel_invoice_requests WHERE status='معلق'", conn).iloc[0]['cnt'])
+            pending_cancel_count_user = int(pd.read_sql("SELECT COUNT(*) as cnt FROM cancel_invoice_requests WHERE status='معلق'", pconn).iloc[0]['cnt'])
             if pending_cancel_count_user > 0:
                 st.markdown(f"<div class='ret-btn-wrap'><span class='ret-badge'>{pending_cancel_count_user}</span></div>", unsafe_allow_html=True)
             if st.button("🚫 طلب إلغاء فاتورة", key="cancel_inv_btn_user"): st.session_state.page = "cancel_invoice_user"; st.query_params["_pg"] = "cancel_invoice_user"
@@ -3043,8 +3052,8 @@ tick();setInterval(tick,1000);
             st.sidebar.markdown("<div class='sb-section-requests'>📋 الطلبات والاعتمادات</div>", unsafe_allow_html=True)
             st.markdown("<div class='sb-btn-requests'>", unsafe_allow_html=True)
 
-            pending_ret_wh = int(pd.read_sql("SELECT COUNT(*) as cnt FROM return_requests WHERE status='معلق'", conn).iloc[0]['cnt'])
-            pending_cancel_wh2 = int(pd.read_sql("SELECT COUNT(*) as cnt FROM cancel_invoice_requests WHERE status='معلق'", conn).iloc[0]['cnt'])
+            pending_ret_wh = int(pd.read_sql("SELECT COUNT(*) as cnt FROM return_requests WHERE status='معلق'", pconn).iloc[0]['cnt'])
+            pending_cancel_wh2 = int(pd.read_sql("SELECT COUNT(*) as cnt FROM cancel_invoice_requests WHERE status='معلق'", pconn).iloc[0]['cnt'])
             _total_ret_cancel_wh = pending_ret_wh + pending_cancel_wh2
             if _total_ret_cancel_wh > 0:
                 st.markdown(f"<div class='ret-btn-wrap'><span class='ret-badge'>{_total_ret_cancel_wh}</span></div>", unsafe_allow_html=True)
@@ -3132,8 +3141,8 @@ tick();setInterval(tick,1000);
             st.sidebar.markdown("<div class='sb-section-requests'>📋 الطلبات والاعتمادات</div>", unsafe_allow_html=True)
             st.markdown("<div class='sb-btn-requests'>", unsafe_allow_html=True)
 
-            pending_ret_adm   = int(pd.read_sql("SELECT COUNT(*) as cnt FROM return_requests WHERE status='معلق'", conn).iloc[0]['cnt'])
-            pending_cancel_adm = int(pd.read_sql("SELECT COUNT(*) as cnt FROM cancel_invoice_requests WHERE status='معلق'", conn).iloc[0]['cnt'])
+            pending_ret_adm   = int(pd.read_sql("SELECT COUNT(*) as cnt FROM return_requests WHERE status='معلق'", pconn).iloc[0]['cnt'])
+            pending_cancel_adm = int(pd.read_sql("SELECT COUNT(*) as cnt FROM cancel_invoice_requests WHERE status='معلق'", pconn).iloc[0]['cnt'])
             if st.button("🔄 طلبات ارجاع المواد وإلغاء الفواتير", key="sb_ret_adm"):
                 st.session_state.page = "return_requests_admin"; st.query_params["_pg"] = "return_requests_admin"
             if st.session_state.get("user_info"): st.query_params["_u"] = st.session_state.user_info.get("username","")
@@ -3197,7 +3206,7 @@ tick();setInterval(tick,1000);
         # ── تبديل المستخدم (مدير النظام فقط) ──
         if role == "مدير نظام":
             _all_users_sw = pd.read_sql(
-                "SELECT username, full_name, role FROM users ORDER BY full_name", conn)
+                "SELECT username, full_name, role FROM users ORDER BY full_name", pconn)
             if not _all_users_sw.empty:
                 st.divider()
                 st.markdown(
@@ -3299,9 +3308,9 @@ tick();setInterval(tick,1000);
         </div>
         """, unsafe_allow_html=True)
     # جلب قوائم الثوابت المسجلة لاستعمالها في حقول الإدخال والتحقق السريع
-    list_warehouses = pd.read_sql("SELECT name FROM settings_warehouses", conn)['name'].tolist()
-    list_contractors = pd.read_sql("SELECT name FROM settings_contractors", conn)['name'].tolist()
-    list_categories = pd.read_sql("SELECT name FROM settings_categories", conn)['name'].tolist()
+    list_warehouses = pd.read_sql("SELECT name FROM settings_warehouses", pconn)['name'].tolist()
+    list_contractors = pd.read_sql("SELECT name FROM settings_contractors", pconn)['name'].tolist()
+    list_categories = pd.read_sql("SELECT name FROM settings_categories", pconn)['name'].tolist()
 
     # ── تأكيد تسجيل الخروج في منتصف الصفحة الرئيسية ──
     if st.session_state.get("logout_confirm"):
@@ -3413,7 +3422,7 @@ tick();setInterval(tick,1000);
         if role == "أمين مستودع المقاول" and _cwk_allowed:
             df_inventory = pd.read_sql(query, conn, params=_cwk_allowed)
         else:
-            df_inventory = pd.read_sql(query, conn)
+            df_inventory = pd.read_sql(query, pconn)
 
         if search_txt:
             df_inventory = df_inventory[
@@ -3514,7 +3523,7 @@ tick();setInterval(tick,1000);
                     else:
                         success_count = 0; skipped_codes = []
                         for mat in inserted_data:
-                            check_exist = pd.read_sql(f"SELECT item_code FROM material_definitions WHERE item_code='{mat['code']}'", conn)
+                            check_exist = pd.read_sql(f"SELECT item_code FROM material_definitions WHERE item_code='{mat['code']}'", pconn)
                             if check_exist.empty:
                                 c.execute("INSERT INTO material_definitions (item_code, item_name, description, category) VALUES (?,?,?,?)",
                                           (mat['code'], mat['name'], mat['desc'], mat['cat']))
@@ -3534,7 +3543,7 @@ tick();setInterval(tick,1000);
             section_card("📋 المواد المعرّفة في النظام", "#004a99")
             search_mat = st.text_input("🔍 ابحث بكود أو اسم المادة:", key="search_mat_table").strip()
             df_current_materials = pd.read_sql(
-                "SELECT item_code, item_name, description, category FROM material_definitions ORDER BY item_code ASC", conn)
+                "SELECT item_code, item_name, description, category FROM material_definitions ORDER BY item_code ASC", pconn)
             if search_mat:
                 df_current_materials = df_current_materials[
                     df_current_materials['item_code'].str.contains(search_mat, case=False, na=False) |
@@ -3574,7 +3583,7 @@ tick();setInterval(tick,1000);
                                     st.error("⚠️ الكود والاسم إلزاميان.")
                                 else:
                                     if new_code != orig_code:
-                                        dup = pd.read_sql(f"SELECT item_code FROM material_definitions WHERE item_code='{new_code}'", conn)
+                                        dup = pd.read_sql(f"SELECT item_code FROM material_definitions WHERE item_code='{new_code}'", pconn)
                                         if not dup.empty:
                                             st.error(f"❌ الكود ({new_code}) مستخدم!"); st.stop()
                                     c.execute("UPDATE material_definitions SET item_code=?, item_name=?, description=?, category=? WHERE item_code=?",
@@ -3625,7 +3634,7 @@ tick();setInterval(tick,1000);
             SELECT i.item_code as 'كود المادة', m.item_name as 'اسم المادة والصنف', i.category as 'الفئة الأساسية', i.warehouse as 'المستودع المستضيف', SUM(i.qty) as 'الرصيد الحالي بالمخزن', cat.red_limit, cat.yellow_limit
             FROM inventory i JOIN material_definitions m ON i.item_code = m.item_code JOIN settings_categories cat ON i.category = cat.name
             WHERE i.warehouse != '' GROUP BY i.item_code, i.warehouse
-        """, conn)
+        """, pconn)
 
         if not df_alert_data.empty:
             def get_status_label(row):
@@ -3725,7 +3734,7 @@ tick();setInterval(tick,1000);
                     else:
                         valid_rows = []; err_list = []
                         for row_in in in_rows:
-                            mat_res = pd.read_sql(f"SELECT item_name, category FROM material_definitions WHERE item_code='{row_in['code']}'", conn)
+                            mat_res = pd.read_sql(f"SELECT item_name, category FROM material_definitions WHERE item_code='{row_in['code']}'", pconn)
                             if mat_res.empty:
                                 err_list.append(row_in['code'])
                             else:
@@ -3848,7 +3857,7 @@ tick();setInterval(tick,1000);
                     _rm = None
                     for i, item in enumerate(st.session_state.cart):
                         c1,c2,c3,c4,c5,c6 = st.columns([1.5, 3, 1.5, 1.2, 1.2, 0.6])
-                        avail_i = int(pd.read_sql(f"SELECT COALESCE(SUM(qty),0) as t FROM inventory WHERE item_code='{item['code']}' AND warehouse='{out_wh}'", conn).iloc[0]['t'])
+                        avail_i = int(pd.read_sql(f"SELECT COALESCE(SUM(qty),0) as t FROM inventory WHERE item_code='{item['code']}' AND warehouse='{out_wh}'", pconn).iloc[0]['t'])
                         c1.markdown(f"<span style='color:#7aaac8;font-weight:900;'>{item['code']}</span>", unsafe_allow_html=True)
                         c2.write(item["name"])
                         c3.markdown(f"<span style='color:#4db8ff;font-size:14px;'>📍 {item.get('wh', out_wh)}</span>", unsafe_allow_html=True)
@@ -4092,7 +4101,7 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(0,140,255,0.10);font-size:17p
                 a3.markdown("<br>", unsafe_allow_html=True)
                 if a3.button("➕ إضافة", use_container_width=True):
                     if ret_code:
-                        mat = pd.read_sql(f"SELECT item_name, category FROM material_definitions WHERE item_code='{ret_code}'", conn)
+                        mat = pd.read_sql(f"SELECT item_name, category FROM material_definitions WHERE item_code='{ret_code}'", pconn)
                         if mat.empty:
                             st.error("❌ الكود غير معرّف في النظام")
                         else:
@@ -4288,7 +4297,7 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(29,218,96,0.12);font-size:17p
                 rr_qty  = col_rr_c2.number_input("الكمية المرتجعة *", min_value=1, value=1, step=1, key=f"rr_qty_{st.session_state.input_retreq_qty}")
                 if col_rr_c3.button("➕ إضافة للقائمة"):
                     if rr_code and rr_qty > 0:
-                        mat_r = pd.read_sql(f"SELECT item_name, category FROM material_definitions WHERE item_code='{rr_code}'", conn)
+                        mat_r = pd.read_sql(f"SELECT item_name, category FROM material_definitions WHERE item_code='{rr_code}'", pconn)
                         if mat_r.empty:
                             st.error("❌ كود المادة المدخل غير معرّف بالنظام!")
                         else:
@@ -4436,7 +4445,7 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(29,218,96,0.12);font-size:17p
                     except Exception:
                         pass
                 df_my_req = pd.read_sql(
-                    f"SELECT * FROM return_requests WHERE requester='{u['full_name']}' ORDER BY id DESC", conn)
+                    f"SELECT * FROM return_requests WHERE requester='{u['full_name']}' ORDER BY id DESC", pconn)
                 if df_my_req.empty:
                     st.info("ℹ️ لم تقم بتقديم أي طلبات ارجاع حتى الآن.")
                 else:
@@ -4653,11 +4662,11 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(29,218,96,0.12);font-size:17p
                     a3.markdown("<br>", unsafe_allow_html=True)
                     if a3.button("➕ إضافة", use_container_width=True):
                         if trans_code:
-                            mat = pd.read_sql(f"SELECT item_name, category FROM material_definitions WHERE item_code='{trans_code}'", conn)
+                            mat = pd.read_sql(f"SELECT item_name, category FROM material_definitions WHERE item_code='{trans_code}'", pconn)
                             if mat.empty:
                                 st.error("❌ الكود غير معرّف في النظام")
                             else:
-                                avail = int(pd.read_sql(f"SELECT COALESCE(SUM(qty),0) as t FROM inventory WHERE item_code='{trans_code}' AND warehouse='{trans_wh_from}'", conn).iloc[0]["t"])
+                                avail = int(pd.read_sql(f"SELECT COALESCE(SUM(qty),0) as t FROM inventory WHERE item_code='{trans_code}' AND warehouse='{trans_wh_from}'", pconn).iloc[0]["t"])
                                 already = sum(x["qty"] for x in st.session_state.transfer_cart if x["code"] == trans_code)
                                 if avail < (trans_qty + already):
                                     st.error(f"❌ الرصيد غير كافٍ في المستودع المصدر — المتاح: {avail}")
@@ -4678,7 +4687,7 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(29,218,96,0.12);font-size:17p
                         _rm = None
                         for i, item in enumerate(st.session_state.transfer_cart):
                             c1,c2,c3,c4,c5 = st.columns([1.5, 3, 1.5, 1.2, 0.6])
-                            avail_i = int(pd.read_sql(f"SELECT COALESCE(SUM(qty),0) as t FROM inventory WHERE item_code='{item['code']}' AND warehouse='{trans_wh_from}'", conn).iloc[0]["t"])
+                            avail_i = int(pd.read_sql(f"SELECT COALESCE(SUM(qty),0) as t FROM inventory WHERE item_code='{item['code']}' AND warehouse='{trans_wh_from}'", pconn).iloc[0]["t"])
                             c1.write(item["code"]); c2.write(item["name"]); c3.write(item.get("cat",""))
                             nq = c4.number_input("", min_value=1, max_value=max(1,avail_i), value=min(int(item["qty"]),max(1,avail_i)), step=1, key=f"tq_{i}", label_visibility="collapsed")
                             if nq != int(item["qty"]): st.session_state.transfer_cart[i]["qty"] = nq; st.rerun()
@@ -4803,7 +4812,7 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(29,218,96,0.12);font-size:17p
         # ── قائمة الفواتير حسب الدور ──
         if role == "موجه بلاغات":
             _ef_df = pd.read_sql(
-                f"SELECT id,invoice_no,invoice_type,warehouse_from,contractor,timestamp FROM archived_invoices WHERE employee=\'{u['full_name']}\' ORDER BY id DESC", conn)
+                f"SELECT id,invoice_no,invoice_type,warehouse_from,contractor,timestamp FROM archived_invoices WHERE employee=\'{u['full_name']}\' ORDER BY id DESC", pconn)
         else:
             _ef_f1,_ef_f2,_ef_f3 = st.columns([2,1.5,1.5])
             _ef_emps = ["الكل"]+pd.read_sql("SELECT DISTINCT employee FROM archived_invoices WHERE employee IN (SELECT full_name FROM users WHERE role=\'موجه بلاغات\') ORDER BY employee",conn)['employee'].tolist()
@@ -5000,7 +5009,7 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(29,218,96,0.12);font-size:17p
             _now_t   = now_mecca()
             _cutoff_t = _now_t.replace(hour=0,minute=0,second=0,microsecond=0) + timedelta(days=1)
             # أقدم سجل موجود
-            _oldest = pd.read_sql("SELECT MIN(log_date) as oldest FROM action_logs", conn)
+            _oldest = pd.read_sql("SELECT MIN(log_date) as oldest FROM action_logs", pconn)
             _oldest_date = str(_oldest.iloc[0]['oldest']) if not _oldest.empty and _oldest.iloc[0]['oldest'] else None
             _delete_date = None
             if _oldest_date:
@@ -5040,7 +5049,7 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(29,218,96,0.12);font-size:17p
             fl3, fl4, fl5 = st.columns([1.5, 1.5, 1])
 
             # قائمة الموظفين
-            _emp_list = pd.read_sql("SELECT DISTINCT user_name FROM action_logs ORDER BY user_name", conn)['user_name'].tolist()
+            _emp_list = pd.read_sql("SELECT DISTINCT user_name FROM action_logs ORDER BY user_name", pconn)['user_name'].tolist()
             search_emp_name  = fl1.selectbox("👤 فلترة بالموظف:", ["الكل"] + _emp_list, key="log_emp_filter")
             search_log_txt   = fl2.text_input("🔎 بحث بالكود أو التفاصيل:", key="log_search")
             type_log_filter  = fl3.selectbox("نوع الحركة:", [
@@ -5063,7 +5072,7 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(29,218,96,0.12);font-size:17p
                 log_query += f" AND log_date <= '{log_date_to.strftime('%Y-%m-%d')}'"
             log_query += " ORDER BY id DESC"
 
-            df_logs = pd.read_sql(log_query, conn)
+            df_logs = pd.read_sql(log_query, pconn)
             if search_log_txt:
                 mask = (
                     df_logs['التفاصيل'].str.contains(search_log_txt, na=False) |
@@ -5141,7 +5150,7 @@ tbody tr:hover td{{color:#1dda70!important;}}
             if track_code:
                 # ── معلومات المادة ──
                 mat_info = pd.read_sql(
-                    f"SELECT item_name, category, description FROM material_definitions WHERE item_code='{track_code}'", conn)
+                    f"SELECT item_name, category, description FROM material_definitions WHERE item_code='{track_code}'", pconn)
                 if mat_info.empty:
                     st.error(f"❌ الكود [{track_code}] غير معرف في النظام.")
                 else:
@@ -5158,7 +5167,7 @@ tbody tr:hover td{{color:#1dda70!important;}}
                     if track_warehouse != "الكل":
                         stock_q += f" AND warehouse='{track_warehouse}'"
                     stock_q += " GROUP BY warehouse HAVING SUM(qty)>0"
-                    df_stock = pd.read_sql(stock_q, conn)
+                    df_stock = pd.read_sql(stock_q, pconn)
                     if not df_stock.empty:
                         section_card("📊 الرصيد الحالي في المستودعات", "#004a99")
                         html_table(df_stock, accent='#004a99', info_label='📍 المستودعات: ')
@@ -5180,7 +5189,7 @@ tbody tr:hover td{{color:#1dda70!important;}}
                         log_q += f" AND log_date <= '{track_date_to.strftime('%Y-%m-%d')}'"
                     log_q += " ORDER BY id DESC"
 
-                    df_track_logs = pd.read_sql(log_q, conn)
+                    df_track_logs = pd.read_sql(log_q, pconn)
                     # فلترة المقاول والمستودع من عمود التفاصيل
                     if track_contractor != "الكل":
                         df_track_logs = df_track_logs[
@@ -5209,7 +5218,7 @@ tbody tr:hover td{{color:#1dda70!important;}}
                     df_all_inv = pd.read_sql(
                         """SELECT id, invoice_type, invoice_no, warehouse_from, warehouse_to,
                            contractor, employee, items_json, timestamp
-                           FROM archived_invoices ORDER BY id DESC""", conn)
+                           FROM archived_invoices ORDER BY id DESC""", pconn)
 
                     inv_matches = []
                     for _, inv_row in df_all_inv.iterrows():
@@ -5269,7 +5278,7 @@ tbody tr:hover td{{color:#1dda70!important;}}
                             # ── جلب HTML عند الطلب فقط ──
                             if st.session_state[inv_view_key]:
                                 _html_row = pd.read_sql(
-                                    f"SELECT html_content FROM archived_invoices WHERE id={inv_r['id']}", conn)
+                                    f"SELECT html_content FROM archived_invoices WHERE id={inv_r['id']}", pconn)
                                 if not _html_row.empty:
                                     components.html(_html_row.iloc[0]['html_content'], height=950, scrolling=True)
                             st.markdown("<hr style='margin:4px 0;'>", unsafe_allow_html=True)
@@ -5302,10 +5311,10 @@ tbody tr:hover td{{color:#1dda70!important;}}
         WAREHOUSE_POSITIONS  = ["مدير المشروع", "نائب مدير المشروع", "أمين مستودع"]
 
         # جلب قوائم النظام
-        ct_warehouses  = pd.read_sql("SELECT name FROM settings_warehouses  ORDER BY name", conn)['name'].tolist()
-        ct_contractors = pd.read_sql("SELECT name FROM settings_contractors ORDER BY name", conn)['name'].tolist()
-        df_contacts    = pd.read_sql("SELECT * FROM contact_numbers ORDER BY entity_type, entity_name, position, name", conn)
-        df_managers    = pd.read_sql("SELECT * FROM managers_directory ORDER BY sort_order ASC, id ASC", conn)
+        ct_warehouses  = pd.read_sql("SELECT name FROM settings_warehouses  ORDER BY name", pconn)['name'].tolist()
+        ct_contractors = pd.read_sql("SELECT name FROM settings_contractors ORDER BY name", pconn)['name'].tolist()
+        df_contacts    = pd.read_sql("SELECT * FROM contact_numbers ORDER BY entity_type, entity_name, position, name", pconn)
+        df_managers    = pd.read_sql("SELECT * FROM managers_directory ORDER BY sort_order ASC, id ASC", pconn)
         # ── تهيئة sort_order إن كانت كلها 0 أو null ──
         if not df_managers.empty:
             _so_vals = df_managers['sort_order'].fillna(0).astype(int).tolist()
@@ -5313,7 +5322,7 @@ tbody tr:hover td{{color:#1dda70!important;}}
                 for _si, (_, _mr) in enumerate(df_managers.iterrows()):
                     c.execute("UPDATE managers_directory SET sort_order=? WHERE id=?", (_si, int(_mr['id'])))
                 conn.commit()
-                df_managers = pd.read_sql("SELECT * FROM managers_directory ORDER BY sort_order ASC, id ASC", conn)
+                df_managers = pd.read_sql("SELECT * FROM managers_directory ORDER BY sort_order ASC, id ASC", pconn)
 
         # دالة مساعدة لعرض أشخاص جهة واحدة بتسلسل هرمي
         def render_entity_contacts(df_grp, allowed_positions, etype_color, etype_bg):
@@ -5523,7 +5532,7 @@ tbody tr:hover td{{color:#1dda70!important;}}
 
                 st.divider()
                 st.write("#### ✏️ تعديل الأرقام الموجودة")
-                df_all_ct = pd.read_sql("SELECT * FROM contact_numbers ORDER BY entity_type, entity_name, position, name", conn)
+                df_all_ct = pd.read_sql("SELECT * FROM contact_numbers ORDER BY entity_type, entity_name, position, name", pconn)
                 if df_all_ct.empty:
                     st.info("ℹ️ لا توجد أرقام مسجلة.")
                 else:
@@ -5603,7 +5612,7 @@ tbody tr:hover td{{color:#1dda70!important;}}
 
                 st.divider()
                 st.write("#### 📋 المدراء المسجلون")
-                df_mgr_adm = pd.read_sql("SELECT * FROM managers_directory ORDER BY sort_order ASC, id ASC", conn)
+                df_mgr_adm = pd.read_sql("SELECT * FROM managers_directory ORDER BY sort_order ASC, id ASC", pconn)
                 if st.button("🔄 مزامنة الترتيب", key="sync_mgr_order"):
                     for _si, (_, _mr) in enumerate(df_mgr_adm.iterrows()):
                         c.execute("UPDATE managers_directory SET sort_order=? WHERE id=?", (_si, int(_mr['id'])))
@@ -5618,7 +5627,7 @@ tbody tr:hover td{{color:#1dda70!important;}}
                         for _si, _rid in enumerate(_sort_action):
                             c.execute("UPDATE managers_directory SET sort_order=? WHERE id=?", (_si, _rid))
                         conn.commit()
-                        df_mgr_adm = pd.read_sql("SELECT * FROM managers_directory ORDER BY sort_order ASC, id ASC", conn)
+                        df_mgr_adm = pd.read_sql("SELECT * FROM managers_directory ORDER BY sort_order ASC, id ASC", pconn)
 
                     st.caption("اختر المدير واضغط ↑ ↓ لتغيير موضعه")
                     _sel_key = "mgr_sel_to_move"
@@ -5686,7 +5695,7 @@ tbody tr:hover td{{color:#1dda70!important;}}
             # ── تبويب الحذف ──
             with adm_tab3:
                 st.write("#### 🗑️ حذف أرقام التواصل")
-                df_del = pd.read_sql("SELECT * FROM contact_numbers ORDER BY entity_type, entity_name, position, name", conn)
+                df_del = pd.read_sql("SELECT * FROM contact_numbers ORDER BY entity_type, entity_name, position, name", pconn)
                 if df_del.empty:
                     st.info("ℹ️ لا توجد أرقام.")
                 else:
@@ -5752,7 +5761,7 @@ tbody tr:hover td{{color:#1dda70!important;}}
         
             with tab_requests_view:
                 section_card("📥 طلبات إعادة تعيين كلمات المرور", "#37474f")
-                df_reqs = pd.read_sql("SELECT id as 'رقم الطلب', phone as 'رقم جوال الموظف الطالب', status as 'حالة الطلب الحالي', request_time as 'توقيت رفع الطلب' FROM access_requests ORDER BY id DESC", conn)
+                df_reqs = pd.read_sql("SELECT id as 'رقم الطلب', phone as 'رقم جوال الموظف الطالب', status as 'حالة الطلب الحالي', request_time as 'توقيت رفع الطلب' FROM access_requests ORDER BY id DESC", pconn)
                 if not df_reqs.empty:
                     html_table(df_reqs, accent='#37474f', info_label='📥 الطلبات: ', badge_col='حالة الطلب الحالي', badge_map={'معلق':('#f9a825','#333'),'تمت المعالجة':('#1daa60','white'),'مرفوض':('#d32f2f','white')})
                 
@@ -5765,7 +5774,7 @@ tbody tr:hover td{{color:#1dda70!important;}}
                     
                         if st.form_submit_button("💾 تحديث واعتماد كلمة المرور الجديدة الآن"):
                             if phone_to_reset and new_password_val:
-                                check_usr = pd.read_sql(f"SELECT username FROM users WHERE username='{phone_to_reset}'", conn)
+                                check_usr = pd.read_sql(f"SELECT username FROM users WHERE username='{phone_to_reset}'", pconn)
                                 if check_usr.empty:
                                     st.error("❌ عذراً رقم الجوال غير مسجل نهائياً كموظف في النظام لإجراء التصفير له.")
                                 else:
@@ -5792,7 +5801,7 @@ tbody tr:hover td{{color:#1dda70!important;}}
 
                     if st.form_submit_button("👥 إنشاء وتفعيل حساب الموظف فوراً"):
                         if new_username and new_fullname and new_password:
-                            check_exist_user = pd.read_sql(f"SELECT username FROM users WHERE username='{new_username}'", conn)
+                            check_exist_user = pd.read_sql(f"SELECT username FROM users WHERE username='{new_username}'", pconn)
                             if not check_exist_user.empty:
                                 st.error(f"❌ خطأ: رقم الجوال ({new_username}) مسجل ومستخدم مسبقاً لموظف آخر بالمنظومة.")
                             else:
@@ -5808,7 +5817,7 @@ tbody tr:hover td{{color:#1dda70!important;}}
                 st.divider()
                 st.write("##### 👥 إدارة وتعديل الموظفين المقيدين حالياً بالنظام:")
             
-                df_all_users = pd.read_sql("SELECT username, full_name, password, role FROM users", conn)
+                df_all_users = pd.read_sql("SELECT username, full_name, password, role FROM users", pconn)
             
                 if not df_all_users.empty:
                     for idx, r_usr in df_all_users.iterrows():
@@ -5826,7 +5835,7 @@ tbody tr:hover td{{color:#1dda70!important;}}
                                 _pos_opts_edit = ["مدير المشروع", "نائب مدير المشروع", "مستلم بلاغات", "أمين مستودع", "أمين مستودع مقاول", "مسؤول فرق طوارئ", "أخرى"]
                                 cur_position = ""
                                 try:
-                                    pos_res = pd.read_sql(f"SELECT COALESCE(position,'') as pos FROM users WHERE username='{r_usr['username']}'", conn)
+                                    pos_res = pd.read_sql(f"SELECT COALESCE(position,'') as pos FROM users WHERE username='{r_usr['username']}'", pconn)
                                     cur_position = pos_res.iloc[0]['pos'] if not pos_res.empty else ""
                                 except Exception: pass
                                 _pos_edit_idx = _pos_opts_edit.index(cur_position) if cur_position in _pos_opts_edit else len(_pos_opts_edit)-1
@@ -5851,7 +5860,7 @@ tbody tr:hover td{{color:#1dda70!important;}}
                                         st.error("⚠️ يرجى عدم ترك الحقول فارغة أثناء التعديل.")
                                     else:
                                         if updated_username != usr_key:
-                                            check_dup = pd.read_sql(f"SELECT username FROM users WHERE username='{updated_username}'", conn)
+                                            check_dup = pd.read_sql(f"SELECT username FROM users WHERE username='{updated_username}'", pconn)
                                             if not check_dup.empty:
                                                 st.error("❌ رقم الجوال الجديد مكتوب ومستخدم لحساب موظف آخر بالفعل.")
                                                 st.stop()
@@ -5862,7 +5871,7 @@ tbody tr:hover td{{color:#1dda70!important;}}
                                         conn.commit()
                                     
                                         if usr_key == u['username']:
-                                            res_self = pd.read_sql(f"SELECT * FROM users WHERE username='{updated_username.strip()}'", conn)
+                                            res_self = pd.read_sql(f"SELECT * FROM users WHERE username='{updated_username.strip()}'", pconn)
                                             if not res_self.empty:
                                                 row_s = res_self.iloc[0]
                                                 st.session_state.user_info = {
@@ -5879,7 +5888,7 @@ tbody tr:hover td{{color:#1dda70!important;}}
             with tab_change_pwd:
                 st.write("##### 🔑 تغيير كلمة مرور أي مستخدم مباشرة:")
                 st.info("يمكنك من هنا تغيير كلمة مرور أي موظف مسجل في النظام لأي كلمة تريدها.")
-                df_all_users_pwd = pd.read_sql("SELECT username, full_name, role FROM users ORDER BY full_name ASC", conn)
+                df_all_users_pwd = pd.read_sql("SELECT username, full_name, role FROM users ORDER BY full_name ASC", pconn)
                 if not df_all_users_pwd.empty:
                     with st.form("direct_pwd_change_form", clear_on_submit=True):
                         selected_user = st.selectbox(
@@ -5986,7 +5995,7 @@ tbody tr:hover td{{color:#1dda70!important;}}
                     if col_ap_lock2[1].button("🔒 قفل", key="lock_admin_pwd2"):
                         st.session_state['admin_pwd_auth'] = False; st.rerun()
                     st.success("✅ تم التحقق. يمكنك الآن تغيير كلمة مرور مدير النظام.")
-                    admin_users = pd.read_sql("SELECT username, full_name FROM users WHERE role='مدير نظام'", conn)
+                    admin_users = pd.read_sql("SELECT username, full_name FROM users WHERE role='مدير نظام'", pconn)
                     if admin_users.empty:
                         st.warning("⚠️ لا يوجد حسابات مدير نظام مسجلة.")
                     else:
@@ -6026,8 +6035,8 @@ tbody tr:hover td{{color:#1dda70!important;}}
 
                 # ── إحصائية الفواتير المعلقة الكلية ──
                 try:
-                    _total_all_inv  = int(pd.read_sql("SELECT COUNT(*) as cnt FROM archived_invoices", conn).iloc[0]['cnt'])
-                    _signed_all_inv = int(pd.read_sql("SELECT COUNT(*) as cnt FROM signed_invoices WHERE deducted=1", conn).iloc[0]['cnt'])
+                    _total_all_inv  = int(pd.read_sql("SELECT COUNT(*) as cnt FROM archived_invoices", pconn).iloc[0]['cnt'])
+                    _signed_all_inv = int(pd.read_sql("SELECT COUNT(*) as cnt FROM signed_invoices WHERE deducted=1", pconn).iloc[0]['cnt'])
                     _pend_all       = max(0, _total_all_inv - _signed_all_inv)
                     _stat1, _stat2, _stat3 = st.columns(3)
                     _stat1.metric("📄 إجمالي الفواتير", _total_all_inv)
@@ -6056,7 +6065,7 @@ tbody tr:hover td{{color:#1dda70!important;}}
                 st.divider()
 
                 df_cwk_users = pd.read_sql(
-                    "SELECT username, full_name FROM users WHERE role='أمين مستودع المقاول' ORDER BY full_name ASC", conn)
+                    "SELECT username, full_name FROM users WHERE role='أمين مستودع المقاول' ORDER BY full_name ASC", pconn)
                 if df_cwk_users.empty:
                     st.info("ℹ️ لا يوجد مستخدمون بصلاحية (أمين مستودع المقاول) حتى الآن.")
                 else:
@@ -6169,7 +6178,7 @@ tbody tr:hover td{{color:#1dda70!important;}}
                 if _fa_search:           _aq += f" AND (invoice_no LIKE '%{_fa_search}%' OR contractor LIKE '%{_fa_search}%')"
                 if _fa_wh != "الكل":     _aq += f" AND (warehouse_from='{_fa_wh}' OR warehouse_to='{_fa_wh}')"
                 _aq += " ORDER BY id DESC LIMIT 100"
-                df_arch = pd.read_sql(_aq, conn)
+                df_arch = pd.read_sql(_aq, pconn)
                 if df_arch.empty:
                     st.info("ℹ️ لا توجد فواتير.")
                 else:
@@ -6229,7 +6238,7 @@ tbody tr:hover td{{color:#1dda70!important;}}
                            timestamp as 'التاريخ'
                     FROM cancel_invoice_requests
                     WHERE status='معتمد' ORDER BY id DESC LIMIT 100
-                """, conn)
+                """, pconn)
                 if df_cancelled.empty:
                     st.info("ℹ️ لا توجد فواتير ملغية.")
                 else:
@@ -6246,7 +6255,7 @@ tbody tr:hover td{{color:#1dda70!important;}}
                 if _fm_type != "الكل":
                     _fmq += f" AND invoice_type='{_fm_type}'"
                 _fmq += " ORDER BY id DESC LIMIT 100"
-                df_mine = pd.read_sql(_fmq, conn)
+                df_mine = pd.read_sql(_fmq, pconn)
                 if df_mine.empty:
                     st.info("ℹ️ لا توجد فواتير منشأة باسمك.")
                 else:
@@ -6338,7 +6347,7 @@ tbody tr:hover td{{color:#1dda70!important;}}
                 _af_s1, _af_s2, _af_s3 = st.columns([2, 1.5, 1.5])
                 _af_no   = _af_s1.text_input("🔍 رقم الفاتورة:", placeholder="ابحث برقم الفاتورة...", key="af_inv_no").strip()
                 _af_date = _af_s2.date_input("📅 من تاريخ:", value=None, key="af_date")
-                _all_emps = ["الكل"] + list(pd.read_sql("SELECT DISTINCT employee FROM archived_invoices ORDER BY employee", conn)['employee'].dropna().tolist())
+                _all_emps = ["الكل"] + list(pd.read_sql("SELECT DISTINCT employee FROM archived_invoices ORDER BY employee", pconn)['employee'].dropna().tolist())
                 _af_emp  = _af_s3.selectbox("👤 الموظف:", _all_emps, key="af_emp")
 
                 _afq = "SELECT id, invoice_no, invoice_type, warehouse_from, warehouse_to, contractor, employee, boq, timestamp FROM archived_invoices WHERE 1=1"
@@ -6349,7 +6358,7 @@ tbody tr:hover td{{color:#1dda70!important;}}
                 if _af_date:           _afq += f" AND DATE(timestamp) >= '{_af_date.strftime('%Y-%m-%d')}'"
                 if _af_emp  != "الكل": _afq += f" AND employee='{_af_emp}'"
                 _afq += " ORDER BY id DESC LIMIT 200"
-                df_af = pd.read_sql(_afq, conn)
+                df_af = pd.read_sql(_afq, pconn)
 
                 if df_af.empty:
                     st.info("ℹ️ لا توجد فواتير تطابق الفلاتر.")
@@ -6396,7 +6405,7 @@ tbody tr:hover td{{color:#1dda70!important;}}
                 if _ca_search:           _caq += f" AND (invoice_no LIKE '%{_ca_search}%' OR requester LIKE '%{_ca_search}%')"
                 if _ca_date:             _caq += f" AND DATE(timestamp) >= '{_ca_date.strftime('%Y-%m-%d')}'"
                 _caq += " ORDER BY id DESC LIMIT 200"
-                df_ca = pd.read_sql(_caq, conn)
+                df_ca = pd.read_sql(_caq, pconn)
 
                 if df_ca.empty:
                     st.info("ℹ️ لا توجد طلبات إلغاء.")
@@ -6471,7 +6480,7 @@ tbody tr:hover td{{color:#1dda70!important;}}
                 if _fm_con2  != "الكل": _fmq2 += f" AND contractor='{_fm_con2}'"
                 if _fm_date2:           _fmq2 += f" AND DATE(timestamp) >= '{_fm_date2.strftime('%Y-%m-%d')}'"
                 _fmq2 += " ORDER BY id DESC LIMIT 200"
-                df_mine2 = pd.read_sql(_fmq2, conn)
+                df_mine2 = pd.read_sql(_fmq2, pconn)
 
                 if df_mine2.empty:
                     st.info("ℹ️ لا توجد فواتير منشأة باسمك.")
@@ -6563,7 +6572,7 @@ tbody tr:hover td{{color:#1dda70!important;}}
                     if _boq_con != "الكل": _all_entity_q += f" AND contractor='{_boq_con}'"
                     if _boq_type != "الكل": _all_entity_q += f" AND invoice_type='{_boq_type}'"
                     _all_entity_q += " ORDER BY id DESC LIMIT 200"
-                    df_all_entity = pd.read_sql(_all_entity_q, conn)
+                    df_all_entity = pd.read_sql(_all_entity_q, pconn)
                     if df_all_entity.empty:
                         st.info(f"ℹ️ لا توجد فواتير لـ {_entity_label}.")
                     else:
@@ -6590,7 +6599,7 @@ tbody tr:hover td{{color:#1dda70!important;}}
                     st.divider()
                     section_card("📋 الفواتير المرتبطة بـ BOQ أيضاً", "#004a99")
 
-                df_boq = pd.read_sql(_bq_query, conn)
+                df_boq = pd.read_sql(_bq_query, pconn)
 
                 if df_boq.empty:
                     st.info("ℹ️ لا توجد فواتير مرتبطة بأرقام BOQ.")
@@ -6803,7 +6812,7 @@ tbody tr:hover td{{color:#1dda70!important;}}
                 elif _bftype == "يدوي": _bq += " AND created_by!='تلقائي'"
                 _bq += " ORDER BY id DESC LIMIT 60"
 
-                df_backups = pd.read_sql(_bq, conn)
+                df_backups = pd.read_sql(_bq, pconn)
                 if df_backups.empty:
                     st.info("ℹ️ لا توجد نسخ احتياطية بعد.")
                 else:
@@ -6867,7 +6876,7 @@ tbody tr:hover td{{color:#1dda70!important;}}
                 st.session_state['admin_pwd_auth'] = False; st.rerun()
 
             st.info("🔑 من هنا يمكنك تغيير كلمة مرور حساب مدير النظام الخاص بك.")
-            admin_users = pd.read_sql("SELECT username, full_name FROM users WHERE role='مدير نظام'", conn)
+            admin_users = pd.read_sql("SELECT username, full_name FROM users WHERE role='مدير نظام'", pconn)
             if admin_users.empty:
                 st.warning("⚠️ لا يوجد حسابات مدير نظام مسجلة.")
             else:
@@ -6915,10 +6924,10 @@ tbody tr:hover td{{color:#1dda70!important;}}
                     _cin = cancel_inv_no_input.replace("'","''")
                     _cemp = u['full_name'].replace("'","''")
                     df_ci = pd.read_sql(
-                        f"SELECT * FROM archived_invoices WHERE invoice_no='{_cin}' AND employee='{_cemp}'", conn)
+                        f"SELECT * FROM archived_invoices WHERE invoice_no='{_cin}' AND employee='{_cemp}'", pconn)
                     if df_ci.empty:
                         _ci_other = pd.read_sql(
-                            f"SELECT employee FROM archived_invoices WHERE invoice_no='{_cin}'", conn)
+                            f"SELECT employee FROM archived_invoices WHERE invoice_no='{_cin}'", pconn)
                         if not _ci_other.empty:
                             st.error("❌ لا يمكنك إلغاء هذه الفاتورة — تم إنشاؤها بواسطة موظف آخر.")
                         else:
@@ -7105,7 +7114,7 @@ tbody tr:hover td{{color:#1dda70!important;}}
 
             with tab_cancel_pending:
                 df_cancel_pending = pd.read_sql(
-                    "SELECT * FROM cancel_invoice_requests WHERE status='معلق' ORDER BY id DESC", conn)
+                    "SELECT * FROM cancel_invoice_requests WHERE status='معلق' ORDER BY id DESC", pconn)
                 if df_cancel_pending.empty:
                     st.success("✅ لا توجد طلبات إلغاء فواتير معلقة حالياً.")
                 else:
@@ -7187,7 +7196,7 @@ tbody tr:hover td{{color:#1dda70!important;}}
 
             with tab_cancel_all:
                 st.markdown(f"<div style='direction:rtl;font-size:18px;font-weight:900;color:#4db8ff;margin-bottom:12px;'>📋 جميع طلبات الإلغاء</div>", unsafe_allow_html=True)
-                df_cancel_all = pd.read_sql("SELECT * FROM cancel_invoice_requests ORDER BY id DESC", conn)
+                df_cancel_all = pd.read_sql("SELECT * FROM cancel_invoice_requests ORDER BY id DESC", pconn)
                 if df_cancel_all.empty:
                     st.info("ℹ️ لا توجد أي طلبات إلغاء في النظام حتى الآن.")
                 else:
@@ -7281,7 +7290,7 @@ tbody tr:hover td{{color:#1dda70!important;}}
                 _query_arch += f" AND invoice_no LIKE '%{_search_no}%'"
             _query_arch += " ORDER BY id DESC LIMIT 100"
 
-            df_cwk_list = pd.read_sql(_query_arch, conn)
+            df_cwk_list = pd.read_sql(_query_arch, pconn)
             if not df_cwk_list.empty and _role_names:
                 df_cwk_list = df_cwk_list[df_cwk_list['employee'].isin(_role_names)]
 
@@ -7290,7 +7299,7 @@ tbody tr:hover td{{color:#1dda70!important;}}
             else:
                 # خريطة الفواتير الموقعة لهذا النوع
                 _all_signed = pd.read_sql(
-                    f"SELECT invoice_no, signed_by, signed_at, status, admin_notes, reviewed_by, reviewed_at FROM signed_invoices WHERE invoice_type='{_inv_type}'", conn)
+                    f"SELECT invoice_no, signed_by, signed_at, status, admin_notes, reviewed_by, reviewed_at FROM signed_invoices WHERE invoice_type='{_inv_type}'", pconn)
                 _signed_map = {str(r['invoice_no']): r.to_dict() for _, r in _all_signed.iterrows()}
 
                 # ── مفتاح "وضع التركيز" — يحفظ الـ inv_id المختار ──
@@ -7846,7 +7855,7 @@ tbody tr:hover td{{color:#1dda70!important;}}
 
             with set_col1:
                 st.markdown("### 🏢 إدارة مستودعات الطوارئ")
-                df_wh = pd.read_sql("SELECT * FROM settings_warehouses", conn)
+                df_wh = pd.read_sql("SELECT * FROM settings_warehouses", pconn)
                 if not df_wh.empty:
                     for _, r_wh in df_wh.iterrows():
                         wh_id = r_wh['id']
@@ -7882,7 +7891,7 @@ tbody tr:hover td{{color:#1dda70!important;}}
 
             with set_col2:
                 st.markdown("### 🏗️ المقاولين المعتمدين")
-                df_con = pd.read_sql("SELECT * FROM settings_contractors", conn)
+                df_con = pd.read_sql("SELECT * FROM settings_contractors", pconn)
                 if not df_con.empty:
                     for _, r_con in df_con.iterrows():
                         con_id = r_con['id']
@@ -7918,7 +7927,7 @@ tbody tr:hover td{{color:#1dda70!important;}}
 
             with set_col3:
                 st.markdown("### 🏷️ فئات أصناف المواد وحدود الأمان")
-                df_cat = pd.read_sql("SELECT * FROM settings_categories", conn)
+                df_cat = pd.read_sql("SELECT * FROM settings_categories", pconn)
                 if not df_cat.empty:
                     for idx_c, r_cat in df_cat.iterrows():
                         with st.expander(f"📦 {r_cat['name']}"):
