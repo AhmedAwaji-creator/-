@@ -4481,8 +4481,8 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(29,218,96,0.12);font-size:17p
             _cancel_cnt = int(pd.read_sql("SELECT COUNT(*) as c FROM cancel_invoice_requests WHERE status=\'معلق\'",conn).iloc[0]['c'])
 
             _tr1,_tr2 = st.tabs([
-                f"🔄 طلبات ارجاع المواد {'(' + str(_ret_cnt) + ' معلق)' if _ret_cnt > 0 else ''}",
-                f"🚫 طلبات إلغاء الفواتير {'(' + str(_cancel_cnt) + ' معلق)' if _cancel_cnt > 0 else ''}"
+                f"🔄 طلبات ارجاع المواد" + (f"  🔴 {_ret_cnt}" if _ret_cnt > 0 else "  ✅"),
+                f"🚫 طلبات إلغاء الفواتير" + (f"  🔴 {_cancel_cnt}" if _cancel_cnt > 0 else "  ✅")
             ])
 
             # ════════════════════════════════════
