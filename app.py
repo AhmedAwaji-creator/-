@@ -4915,6 +4915,7 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(29,218,96,0.12);font-size:17p
                         st.session_state['ef_type_sel'] = row_ef['invoice_type']
                         st.session_state['ef_items'] = None
                         st.session_state['ef_confirm'] = False
+                        st.session_state['ef_compare_mode'] = False
                         st.rerun()
         else:
             # مدير النظام / مسؤول المستودعات: فلتر متقدم
@@ -4952,6 +4953,7 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(29,218,96,0.12);font-size:17p
                         st.session_state['ef_type_sel'] = row_ef['invoice_type']
                         st.session_state['ef_items'] = None
                         st.session_state['ef_confirm'] = False
+                        st.session_state['ef_compare_mode'] = False
                         st.rerun()
 
         # ══════════════════════════════════════════
@@ -4961,7 +4963,7 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(29,218,96,0.12);font-size:17p
             ef_type = st.session_state.get('ef_type_sel', 'صرف')
 
             if st.button("✖️ إغلاق التعديل", key="ef_cancel_btn", type="secondary"):
-                for k in ['ef_search','ef_items','ef_confirm','ef_result_html','ef_contractor','ef_wh_from','ef_wh_to','ef_type_sel']:
+                for k in ['ef_search','ef_items','ef_confirm','ef_result_html','ef_contractor','ef_wh_from','ef_wh_to','ef_type_sel','ef_compare_mode','ef_new_wh','ef_new_cont']:
                     st.session_state.pop(k, None)
                 st.rerun()
 
