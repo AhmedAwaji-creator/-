@@ -7004,10 +7004,16 @@ tbody tr:hover td{{color:#1dda70!important;}}
                     _cn_pressed = col_cn_cancel.button("🔙 الرجوع للبداية", key="confirm_cancel_no")
                     if _cy_pressed:
                         ts_c = now_mecca().strftime("%Y-%m-%d %H:%M:%S")
-                        req_no_c = "CR" + now_mecca().strftime("%d%H%M")
-                        _ci_html_row = pd.read_sql("SELECT html_content FROM archived_invoices WHERE id=?",
-                                                   conn, params=(int(ci_row['id']),))
-                        _ci_html_content = _ci_html_row.iloc[0]['html_content'] if not _ci_html_row.empty else ""
+                        req_no_c = "CR" + now_mecca().strftime("%d%H%M%S")
+                        # جلب HTML الفاتورة بدون params
+                        try:
+                            import sqlite3 as _sq3c
+                            _pc = _sq3c.connect(DB_NAME, check_same_thread=False, timeout=30)
+                            _ci_html_content = (_pc.execute(f"SELECT html_content FROM archived_invoices WHERE id={int(ci_row['id'])}").fetchone() or [''])[0]
+                            _pc.close()
+                        except:
+                            _ci_html_content = ""
+                        _inv_type_lbl = {"صرف":"الصرف","ارجاع":"الإرجاع","نقل":"النقل"}.get(ci_row.get('invoice_type',''),'')
                         c.execute("""INSERT INTO cancel_invoice_requests
                                      (request_no, invoice_no, invoice_type, warehouse_return, contractor, items_json,
                                       cancel_reason, boq, requester, status, invoice_html, timestamp)
@@ -7026,6 +7032,8 @@ tbody tr:hover td{{color:#1dda70!important;}}
                         st.session_state['cancel_inv_data'] = None
                         st.session_state['cancel_inv_confirm'] = False
                         st.session_state['last_cancel_req_no'] = req_no_c
+                        st.session_state['last_cancel_inv_no'] = ci_row['invoice_no']
+                        st.session_state['last_cancel_inv_type'] = _inv_type_lbl
                         st.rerun()
                     if _cn_pressed:
                         st.session_state['cancel_inv_confirm'] = False
@@ -7035,17 +7043,18 @@ tbody tr:hover td{{color:#1dda70!important;}}
 
             # ── إشعار نجاح بعد إرسال الطلب ──
             if st.session_state.get('last_cancel_req_no') and not st.session_state.get('cancel_inv_data'):
-                st.markdown(
-                    f"<div style='background:rgba(0,50,20,0.45);border:2px solid #1daa60;border-radius:12px;"
-                    f"padding:18px;text-align:center;direction:rtl;margin-top:16px;'>"
-                    f"✅ <b>تم إنشاء طلب إلغاء الفاتورة بنجاح — بانتظار اعتماد مدير النظام أو أمين المستودع</b><br>"
-                    f"رقم الطلب: <span style='color:red;font-weight:900;font-size:18px;'>"
-                    f"{st.session_state['last_cancel_req_no']}</span><br>"
-                    f"<small>لن تُرجع المواد إلى المستودع إلا بعد الاعتماد.</small>"
-                    f"</div>",
-                    unsafe_allow_html=True)
-                if st.button("✖️ إغلاق الإشعار", key="close_cancel_notif"):
-                    st.session_state['last_cancel_req_no'] = None; st.rerun()
+                _lc_inv  = st.session_state.get('last_cancel_inv_no','')
+                _lc_type = st.session_state.get('last_cancel_inv_type','')
+                st.markdown(f"""
+                <div style='background:rgba(0,60,20,0.65);border:2px solid #1daa60;border-radius:14px;
+                    padding:20px;text-align:center;direction:rtl;margin-top:16px;'>
+                    <div style='font-size:22px;font-weight:900;color:#1dda70;'>✅ تم تقديم طلب إلغاء فاتورة {_lc_type} رقم <b style='color:white;'>{_lc_inv}</b> بنجاح!</div>
+                    <div style='font-size:15px;color:#8aaac8;margin-top:8px;'>رقم الطلب: <b style='color:#4db8ff;'>{st.session_state['last_cancel_req_no']}</b></div>
+                    <div style='font-size:14px;color:#8aaac8;margin-top:4px;'>⏳ بانتظار اعتماد مدير النظام أو مسؤول المستودعات — لن تُرجع المواد إلا بعد الاعتماد</div>
+                </div>""", unsafe_allow_html=True)
+                if st.button("✖️ إغلاق", key="close_cancel_notif"):
+                    for k in ['last_cancel_req_no','last_cancel_inv_no','last_cancel_inv_type']: st.session_state.pop(k,None)
+                    st.rerun()
 
         with tab_my_cancel:
             # مسح حالة نموذج الإلغاء لمنع ظهور widgets مكررة
