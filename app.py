@@ -4480,17 +4480,12 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(29,218,96,0.12);font-size:17p
             _ret_cnt    = int(pd.read_sql("SELECT COUNT(*) as c FROM return_requests WHERE status=\'معلق\'",conn).iloc[0]['c'])
             _cancel_cnt = int(pd.read_sql("SELECT COUNT(*) as c FROM cancel_invoice_requests WHERE status=\'معلق\'",conn).iloc[0]['c'])
 
-            # بادجات أعلى الصفحة
-            _bc1,_bc2 = st.columns(2)
-            _bc1.markdown(f"""<div style='background:rgba(0,30,80,0.55);border:2px solid {"#d32f2f" if _ret_cnt>0 else "#1daa60"};border-radius:12px;padding:14px;text-align:center;direction:rtl;'>
-                <div style='font-size:36px;font-weight:900;color:{"#ff6666" if _ret_cnt>0 else "#1dda70"};'>{_ret_cnt}</div>
-                <div style='font-size:14px;color:#8aaac8;margin-top:4px;'>🔄 طلبات ارجاع معلقة</div></div>""",unsafe_allow_html=True)
-            _bc2.markdown(f"""<div style='background:rgba(80,0,0,0.40);border:2px solid {"#d32f2f" if _cancel_cnt>0 else "#1daa60"};border-radius:12px;padding:14px;text-align:center;direction:rtl;'>
-                <div style='font-size:36px;font-weight:900;color:{"#ff6666" if _cancel_cnt>0 else "#1dda70"};'>{_cancel_cnt}</div>
-                <div style='font-size:14px;color:#8aaac8;margin-top:4px;'>🚫 طلبات إلغاء معلقة</div></div>""",unsafe_allow_html=True)
-            st.markdown("<br>",unsafe_allow_html=True)
-
-            _tr1,_tr2 = st.tabs([f"🔄 طلبات ارجاع المواد ({_ret_cnt} معلق)",f"🚫 طلبات إلغاء الفواتير ({_cancel_cnt} معلق)"])
+            _ret_badge    = f" 🔴{_ret_cnt}"    if _ret_cnt    > 0 else ""
+            _cancel_badge = f" 🔴{_cancel_cnt}" if _cancel_cnt > 0 else ""
+            _tr1,_tr2 = st.tabs([
+                f"🔄 طلبات ارجاع المواد{_ret_badge}",
+                f"🚫 طلبات إلغاء الفواتير{_cancel_badge}"
+            ])
 
             # ════════════════════════════════════
             # تبويب ١: طلبات الارجاع
