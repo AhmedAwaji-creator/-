@@ -4947,6 +4947,20 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(29,218,96,0.12);font-size:17p
                 _nwh  = _c1.selectbox("📍 المستودع:",_whs,index=_wh_i,key="ef_nwh")
                 _ncont= _c2.selectbox("🏗️ المقاول:", _cos,index=_co_i,key="ef_ncont")
 
+                # تحذير عند تغيير المستودع
+                if _nwh != _inv.get('warehouse_from',''):
+                    st.markdown(f"<div style='background:rgba(80,50,0,0.45);border:1px solid #f9a825;border-radius:8px;padding:8px 14px;direction:rtl;'>⚠️ غيّرت المستودع من <b>{_inv.get('warehouse_from','')}</b> إلى <b>{_nwh}</b> — سيتم التحقق من توفر المواد في المستودع الجديد عند الحفظ.</div>",unsafe_allow_html=True)
+                    # إذا تغير المستودع، أعد تحميل المواد لتنبيه المستخدم بما هو غير متوفر
+                    _wh_issues = []
+                    for _it in st.session_state.get('ef_items',[]):
+                        _s=pd.read_sql(f"SELECT COALESCE(SUM(qty),0) as t FROM inventory WHERE item_code='{_it.get('code','')}' AND warehouse='{_nwh}'",conn)
+                        _av=int(_s.iloc[0]['t']) if not _s.empty else 0
+                        if _av < int(_it.get('qty',0)):
+                            _wh_issues.append(f"❌ {_it.get('code','')} — مطلوب: {_it.get('qty',0)} | متوفر في [{_nwh}]: {_av}")
+                    if _wh_issues:
+                        st.markdown("<div style='background:rgba(80,0,0,0.45);border:1px solid #d32f2f;border-radius:8px;padding:10px 14px;direction:rtl;'>" +
+                                    "<br>".join(_wh_issues) + "</div>", unsafe_allow_html=True)
+
                 st.markdown("**📦 المواد:**")
                 _items2=[]
                 for _ii,_it in enumerate(st.session_state['ef_items']):
@@ -4964,13 +4978,23 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(29,218,96,0.12);font-size:17p
                 _aqty =_a2.number_input("كمية:",min_value=1,value=1,key="ef_aqty")
                 if _a3.button("➕ إضافة",key="ef_addbtn",use_container_width=True):
                     if _acode:
-                        _anm=pd.read_sql(f"SELECT item_name FROM material_definitions WHERE item_code=\'{_acode}\'",conn)
-                        _aname=_anm.iloc[0]['item_name'] if not _anm.empty else _acode
-                        if any(i.get('code')==_acode for i in st.session_state['ef_items']):
-                            st.warning(f"⚠️ الكود {_acode} موجود بالفعل.")
+                        # ١. تحقق وجود الكود في تعريفات المواد
+                        _anm=pd.read_sql(f"SELECT item_name FROM material_definitions WHERE item_code='{_acode}'",conn)
+                        if _anm.empty:
+                            st.error(f"❌ الكود **{_acode}** غير معرّف في النظام.")
                         else:
-                            st.session_state['ef_items'].append({'code':_acode,'name':_aname,'qty':int(_aqty),'cat':''})
-                            st.rerun()
+                            # ٢. تحقق توفر الكمية في المستودع المختار
+                            _ast=pd.read_sql(f"SELECT COALESCE(SUM(qty),0) as t FROM inventory WHERE item_code='{_acode}' AND warehouse='{_nwh}'",conn)
+                            _av=int(_ast.iloc[0]['t']) if not _ast.empty else 0
+                            if _av<=0:
+                                st.error(f"❌ الكود **{_acode}** غير متوفر في مستودع [{_nwh}] — الرصيد: 0")
+                            elif int(_aqty)>_av:
+                                st.error(f"❌ الكمية المطلوبة ({_aqty}) أكبر من المتوفر ({_av}) في [{_nwh}]")
+                            elif any(i.get('code')==_acode for i in st.session_state['ef_items']):
+                                st.warning(f"⚠️ الكود {_acode} موجود — عدّل كميته أعلاه.")
+                            else:
+                                st.session_state['ef_items'].append({'code':_acode,'name':_anm.iloc[0]['item_name'],'qty':int(_aqty),'cat':''})
+                                st.rerun()
                     else: st.error("❌ أدخل الكود.")
 
                 if st.checkbox("👁️ معاينة الفاتورة الجديدة مباشرة",key="ef_lprev"):
@@ -5002,19 +5026,31 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(29,218,96,0.12);font-size:17p
                 st.divider()
                 _b1,_b2=st.columns(2)
                 if _b1.button("✅ تأكيد الحفظ",key="ef_finalsave",type="primary",use_container_width=True):
-                    c.execute("UPDATE archived_invoices SET warehouse_from=?,contractor=?,items_json=?,html_content=? WHERE invoice_no=?",
-                              (_nwh,_ncont,json.dumps(_items2),_nh,_inv_no))
-                    try:
-                        _ap=pd.read_sql(f"SELECT id FROM signed_invoices WHERE invoice_no=\'{_inv_no}\' AND status=\'معتمد\'",conn)
-                        if not _ap.empty:
-                            c.execute("UPDATE signed_invoices SET status=\'معدّلة-تحتاج اعتماد\',admin_notes=? WHERE invoice_no=? AND status=\'معتمد\'",
-                                      (f"⚠️ عدّلها: {u['full_name']} في {now_mecca().strftime('%Y-%m-%d %H:%M')}",_inv_no))
-                    except: pass
-                    save_log("تعديل فاتورة","—",0,f"تعديل [{_inv_no}]→مستودع:{_nwh} مقاول:{_ncont}",u['full_name'])
-                    conn.commit()
-                    for k in ['ef_selected','ef_items','ef_compare','ef_new_wh','ef_new_cont']: st.session_state.pop(k,None)
-                    st.success(f"✅ تم حفظ التعديل على الفاتورة {_inv_no}")
-                    st.rerun()
+                    # تحقق نهائي من الكميات
+                    _final_errs = []
+                    for _it in _items2:
+                        _s=pd.read_sql(f"SELECT COALESCE(SUM(qty),0) as t FROM inventory WHERE item_code='{_it.get('code','')}' AND warehouse='{_nwh}'",conn)
+                        _av=int(_s.iloc[0]['t']) if not _s.empty else 0
+                        if _av < int(_it.get('qty',0)):
+                            _final_errs.append(f"❌ {_it.get('code','')} — مطلوب: {_it.get('qty',0)} | متوفر: {_av}")
+                    if _final_errs:
+                        st.markdown("<div style='background:rgba(80,0,0,0.45);border:1px solid #d32f2f;border-radius:10px;padding:12px 16px;direction:rtl;'>" +
+                                    "<b style='color:#ff6666;'>❌ لا يمكن الحفظ — كميات غير متوفرة:</b><br>" +
+                                    "<br>".join(_final_errs) + "</div>", unsafe_allow_html=True)
+                    else:
+                        c.execute("UPDATE archived_invoices SET warehouse_from=?,contractor=?,items_json=?,html_content=? WHERE invoice_no=?",
+                                  (_nwh,_ncont,json.dumps(_items2),_nh,_inv_no))
+                        try:
+                            _ap=pd.read_sql(f"SELECT id FROM signed_invoices WHERE invoice_no='{_inv_no}' AND status='معتمد'",conn)
+                            if not _ap.empty:
+                                c.execute("UPDATE signed_invoices SET status='معدّلة-تحتاج اعتماد',admin_notes=? WHERE invoice_no=? AND status='معتمد'",
+                                          (f"⚠️ عدّلها: {u['full_name']} في {now_mecca().strftime('%Y-%m-%d %H:%M')}",_inv_no))
+                        except: pass
+                        save_log("تعديل فاتورة","—",0,f"تعديل [{_inv_no}]→مستودع:{_nwh} مقاول:{_ncont}",u['full_name'])
+                        conn.commit()
+                        for k in ['ef_selected','ef_items','ef_compare','ef_new_wh','ef_new_cont']: st.session_state.pop(k,None)
+                        st.success(f"✅ تم حفظ التعديل على الفاتورة {_inv_no}")
+                        st.rerun()
                 if _b2.button("🔙 رجوع للتعديل",key="ef_backto",use_container_width=True):
                     st.session_state['ef_compare']=False; st.rerun()
 
