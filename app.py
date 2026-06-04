@@ -2523,6 +2523,65 @@ if st.session_state.get('auth', False):
     var mo = new MutationObserver(applyDark);
     mo.observe(window.parent.document.body, {childList:true, subtree:true});
 
+    // ── بادج التبويبات (دائرة حمراء فوق الأيقونة) ──
+    function injectTabBadges() {
+        try {
+            var doc = window.parent.document;
+            // ابحث عن كل مجموعات tabs
+            var tabGroups = doc.querySelectorAll('[role="tablist"]');
+            tabGroups.forEach(function(tl) {
+                var tabs = tl.querySelectorAll('[role="tab"]');
+                tabs.forEach(function(tab) {
+                    var txt = tab.textContent || '';
+                    // هل يحتوي على 🔴 + رقم؟
+                    var m = txt.match(/🔴\s*(\d+)/);
+                    if (m) {
+                        var count = m[1];
+                        // إزالة بادج قديم
+                        var old = tab.querySelector('.tab-badge-injected');
+                        if (old) old.remove();
+                        // إخفاء النص الأصلي للرقم
+                        tab.style.position = 'relative';
+                        // إنشاء البادج
+                        var badge = doc.createElement('span');
+                        badge.className = 'tab-badge-injected';
+                        badge.textContent = count;
+                        badge.style.cssText = [
+                            'position:absolute',
+                            'top:-8px',
+                            'right:-6px',
+                            'background:#d32f2f',
+                            'color:white',
+                            'border-radius:50%',
+                            'min-width:19px',
+                            'height:19px',
+                            'font-size:11px',
+                            'font-weight:900',
+                            'display:flex',
+                            'align-items:center',
+                            'justify-content:center',
+                            'border:2px solid white',
+                            'box-shadow:0 2px 5px rgba(0,0,0,0.6)',
+                            'z-index:9999',
+                            'line-height:1',
+                            'padding:0 3px'
+                        ].join(';');
+                        tab.appendChild(badge);
+                        // إخفاء 🔴 من النص
+                        tab.childNodes.forEach(function(n) {
+                            if (n.nodeType===3 && n.textContent.includes('🔴')) {
+                                n.textContent = n.textContent.replace(/\s*🔴\s*\d+/, '');
+                            }
+                        });
+                    }
+                });
+            });
+        } catch(e) {}
+    }
+    var moTabs = new MutationObserver(injectTabBadges);
+    moTabs.observe(window.parent.document.body, {childList:true, subtree:true});
+    setInterval(injectTabBadges, 600);
+
 
 
   } catch(e) { console.log(e); }
