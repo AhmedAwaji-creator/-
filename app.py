@@ -4995,19 +4995,24 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(29,218,96,0.12);font-size:17p
                         st.markdown("<div style='background:rgba(60,40,0,0.50);border:2px solid #f9a825;border-radius:10px;padding:10px 14px;direction:rtl;'>⚠️ <b style='color:#ffaa66;'>فاتورة معتمدة</b> — بعد التعديل ستعود للاعتماد باسمك</div>", unsafe_allow_html=True)
 
                     if st.session_state.get('ef_items') is None:
-                        try: st.session_state['ef_items'] = json.loads(row['items_json'])
+                        try: st.session_state['ef_items'] = json.loads(row.get('items_json','[]'))
                         except: st.session_state['ef_items'] = []
 
                     # ── مرحلة ١: التعديل ──
                     if not st.session_state.get('ef_compare_mode'):
                         section_card("📋 تعديل بيانات الفاتورة", "#f9a825")
+
+                        # تحديد الـ index بأمان
+                        _wh_cur = str(row.get('warehouse_from',''))
+                        _co_cur = str(row.get('contractor',''))
+                        _wh_list = list_warehouses if list_warehouses else [_wh_cur]
+                        _co_list = list_contractors if list_contractors else [_co_cur]
+                        _wh_idx  = _wh_list.index(_wh_cur) if _wh_cur in _wh_list else 0
+                        _co_idx  = _co_list.index(_co_cur) if _co_cur in _co_list else 0
+
                         _ea1, _ea2 = st.columns(2)
-                        _new_wh_adm   = _ea1.selectbox("📍 المستودع:", list_warehouses,
-                            index=list_warehouses.index(row['warehouse_from']) if row['warehouse_from'] in list_warehouses else 0,
-                            key="ef_wh_adm")
-                        _new_cont_adm = _ea2.selectbox("🏗️ المقاول:", list_contractors,
-                            index=list_contractors.index(row['contractor']) if row['contractor'] in list_contractors else 0,
-                            key="ef_cont_adm")
+                        _new_wh_adm   = _ea1.selectbox("📍 المستودع:", _wh_list, index=_wh_idx, key="ef_wh_adm")
+                        _new_cont_adm = _ea2.selectbox("🏗️ المقاول:", _co_list, index=_co_idx, key="ef_cont_adm")
 
                         st.markdown("**📦 المواد — تعديل الكميات أو حذف:**")
                         _new_items = []
