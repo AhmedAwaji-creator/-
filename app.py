@@ -7017,38 +7017,38 @@ tbody tr:hover td{{color:#1dda70!important;}}
                     _cy_pressed = col_cy.button("✅ نعم، تأكيد وإرسال الطلب", key="confirm_cancel_yes", type="primary")
                     _cn_pressed = col_cn_cancel.button("🔙 الرجوع للبداية", key="confirm_cancel_no")
                     if _cy_pressed:
-                        ts_c = now_mecca().strftime("%Y-%m-%d %H:%M:%S")
-                        req_no_c = "CR" + now_mecca().strftime("%d%H%M%S")
-                        # جلب HTML الفاتورة بدون params
                         try:
-                            import sqlite3 as _sq3c
-                            _pc = _sq3c.connect(DB_NAME, check_same_thread=False, timeout=30)
-                            _ci_html_content = (_pc.execute(f"SELECT html_content FROM archived_invoices WHERE id={int(ci_row['id'])}").fetchone() or [''])[0]
-                            _pc.close()
-                        except:
-                            _ci_html_content = ""
-                        _inv_type_lbl = {"صرف":"الصرف","ارجاع":"الإرجاع","نقل":"النقل"}.get(ci_row.get('invoice_type',''),'')
-                        c.execute("""INSERT INTO cancel_invoice_requests
-                                     (request_no, invoice_no, invoice_type, warehouse_return, contractor, items_json,
-                                      cancel_reason, boq, requester, status, invoice_html, timestamp)
-                                     VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""",
-                                  (req_no_c, ci_row['invoice_no'], ci_row['invoice_type'],
-                                   st.session_state.get('cancel_wh_return', cancel_wh_return),
-                                   st.session_state.get('cancel_contractor_sel', cancel_contractor),
-                                   ci_row.get('items_json', '[]'),
-                                   st.session_state.get('cancel_reason_txt', cancel_reason),
-                                   st.session_state.get('cancel_boq_txt', ''),
-                                   u['full_name'], "معلق", _ci_html_content, ts_c))
-                        conn.commit()
-                        save_log("طلب إلغاء فاتورة", "—", 0,
-                                 f"طلب إلغاء فاتورة [{ci_row['invoice_no']}] — السبب: {st.session_state.get('cancel_reason_txt', '')}",
-                                 u['full_name'])
-                        st.session_state['cancel_inv_data'] = None
-                        st.session_state['cancel_inv_confirm'] = False
-                        st.session_state['last_cancel_req_no'] = req_no_c
-                        st.session_state['last_cancel_inv_no'] = ci_row['invoice_no']
-                        st.session_state['last_cancel_inv_type'] = _inv_type_lbl
-                        st.rerun()
+                            ts_c = now_mecca().strftime("%Y-%m-%d %H:%M:%S")
+                            req_no_c = "CR" + now_mecca().strftime("%d%H%M%S")
+                            import sqlite3 as _sq3ins
+                            _pc_ins = _sq3ins.connect(DB_NAME, check_same_thread=False, timeout=30)
+                            # جلب HTML
+                            _ci_html_row2 = _pc_ins.execute(f"SELECT html_content FROM archived_invoices WHERE id={int(ci_row['id'])}").fetchone()
+                            _ci_html_content = _ci_html_row2[0] if _ci_html_row2 else ""
+                            _inv_type_lbl = {"صرف":"الصرف","ارجاع":"الإرجاع","نقل":"النقل"}.get(str(ci_row.get('invoice_type','')),'')
+                            _pc_ins.execute("""INSERT INTO cancel_invoice_requests
+                                             (request_no, invoice_no, invoice_type, warehouse_return, contractor, items_json,
+                                              cancel_reason, boq, requester, status, invoice_html, timestamp)
+                                             VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""",
+                                          (req_no_c, ci_row['invoice_no'], ci_row.get('invoice_type',''),
+                                           st.session_state.get('cancel_wh_return', ''),
+                                           st.session_state.get('cancel_contractor_sel', ''),
+                                           ci_row.get('items_json', '[]'),
+                                           st.session_state.get('cancel_reason_txt', ''),
+                                           st.session_state.get('cancel_boq_txt', ''),
+                                           u['full_name'], "معلق", _ci_html_content, ts_c))
+                            _pc_ins.commit()
+                            _pc_ins.close()
+                            save_log("طلب إلغاء فاتورة", "—", 0,
+                                     f"طلب إلغاء فاتورة [{ci_row['invoice_no']}]", u['full_name'])
+                            st.session_state['cancel_inv_data'] = None
+                            st.session_state['cancel_inv_confirm'] = False
+                            st.session_state['last_cancel_req_no'] = req_no_c
+                            st.session_state['last_cancel_inv_no'] = ci_row['invoice_no']
+                            st.session_state['last_cancel_inv_type'] = _inv_type_lbl
+                            st.rerun()
+                        except Exception as _ce:
+                            st.error(f"❌ خطأ في إرسال الطلب: {_ce}")
                     if _cn_pressed:
                         st.session_state['cancel_inv_confirm'] = False
                         st.session_state['cancel_inv_data'] = None
