@@ -4480,12 +4480,24 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(29,218,96,0.12);font-size:17p
             _ret_cnt    = int(pd.read_sql("SELECT COUNT(*) as c FROM return_requests WHERE status=\'معلق\'",conn).iloc[0]['c'])
             _cancel_cnt = int(pd.read_sql("SELECT COUNT(*) as c FROM cancel_invoice_requests WHERE status=\'معلق\'",conn).iloc[0]['c'])
 
-            _ret_badge    = f" 🔴{_ret_cnt}"    if _ret_cnt    > 0 else ""
-            _cancel_badge = f" 🔴{_cancel_cnt}" if _cancel_cnt > 0 else ""
             _tr1,_tr2 = st.tabs([
-                f"🔄 طلبات ارجاع المواد{_ret_badge}",
-                f"🚫 طلبات إلغاء الفواتير{_cancel_badge}"
+                "🔄 طلبات ارجاع المواد",
+                "🚫 طلبات إلغاء الفواتير"
             ])
+
+            # بادجات بأسلوب الأيفون فوق التبويبات
+            if _ret_cnt > 0 or _cancel_cnt > 0:
+                _b_ret    = f"<span style='background:#d32f2f;color:white;border-radius:50%;min-width:20px;height:20px;font-size:12px;font-weight:900;display:inline-flex;align-items:center;justify-content:center;padding:0 5px;border:2px solid white;box-shadow:0 2px 5px rgba(0,0,0,0.5);margin-left:4px;'>{_ret_cnt}</span>" if _ret_cnt > 0 else ""
+                _b_cancel = f"<span style='background:#d32f2f;color:white;border-radius:50%;min-width:20px;height:20px;font-size:12px;font-weight:900;display:inline-flex;align-items:center;justify-content:center;padding:0 5px;border:2px solid white;box-shadow:0 2px 5px rgba(0,0,0,0.5);margin-left:4px;'>{_cancel_cnt}</span>" if _cancel_cnt > 0 else ""
+                st.markdown(f"""
+                <div style='display:flex;gap:0;direction:rtl;margin-top:-54px;margin-bottom:34px;pointer-events:none;padding-right:6px;'>
+                    <div style='flex:1;display:flex;align-items:flex-start;justify-content:flex-end;padding-right:10px;'>
+                        {_b_ret}
+                    </div>
+                    <div style='flex:1;display:flex;align-items:flex-start;justify-content:flex-end;padding-right:10px;'>
+                        {_b_cancel}
+                    </div>
+                </div>""", unsafe_allow_html=True)
 
             # ════════════════════════════════════
             # تبويب ١: طلبات الارجاع
