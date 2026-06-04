@@ -6912,13 +6912,13 @@ tbody tr:hover td{{color:#1dda70!important;}}
                 if not cancel_inv_no_input:
                     st.error("❌ يرجى إدخال رقم الفاتورة!")
                 else:
+                    _cin = cancel_inv_no_input.replace("'","''")
+                    _cemp = u['full_name'].replace("'","''")
                     df_ci = pd.read_sql(
-                        "SELECT * FROM archived_invoices WHERE invoice_no=? AND employee=?",
-                        conn, params=(cancel_inv_no_input, u['full_name']))
+                        f"SELECT * FROM archived_invoices WHERE invoice_no='{_cin}' AND employee='{_cemp}'", conn)
                     if df_ci.empty:
                         _ci_other = pd.read_sql(
-                            "SELECT employee FROM archived_invoices WHERE invoice_no=?",
-                            conn, params=(cancel_inv_no_input,))
+                            f"SELECT employee FROM archived_invoices WHERE invoice_no='{_cin}'", conn)
                         if not _ci_other.empty:
                             st.error("❌ لا يمكنك إلغاء هذه الفاتورة — تم إنشاؤها بواسطة موظف آخر.")
                         else:
@@ -6936,10 +6936,15 @@ tbody tr:hover td{{color:#1dda70!important;}}
                 if st.button("👁️ معاينة الفاتورة", key="cancel_preview_btn"):
                     st.session_state['cancel_show_preview'] = not st.session_state.get('cancel_show_preview', False)
                 if st.session_state.get('cancel_show_preview', False):
-                    _ci_html = pd.read_sql("SELECT html_content FROM archived_invoices WHERE id=?",
-                                           conn, params=(int(ci_row['id']),))
-                    if not _ci_html.empty:
-                        components.html(_ci_html.iloc[0]['html_content'], height=480, scrolling=True)
+                    try:
+                        import sqlite3 as _sq3p
+                        _pc2 = _sq3p.connect(DB_NAME, check_same_thread=False, timeout=30)
+                        _ch_row = _pc2.execute(f"SELECT html_content FROM archived_invoices WHERE id={int(ci_row['id'])}").fetchone()
+                        _pc2.close()
+                        if _ch_row and _ch_row[0]:
+                            _ch_str = str(_ch_row[0]).replace('background:rgba(3,10,28,0.82)','background:white').replace('background:rgba(3,10,28,0.88)','background:white')
+                            components.html(_ch_str, height=900, scrolling=True)
+                    except: pass
 
                 st.markdown("---")
 
