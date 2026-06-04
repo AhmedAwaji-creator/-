@@ -4878,244 +4878,145 @@ td{{padding:10px 14px;border-bottom:1px solid rgba(29,218,96,0.12);font-size:17p
     # صفحة: تعديل فاتورة سابقة
     # ---------------------------------------------------------
     elif st.session_state.page == "edit_invoice":
-        page_header("✏️", "تعديل فاتورة سابقة", "اختر فاتورة لتعديل مستودعها أو مقاولها", "#f9a825")
+        if role not in ("مدير نظام","مسؤول المستودعات","موجه بلاغات"):
+            st.error("❌ غير مصرح."); st.stop()
+        page_header("✏️","تعديل فاتورة سابقة","اختر فاتورة وعدّل بياناتها","#f9a825")
 
-        # ══════════════════════════════════════════
-        # موجه البلاغات: يرى فواتيره فقط
-        # مدير النظام / مسؤول المستودعات: فلتر
-        # ══════════════════════════════════════════
-
+        # ── قائمة الفواتير حسب الدور ──
         if role == "موجه بلاغات":
-            # عرض فواتير الموجه
-            df_ef_list = pd.read_sql(
-                f"SELECT id, invoice_no, invoice_type, warehouse_from, contractor, timestamp, boq "
-                f"FROM archived_invoices WHERE employee='{u['full_name']}' ORDER BY id DESC",
-                conn)
-            if df_ef_list.empty:
-                st.info("ℹ️ لا توجد فواتير بعد.")
-            else:
-                st.markdown(f"<div style='direction:rtl;color:#8aaac8;margin-bottom:8px;'>📄 اختر الفاتورة التي تريد تعديل مستودعها أو مقاولها:</div>", unsafe_allow_html=True)
-                last_id = int(df_ef_list.iloc[0]['id'])
-                for _, row_ef in df_ef_list.iterrows():
-                    row_ef = row_ef.to_dict()
-                    _is_last = (int(row_ef['id']) == last_id)
-                    _tc = {"صرف":"#e53e3e","ارجاع":"#2b6cb0","نقل":"#276749"}.get(row_ef['invoice_type'],"#555")
-                    _border = "2px solid #f9a825" if _is_last else "1px solid rgba(0,140,255,0.15)"
-                    _bg = "rgba(60,40,0,0.40)" if _is_last else "rgba(3,10,28,0.75)"
-                    st.markdown(f"""
-                    <div style='background:{_bg};border:{_border};border-radius:10px;padding:10px 14px;direction:rtl;margin:4px 0;'>
-                        <span style='background:{_tc};color:white;border-radius:4px;padding:1px 7px;font-size:13px;'>{row_ef['invoice_type']}</span>
-                        &nbsp;<b style='color:#ddeeff;'>{row_ef['invoice_no']}</b>
-                        {"&nbsp;<span style='background:#f9a825;color:#111;border-radius:4px;padding:1px 7px;font-size:12px;'>⭐ آخر فاتورة</span>" if _is_last else ""}
-                        <span style='color:#6898c0;font-size:13px;float:left;'>📅 {str(row_ef['timestamp'])[:16]}</span><br>
-                        <span style='color:#8aaac8;font-size:13px;'>📍 {row_ef.get('warehouse_from','—')} | 🏗️ {row_ef.get('contractor','—')}</span>
-                    </div>""", unsafe_allow_html=True)
-                    if st.button(f"✏️ تعديل {row_ef['invoice_no']}", key=f"ef_sel_{row_ef['id']}"):
-                        st.session_state['ef_search'] = row_ef['invoice_no']
-                        st.session_state['ef_type_sel'] = row_ef['invoice_type']
-                        st.session_state['ef_items'] = None
-                        st.session_state['ef_confirm'] = False
-                        st.session_state['ef_compare_mode'] = False
-                        st.rerun()
+            _ef_df = pd.read_sql(
+                f"SELECT id,invoice_no,invoice_type,warehouse_from,contractor,timestamp FROM archived_invoices WHERE employee=\'{u['full_name']}\' ORDER BY id DESC", conn)
         else:
-            # مدير النظام / مسؤول المستودعات: فلتر متقدم
-            _ef_f1, _ef_f2, _ef_f3 = st.columns([2, 1.5, 1.5])
-            _ef_emps = ["الكل"] + list(pd.read_sql(
-                "SELECT DISTINCT employee FROM archived_invoices WHERE employee IN (SELECT full_name FROM users WHERE role='موجه بلاغات') ORDER BY employee",
-                conn)['employee'].tolist())
-            _ef_emp_sel  = _ef_f1.selectbox("👤 موجه البلاغات:", _ef_emps, key="ef_emp_sel")
-            _ef_date_sel = _ef_f2.date_input("📅 من تاريخ:", value=None, key="ef_date_sel")
-            _ef_no_sel   = _ef_f3.text_input("🔍 رقم الفاتورة:", key="ef_no_sel", placeholder="G1, G2...").strip()
+            _ef_f1,_ef_f2,_ef_f3 = st.columns([2,1.5,1.5])
+            _ef_emps = ["الكل"]+pd.read_sql("SELECT DISTINCT employee FROM archived_invoices WHERE employee IN (SELECT full_name FROM users WHERE role=\'موجه بلاغات\') ORDER BY employee",conn)['employee'].tolist()
+            _ef_emp  = _ef_f1.selectbox("👤 الموجه:",_ef_emps,key="ef_emp")
+            _ef_date = _ef_f2.date_input("📅 من تاريخ:",value=None,key="ef_date")
+            _ef_no   = _ef_f3.text_input("🔍 رقم الفاتورة:",key="ef_no",placeholder="G1...").strip()
+            _efq = "SELECT id,invoice_no,invoice_type,warehouse_from,contractor,employee,timestamp FROM archived_invoices WHERE 1=1"
+            if _ef_emp!="الكل": _efq+=f" AND employee=\'{_ef_emp}\'"
+            if _ef_date:         _efq+=f" AND DATE(timestamp)>=\'{_ef_date.strftime('%Y-%m-%d')}\'"
+            if _ef_no:           _efq+=f" AND invoice_no LIKE \'%{_ef_no}%\'"
+            _efq+=" ORDER BY id DESC LIMIT 100"
+            _ef_df = pd.read_sql(_efq,conn)
 
-            _efq = "SELECT id, invoice_no, invoice_type, warehouse_from, contractor, employee, timestamp FROM archived_invoices WHERE 1=1"
-            if _ef_emp_sel != "الكل": _efq += f" AND employee='{_ef_emp_sel}'"
-            if _ef_date_sel: _efq += f" AND DATE(timestamp) >= '{_ef_date_sel.strftime('%Y-%m-%d')}'"
-            if _ef_no_sel:   _efq += f" AND invoice_no LIKE '%{_ef_no_sel}%'"
-            _efq += " ORDER BY id DESC LIMIT 100"
-            df_ef_list = pd.read_sql(_efq, conn)
-
-            if df_ef_list.empty:
-                st.info("لا توجد فواتير مطابقة.")
+        # ── عرض القائمة ──
+        if not st.session_state.get('ef_selected'):
+            if _ef_df.empty:
+                st.info("لا توجد فواتير.")
             else:
-                st.markdown(f"<div style='direction:rtl;color:#8aaac8;margin-bottom:6px;'>وُجد <b style='color:#4db8ff;'>{len(df_ef_list)}</b> فاتورة</div>", unsafe_allow_html=True)
-                for _, row_ef in df_ef_list.iterrows():
-                    row_ef = row_ef.to_dict()
-                    _tc = {"صرف":"#e53e3e","ارجاع":"#2b6cb0","نقل":"#276749"}.get(row_ef['invoice_type'],"#555")
-                    st.markdown(f"""
-                    <div style='background:rgba(3,10,28,0.75);border:1px solid rgba(0,140,255,0.15);border-radius:10px;padding:10px 14px;direction:rtl;margin:4px 0;'>
-                        <span style='background:{_tc};color:white;border-radius:4px;padding:1px 7px;font-size:13px;'>{row_ef['invoice_type']}</span>
-                        &nbsp;<b style='color:#ddeeff;'>{row_ef['invoice_no']}</b>
-                        <span style='color:#6898c0;font-size:13px;float:left;'>📅 {str(row_ef['timestamp'])[:16]}</span><br>
-                        <span style='color:#8aaac8;font-size:13px;'>👤 {row_ef.get('employee','—')} | 📍 {row_ef.get('warehouse_from','—')} | 🏗️ {row_ef.get('contractor','—')}</span>
-                    </div>""", unsafe_allow_html=True)
-                    if st.button(f"✏️ تعديل {row_ef['invoice_no']}", key=f"ef_sel_{row_ef['id']}"):
-                        st.session_state['ef_search'] = row_ef['invoice_no']
-                        st.session_state['ef_type_sel'] = row_ef['invoice_type']
+                last_id = int(_ef_df.iloc[0]['id'])
+                for _,r2 in _ef_df.iterrows():
+                    r2=r2.to_dict()
+                    _tc={"صرف":"#e53e3e","ارجاع":"#2b6cb0","نقل":"#276749"}.get(r2['invoice_type'],"#555")
+                    _is_last=(int(r2['id'])==last_id)
+                    st.markdown(f"""<div style='background:{"rgba(60,40,0,0.40)" if _is_last else "rgba(3,10,28,0.75)"};border:{"2px solid #f9a825" if _is_last else "1px solid rgba(0,140,255,0.15)"};border-radius:10px;padding:10px 14px;direction:rtl;margin:4px 0;'>
+                    <span style='background:{_tc};color:white;border-radius:4px;padding:1px 7px;font-size:13px;'>{r2['invoice_type']}</span> <b style='color:#ddeeff;'>{r2['invoice_no']}</b>{"&nbsp;<span style='background:#f9a825;color:#111;border-radius:4px;padding:1px 6px;font-size:12px;'>⭐</span>" if _is_last else ""}
+                    <span style='color:#6898c0;font-size:13px;float:left;'>📅 {str(r2.get('timestamp',''))[:16]}</span><br>
+                    <span style='color:#8aaac8;font-size:13px;'>{"👤 "+str(r2.get('employee',''))+" | " if role!="موجه بلاغات" else ""}📍 {r2.get('warehouse_from','—')} | 🏗️ {r2.get('contractor','—')}</span></div>""",unsafe_allow_html=True)
+                    if st.button(f"✏️ تعديل {r2['invoice_no']}",key=f"ef_pick_{r2['id']}"):
+                        st.session_state['ef_selected'] = r2['invoice_no']
                         st.session_state['ef_items'] = None
-                        st.session_state['ef_confirm'] = False
-                        st.session_state['ef_compare_mode'] = False
+                        st.session_state['ef_compare'] = False
                         st.rerun()
 
-        # ══════════════════════════════════════════
-        # شاشة التعديل بعد اختيار الفاتورة
-        # ══════════════════════════════════════════
-        if st.session_state.get('ef_search'):
-            ef_type = st.session_state.get('ef_type_sel', 'صرف')
+        # ── شاشة التعديل ──
+        else:
+            _inv_no = st.session_state['ef_selected']
+            _inv_df = pd.read_sql(f"SELECT * FROM archived_invoices WHERE invoice_no=\'{_inv_no}\'",conn)
+            if _inv_df.empty:
+                st.error("❌ الفاتورة غير موجودة."); st.session_state.pop('ef_selected',None); st.rerun()
+            _inv = dict(_inv_df.iloc[0])
 
-            if st.button("✖️ إغلاق التعديل", key="ef_cancel_btn", type="secondary"):
-                for k in ['ef_search','ef_items','ef_confirm','ef_result_html','ef_contractor','ef_wh_from','ef_wh_to','ef_type_sel','ef_compare_mode','ef_new_wh','ef_new_cont']:
-                    st.session_state.pop(k, None)
+            if st.button("✖️ رجوع للقائمة",key="ef_back_list"):
+                for k in ['ef_selected','ef_items','ef_compare','ef_new_wh','ef_new_cont']: st.session_state.pop(k,None)
                 st.rerun()
 
-            df_inv = pd.read_sql(
-                f"SELECT * FROM archived_invoices WHERE invoice_no='{st.session_state['ef_search']}'", conn)
-            if df_inv.empty:
-                st.error(f"❌ لم يتم العثور على الفاتورة.")
+            st.markdown(f"<div style='background:rgba(0,30,80,0.50);border:1px solid rgba(0,140,255,0.25);border-radius:10px;padding:10px 14px;direction:rtl;margin-bottom:12px;'>✏️ تعديل فاتورة <b style='color:#4db8ff;'>{_inv_no}</b> | {_inv['invoice_type']} | 👤 {_inv.get('employee','')}</div>",unsafe_allow_html=True)
+
+            if st.session_state.get('ef_items') is None:
+                try: st.session_state['ef_items']=json.loads(_inv.get('items_json','[]') or '[]')
+                except: st.session_state['ef_items']=[]
+
+            if not st.session_state.get('ef_compare'):
+                # ── نموذج التعديل ──
+                _whs = list_warehouses or [_inv.get('warehouse_from','')]
+                _cos = list_contractors or [_inv.get('contractor','')]
+                _wh_i  = _whs.index(_inv.get('warehouse_from','')) if _inv.get('warehouse_from','') in _whs else 0
+                _co_i  = _cos.index(_inv.get('contractor',''))    if _inv.get('contractor','')    in _cos else 0
+                _c1,_c2 = st.columns(2)
+                _nwh  = _c1.selectbox("📍 المستودع:",_whs,index=_wh_i,key="ef_nwh")
+                _ncont= _c2.selectbox("🏗️ المقاول:", _cos,index=_co_i,key="ef_ncont")
+
+                st.markdown("**📦 المواد:**")
+                _items2=[]
+                for _ii,_it in enumerate(st.session_state['ef_items']):
+                    _col1,_col2,_col3=st.columns([3,1,0.5])
+                    _col1.markdown(f"<span style='color:#ddeeff;'><b style='color:#7aaac8;'>{_it.get('code','')}</b> — {_it.get('name','')}</span>",unsafe_allow_html=True)
+                    _q2=_col2.number_input("ك",min_value=0,value=int(_it.get('qty',1)),key=f"ef_q2_{_ii}",label_visibility="collapsed")
+                    _d2=_col3.button("🗑️",key=f"ef_d2_{_ii}")
+                    if not _d2 and _q2>0: _items2.append({**_it,'qty':_q2})
+                st.session_state['ef_items']=_items2
+
+                st.divider()
+                st.markdown("**➕ إضافة مادة:**")
+                _a1,_a2,_a3=st.columns([2,1,1])
+                _acode=_a1.text_input("كود:",key="ef_acode",placeholder="908514012").strip()
+                _aqty =_a2.number_input("كمية:",min_value=1,value=1,key="ef_aqty")
+                if _a3.button("➕ إضافة",key="ef_addbtn",use_container_width=True):
+                    if _acode:
+                        _anm=pd.read_sql(f"SELECT item_name FROM material_definitions WHERE item_code=\'{_acode}\'",conn)
+                        _aname=_anm.iloc[0]['item_name'] if not _anm.empty else _acode
+                        if any(i.get('code')==_acode for i in st.session_state['ef_items']):
+                            st.warning(f"⚠️ الكود {_acode} موجود بالفعل.")
+                        else:
+                            st.session_state['ef_items'].append({'code':_acode,'name':_aname,'qty':int(_aqty),'cat':''})
+                            st.rerun()
+                    else: st.error("❌ أدخل الكود.")
+
+                if st.checkbox("👁️ معاينة الفاتورة الجديدة مباشرة",key="ef_lprev"):
+                    _lh=render_invoice_html("فاتورة صرف مواد طوارئ",st.session_state['ef_items'],_nwh,_ncont,_inv['employee'],_inv_no,boq=_inv.get('boq',''))
+                    _lh=_lh.replace('background:rgba(3,10,28,0.82)','background:white').replace('background:rgba(3,10,28,0.88)','background:white')
+                    components.html(_lh,height=900,scrolling=True)
+
+                st.divider()
+                if st.button("🔍 مقارنة القديم والجديد ثم تأكيد",key="ef_tocmp",type="primary",use_container_width=True):
+                    st.session_state['ef_new_wh']  =_nwh
+                    st.session_state['ef_new_cont']=_ncont
+                    st.session_state['ef_compare'] =True
+                    st.rerun()
+
             else:
-                row = dict(df_inv.iloc[0])
-
-                if role != "موجه بلاغات":  # مدير النظام / مسؤول المستودعات
-                    _ef_is_approved = False
-                    _ef_can_edit = True
-                    from datetime import timedelta as _td72
+                # ── شاشة المقارنة ──
+                _nwh  =st.session_state.get('ef_new_wh',  _inv.get('warehouse_from',''))
+                _ncont=st.session_state.get('ef_new_cont',_inv.get('contractor',''))
+                _items2=st.session_state.get('ef_items',[])
+                _c1,_c2=st.columns(2)
+                _c1.markdown("<div style='text-align:center;color:#ff6666;font-weight:900;'>🔴 القديمة</div>",unsafe_allow_html=True)
+                _c2.markdown("<div style='text-align:center;color:#1dda70;font-weight:900;'>🟢 الجديدة</div>",unsafe_allow_html=True)
+                _oh=str(_inv.get('html_content',''))
+                _oh=_oh.replace('background:rgba(3,10,28,0.82)','background:white').replace('background:rgba(3,10,28,0.88)','background:white')
+                with _c1: components.html(_oh,height=800,scrolling=True)
+                _nh=render_invoice_html("فاتورة صرف مواد طوارئ",_items2,_nwh,_ncont,_inv['employee'],_inv_no,boq=_inv.get('boq',''))
+                _nhs=_nh.replace('background:rgba(3,10,28,0.82)','background:white').replace('background:rgba(3,10,28,0.88)','background:white')
+                with _c2: components.html(_nhs,height=800,scrolling=True)
+                st.divider()
+                _b1,_b2=st.columns(2)
+                if _b1.button("✅ تأكيد الحفظ",key="ef_finalsave",type="primary",use_container_width=True):
+                    c.execute("UPDATE archived_invoices SET warehouse_from=?,contractor=?,items_json=?,html_content=? WHERE invoice_no=?",
+                              (_nwh,_ncont,json.dumps(_items2),_nh,_inv_no))
                     try:
-                        _ef_signed = pd.read_sql(f"SELECT status, reviewed_at FROM signed_invoices WHERE invoice_no='{row['invoice_no']}' AND status='معتمد'", conn)
-                        _ef_is_approved = not _ef_signed.empty
-                        if _ef_is_approved:
-                            _rev_dt = datetime.strptime(str(_ef_signed.iloc[0]['reviewed_at'])[:19], "%Y-%m-%d %H:%M:%S")
-                            _hrs = (now_mecca().replace(tzinfo=None) - _rev_dt).total_seconds() / 3600
-                            if _hrs > 168: _ef_can_edit = False
+                        _ap=pd.read_sql(f"SELECT id FROM signed_invoices WHERE invoice_no=\'{_inv_no}\' AND status=\'معتمد\'",conn)
+                        if not _ap.empty:
+                            c.execute("UPDATE signed_invoices SET status=\'معدّلة-تحتاج اعتماد\',admin_notes=? WHERE invoice_no=? AND status=\'معتمد\'",
+                                      (f"⚠️ عدّلها: {u['full_name']} في {now_mecca().strftime('%Y-%m-%d %H:%M')}",_inv_no))
                     except: pass
-
-                    if _ef_is_approved and not _ef_can_edit:
-                        st.error("❌ هذه الفاتورة معتمدة ومضى عليها أكثر من أسبوع — لا يمكن تعديلها.")
-                        st.stop()
-
-                    if _ef_is_approved:
-                        st.markdown("<div style='background:rgba(60,40,0,0.50);border:2px solid #f9a825;border-radius:10px;padding:10px 14px;direction:rtl;'>⚠️ <b style='color:#ffaa66;'>فاتورة معتمدة</b> — بعد التعديل ستعود للاعتماد باسمك</div>", unsafe_allow_html=True)
-
-                    if st.session_state.get('ef_items') is None:
-                        try: st.session_state['ef_items'] = json.loads(row.get('items_json','[]'))
-                        except: st.session_state['ef_items'] = []
-
-                    # ── مرحلة ١: التعديل ──
-                    if not st.session_state.get('ef_compare_mode'):
-                        section_card("📋 تعديل بيانات الفاتورة", "#f9a825")
-
-                        # تحديد الـ index بأمان
-                        _wh_cur = str(row.get('warehouse_from',''))
-                        _co_cur = str(row.get('contractor',''))
-                        _wh_list = list_warehouses if list_warehouses else [_wh_cur]
-                        _co_list = list_contractors if list_contractors else [_co_cur]
-                        _wh_idx  = _wh_list.index(_wh_cur) if _wh_cur in _wh_list else 0
-                        _co_idx  = _co_list.index(_co_cur) if _co_cur in _co_list else 0
-
-                        _ea1, _ea2 = st.columns(2)
-                        _new_wh_adm   = _ea1.selectbox("📍 المستودع:", _wh_list, index=_wh_idx, key="ef_wh_adm")
-                        _new_cont_adm = _ea2.selectbox("🏗️ المقاول:", _co_list, index=_co_idx, key="ef_cont_adm")
-
-                        st.markdown("**📦 المواد — تعديل الكميات أو حذف:**")
-                        _new_items = []
-                        for _ii, _it in enumerate(st.session_state['ef_items']):
-                            _ic1, _ic2, _ic3 = st.columns([3, 1, 0.5])
-                            _ic1.markdown(f"<span style='color:#ddeeff;font-size:14px;'><b style='color:#7aaac8;'>{_it.get('code','')}</b> — {_it.get('name','')}</span>", unsafe_allow_html=True)
-                            _new_q = _ic2.number_input("الكمية", min_value=0, value=int(_it.get('qty',1)), key=f"ef_q_{_ii}", label_visibility="collapsed")
-                            _del = _ic3.button("🗑️", key=f"ef_del_{_ii}", help="حذف")
-                            if not _del and _new_q > 0:
-                                _new_items.append({**_it, 'qty': _new_q})
-                        st.session_state['ef_items'] = _new_items
-
-                        # ── إضافة مادة جديدة ──
-                        st.divider()
-                        st.markdown("**➕ إضافة مادة جديدة:**")
-                        _add1, _add2, _add3 = st.columns([2, 1, 1])
-                        _add_code = _add1.text_input("كود المادة:", key="ef_add_code", placeholder="908514012").strip()
-                        _add_qty  = _add2.number_input("الكمية:", min_value=1, value=1, key="ef_add_qty")
-                        if _add3.button("➕ إضافة", key="ef_add_btn", use_container_width=True):
-                            if _add_code:
-                                _nm = pd.read_sql(f"SELECT item_name FROM material_definitions WHERE item_code='{_add_code}'", conn)
-                                _add_name = _nm.iloc[0]['item_name'] if not _nm.empty else _add_code
-                                if any(i.get('code') == _add_code for i in st.session_state['ef_items']):
-                                    st.warning(f"⚠️ الكود {_add_code} موجود — عدّل كميته أعلاه.")
-                                else:
-                                    st.session_state['ef_items'].append({'code': _add_code, 'name': _add_name, 'qty': int(_add_qty), 'cat': ''})
-                                    st.success(f"✅ تمت إضافة {_add_code}"); st.rerun()
-                            else:
-                                st.error("❌ أدخل كود المادة.")
-
-                        # ── معاينة الفاتورة الجديدة مباشرة ──
-                        st.divider()
-                        if st.checkbox("👁️ معاينة الفاتورة بعد التعديل (مباشر)", key="ef_live_prev"):
-                            _live_html = render_invoice_html("فاتورة صرف مواد طوارئ", st.session_state['ef_items'],
-                                                             st.session_state.get("ef_wh_adm", row['warehouse_from']),
-                                                             st.session_state.get("ef_cont_adm", row['contractor']),
-                                                             row['employee'], row['invoice_no'], boq=row.get('boq',''))
-                            _lh = _live_html.replace('background:rgba(3,10,28,0.82)','background:white').replace('background:rgba(3,10,28,0.88)','background:white')
-                            if '<body' in _lh and 'background:#f0f4f8' not in _lh:
-                                _lh = _lh.replace('<body>','<body style="background:#f0f4f8;">').replace('<body ','<body style="background:#f0f4f8;" ')
-                            components.html(_lh, height=950, scrolling=True)
-
-                        st.divider()
-                        if st.button("🔍 مقارنة القديم والجديد قبل التأكيد", key="ef_compare_btn", use_container_width=True):
-                            # حفظ التعديلات مؤقتاً في session
-                            st.session_state['ef_new_wh']   = st.session_state.get("ef_wh_adm",   row['warehouse_from'])
-                            st.session_state['ef_new_cont'] = st.session_state.get("ef_cont_adm", row['contractor'])
-                            st.session_state['ef_compare_mode'] = True
-                            st.rerun()
-
-                    # ── مرحلة ٢: المقارنة والتأكيد ──
-                    else:
-                        _new_wh_adm   = st.session_state.get('ef_new_wh',   row['warehouse_from'])
-                        _new_cont_adm = st.session_state.get('ef_new_cont', row['contractor'])
-                        _new_items    = st.session_state.get('ef_items', [])
-
-                        st.markdown(f"""
-                        <div style='background:rgba(0,30,80,0.50);border:1px solid rgba(0,140,255,0.30);
-                            border-radius:12px;padding:12px 16px;direction:rtl;margin-bottom:12px;'>
-                            📋 <b style='color:#4db8ff;'>مقارنة الفاتورة {row['invoice_no']}</b><br>
-                            <span style='color:#8aaac8;'>تحقق من التغييرات قبل التأكيد النهائي</span>
-                        </div>""", unsafe_allow_html=True)
-
-                        _cmp1, _cmp2 = st.columns(2)
-                        _cmp1.markdown("<div style='text-align:center;color:#ff6666;font-weight:900;font-size:16px;margin-bottom:8px;'>🔴 الفاتورة القديمة</div>", unsafe_allow_html=True)
-                        _cmp2.markdown("<div style='text-align:center;color:#1dda70;font-weight:900;font-size:16px;margin-bottom:8px;'>🟢 الفاتورة الجديدة</div>", unsafe_allow_html=True)
-
-                        # عرض الفاتورة القديمة
-                        _old_html = str(row['html_content'])
-                        _old_html = _old_html.replace('background:rgba(3,10,28,0.82)','background:white').replace('background:rgba(3,10,28,0.88)','background:white')
-                        if '<body' in _old_html and 'background:#f0f4f8' not in _old_html:
-                            _old_html = _old_html.replace('<body>','<body style="background:#f0f4f8;">').replace('<body ','<body style="background:#f0f4f8;" ')
-                        with _cmp1:
-                            components.html(_old_html, height=900, scrolling=True)
-
-                        # عرض الفاتورة الجديدة
-                        _new_html_adm = render_invoice_html("فاتورة صرف مواد طوارئ", _new_items, _new_wh_adm, _new_cont_adm,
-                                                            row['employee'], row['invoice_no'], boq=row.get('boq',''))
-                        _nh = _new_html_adm.replace('background:rgba(3,10,28,0.82)','background:white').replace('background:rgba(3,10,28,0.88)','background:white')
-                        if '<body' in _nh and 'background:#f0f4f8' not in _nh:
-                            _nh = _nh.replace('<body>','<body style="background:#f0f4f8;">').replace('<body ','<body style="background:#f0f4f8;" ')
-                        with _cmp2:
-                            components.html(_nh, height=900, scrolling=True)
-
-                        st.divider()
-                        _conf1, _conf2 = st.columns(2)
-                        if _conf1.button("✅ تأكيد وإرسال للاعتماد", key="ef_confirm_final", type="primary", use_container_width=True):
-                            c.execute("UPDATE archived_invoices SET warehouse_from=?, contractor=?, items_json=?, html_content=? WHERE invoice_no=?",
-                                      (_new_wh_adm, _new_cont_adm, json.dumps(_new_items), _new_html_adm, row['invoice_no']))
-                            if _ef_is_approved:
-                                c.execute("UPDATE signed_invoices SET status='معدّلة-تحتاج اعتماد', admin_notes=? WHERE invoice_no=? AND status='معتمد'",
-                                          (f"⚠️ عدّلها: {u['full_name']} في {now_mecca().strftime('%Y-%m-%d %H:%M')}", row['invoice_no']))
-                            save_log("تعديل فاتورة", "—", 0, f"تعديل [{row['invoice_no']}]: مستودع→{_new_wh_adm} | مقاول→{_new_cont_adm}", u['full_name'])
-                            conn.commit()
-                            st.success(f"✅ تم حفظ التعديل وإرساله للاعتماد")
-                            for k in ['ef_search','ef_items','ef_confirm','ef_type_sel','ef_compare_mode','ef_new_wh','ef_new_cont']:
-                                st.session_state.pop(k, None)
-                            st.rerun()
-                        if _conf2.button("🔙 الرجوع للتعديل", key="ef_back_edit", use_container_width=True):
-                            st.session_state['ef_compare_mode'] = False
-                            st.rerun()
-
-                # موجه البلاغات: لا يصل لهذه الصفحة بهذا الدور
+                    save_log("تعديل فاتورة","—",0,f"تعديل [{_inv_no}]→مستودع:{_nwh} مقاول:{_ncont}",u['full_name'])
+                    conn.commit()
+                    for k in ['ef_selected','ef_items','ef_compare','ef_new_wh','ef_new_cont']: st.session_state.pop(k,None)
+                    st.success(f"✅ تم حفظ التعديل على الفاتورة {_inv_no}")
+                    st.rerun()
+                if _b2.button("🔙 رجوع للتعديل",key="ef_backto",use_container_width=True):
+                    st.session_state['ef_compare']=False; st.rerun()
 
     elif st.session_state.page == "view_logs":
         st.markdown("<div class='main-title'>🛠️ سجل العمليات التفصيلي وأرشيف فواتير النظام</div>", unsafe_allow_html=True)
