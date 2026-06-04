@@ -6909,200 +6909,151 @@ tbody tr:hover td{{color:#1dda70!important;}}
     # صفحة: تقديم طلب إلغاء فاتورة (موجه البلاغات)
     # ---------------------------------------------------------
     elif st.session_state.page == "cancel_invoice_user":
-        st.markdown("<div class='main-title'>🚫 تقديم طلب إلغاء فاتورة</div>", unsafe_allow_html=True)
-        st.info("ℹ️ يمكنك هنا تقديم طلب إلغاء فاتورة صرف. سيتم مراجعة الطلب من قِبل مسؤول المستودع أو مدير النظام، وعند الاعتماد ستُرجع المواد للمستودع المحدد.")
+        if role not in ("موجه بلاغات","مدير نظام","مسؤول المستودعات"):
+            st.error("❌ غير مصرح."); st.stop()
+        page_header("🚫","طلب إلغاء فاتورة","تقديم طلب إلغاء فاتورة صرف — يحتاج اعتماد المشرف","#c62828")
 
-        tab_new_cancel, tab_my_cancel = st.tabs(["➕ طلب إلغاء جديد", "📋 طلباتي السابقة"])
+        # ── إشعار النجاح ──
+        if st.session_state.get('ci_success_msg'):
+            _msg=st.session_state.pop('ci_success_msg')
+            st.markdown(f"""<div style='background:rgba(0,60,20,0.65);border:2px solid #1daa60;border-radius:14px;
+                padding:20px;text-align:center;direction:rtl;margin-bottom:16px;'>
+                <div style='font-size:22px;font-weight:900;color:#1dda70;'>{_msg}</div>
+                <div style='font-size:14px;color:#8aaac8;margin-top:8px;'>⏳ بانتظار اعتماد مسؤول المستودعات أو مدير النظام — لن تُرجع المواد إلا بعد الاعتماد</div>
+                </div>""",unsafe_allow_html=True)
 
-        with tab_new_cancel:
-            cancel_inv_no_input = st.text_input("رقم الفاتورة المراد إلغاؤها *", key="cancel_no_input", placeholder="مثال: G1 أو T3 ...").strip()
+        _ci_tabs=st.tabs(["🚫 تقديم طلب إلغاء","📋 طلباتي السابقة"])
 
-            if st.button("🔍 بحث عن الفاتورة", key="cancel_search_btn"):
-                if not cancel_inv_no_input:
-                    st.error("❌ يرجى إدخال رقم الفاتورة!")
-                else:
-                    _cin = cancel_inv_no_input.replace("'","''")
-                    _cemp = u['full_name'].replace("'","''")
-                    df_ci = pd.read_sql(
-                        f"SELECT * FROM archived_invoices WHERE invoice_no='{_cin}' AND employee='{_cemp}'", pconn)
-                    if df_ci.empty:
-                        _ci_other = pd.read_sql(
-                            f"SELECT employee FROM archived_invoices WHERE invoice_no='{_cin}'", pconn)
-                        if not _ci_other.empty:
-                            st.error("❌ لا يمكنك إلغاء هذه الفاتورة — تم إنشاؤها بواسطة موظف آخر.")
-                        else:
-                            st.error(f"❌ لم يتم العثور على فاتورة برقم ({cancel_inv_no_input}).")
-                        st.session_state['cancel_inv_data'] = None
+        with _ci_tabs[0]:
+            # ── بحث عن الفاتورة ──
+            if not st.session_state.get('ci_inv_data'):
+                section_card("🔍 ابحث عن الفاتورة المراد إلغاؤها","#c62828")
+                _ci_no=st.text_input("رقم الفاتورة:",key="ci_inv_no_input",placeholder="G1, G2...").strip()
+                if st.button("🔍 بحث",key="ci_search_btn",type="primary"):
+                    if not _ci_no:
+                        st.error("❌ أدخل رقم الفاتورة.")
                     else:
-                        st.session_state['cancel_inv_data'] = df_ci.iloc[0].to_dict()
-                        st.session_state['cancel_inv_confirm'] = False
-
-            if st.session_state.get('cancel_inv_data'):
-                ci_row = st.session_state['cancel_inv_data']
-                st.success(f"✅ تم العثور على الفاتورة | المستودع: {ci_row.get('warehouse_from','')} | المقاول: {ci_row.get('contractor','')} | التاريخ: {ci_row.get('timestamp','')}")
-
-                # ── معاينة الفاتورة ──
-                if st.button("👁️ معاينة الفاتورة", key="cancel_preview_btn"):
-                    st.session_state['cancel_show_preview'] = not st.session_state.get('cancel_show_preview', False)
-                if st.session_state.get('cancel_show_preview', False):
-                    try:
-                        import sqlite3 as _sq3p
-                        _pc2 = _sq3p.connect(DB_NAME, check_same_thread=False, timeout=30)
-                        _ch_row = _pc2.execute(f"SELECT html_content FROM archived_invoices WHERE id={int(ci_row['id'])}").fetchone()
-                        _pc2.close()
-                        if _ch_row and _ch_row[0]:
-                            _ch_str = str(_ch_row[0]).replace('background:rgba(3,10,28,0.82)','background:white').replace('background:rgba(3,10,28,0.88)','background:white')
-                            components.html(_ch_str, height=900, scrolling=True)
-                    except: pass
-
-                st.markdown("---")
-
-                # ── بيانات الإلغاء ──
-                st.markdown("##### 📝 بيانات طلب الإلغاء:")
-                ci_col1, ci_col2 = st.columns([1, 1])
-                # المستودع الذي ستُرجع إليه المواد
-                _wh_opts_ci = list_warehouses
-                _ci_wh_default = ci_row.get('warehouse_from', '')
-                _ci_wh_idx = _wh_opts_ci.index(_ci_wh_default) if _ci_wh_default in _wh_opts_ci else 0
-                cancel_wh_return = ci_col1.selectbox(
-                    "📍 المستودع الذي ستُرجع إليه المواد *",
-                    _wh_opts_ci, index=_ci_wh_idx, key="cancel_wh_return"
-                )
-                # المقاول المسلّم للمادة
-                _con_opts_ci = list_contractors
-                _ci_con_default = ci_row.get('contractor', '')
-                _ci_con_idx = _con_opts_ci.index(_ci_con_default) if _ci_con_default in _con_opts_ci else 0
-                cancel_contractor = ci_col2.selectbox(
-                    "🏗️ المقاول المسلّم للمادة *",
-                    _con_opts_ci, index=_ci_con_idx, key="cancel_contractor_sel"
-                )
-                # سبب الإلغاء الإجباري
-                cancel_reason = st.text_area(
-                    "📝 سبب الإلغاء * (إجباري)",
-                    placeholder="يرجى كتابة سبب إلغاء الفاتورة بوضوح...",
-                    key="cancel_reason_txt",
-                    height=80
-                )
-                # BOQ الحالة الإجبارية
-                cancel_boq = st.text_input(
-                    "📋 BOQ الحالة * (إجباري)",
-                    placeholder="أدخل رقم أو وصف BOQ الحالة...",
-                    key="cancel_boq_txt"
-                ).strip()
-
-                if not st.session_state.get('cancel_inv_confirm'):
-                    st.markdown("<div class='btn-danger'>", unsafe_allow_html=True)
-                    if st.button("🚫 تقديم طلب الإلغاء", key="submit_cancel_req"):
-                        if not cancel_reason.strip():
-                            st.error("❌ يرجى كتابة سبب الإلغاء — هذا الحقل إجباري!")
-                        elif not st.session_state.get('cancel_boq_txt', '').strip():
-                            st.error("❌ يرجى إدخال BOQ الحالة — هذا الحقل إجباري!")
+                        import sqlite3 as _sq3s
+                        _pcs=_sq3s.connect(DB_NAME,check_same_thread=False,timeout=30)
+                        _pcs.row_factory=_sq3s.Row
+                        _ci_row=_pcs.execute(f"SELECT * FROM archived_invoices WHERE invoice_no=\'{_ci_no.replace(chr(39),chr(39)*2)}\'").fetchone()
+                        _pcs.close()
+                        if not _ci_row:
+                            st.error(f"❌ لم يتم العثور على فاتورة برقم ({_ci_no}).")
+                        elif role=="موجه بلاغات" and str(_ci_row['employee'])!=u['full_name']:
+                            st.error("❌ لا يمكنك إلغاء فاتورة أنشأها موظف آخر.")
                         else:
-                            st.session_state['cancel_inv_confirm'] = True
+                            st.session_state['ci_inv_data']=dict(_ci_row)
+                            st.session_state['ci_confirm']=False
                             st.rerun()
-                    st.markdown("</div>", unsafe_allow_html=True)
-                else:
-                    ci_items = json.loads(ci_row.get('items_json', '[]'))
-                    items_summary = "، ".join([f"{i.get('name','?')} ({i.get('qty',0)})" for i in ci_items])
-                    _cr_text = st.session_state.get('cancel_reason_txt', cancel_reason)
-                    _cr_wh   = st.session_state.get('cancel_wh_return', cancel_wh_return)
-                    _cr_con  = st.session_state.get('cancel_contractor_sel', cancel_contractor)
-                    st.markdown(f"""<div class='warn-box'>⚠️ <b>هل أنت متأكد أنك تريد إلغاء الفاتورة؟</b><br>
-                    سيتم ارجاع المواد المصروفة إلى مستودع <b>{_cr_wh}</b> بعد الاعتماد كما هو في خانة الارجاع.<br>
-                    المواد: {items_summary}<br>
-                    <b>سبب الإلغاء:</b> {_cr_text}<br>
-                    <b>المقاول:</b> {_cr_con}
-                    </div>""", unsafe_allow_html=True)
-                    col_cy, col_cn_cancel = st.columns([1, 1])
-                    _cy_pressed = col_cy.button("✅ نعم، تأكيد وإرسال الطلب", key="confirm_cancel_yes", type="primary")
-                    _cn_pressed = col_cn_cancel.button("🔙 الرجوع للبداية", key="confirm_cancel_no")
-                    if _cy_pressed:
-                        try:
-                            ts_c = now_mecca().strftime("%Y-%m-%d %H:%M:%S")
-                            req_no_c = "CR" + now_mecca().strftime("%d%H%M%S")
-                            import sqlite3 as _sq3ins
-                            _pc_ins = _sq3ins.connect(DB_NAME, check_same_thread=False, timeout=30)
-                            # جلب HTML
-                            _ci_html_row2 = _pc_ins.execute(f"SELECT html_content FROM archived_invoices WHERE id={int(ci_row['id'])}").fetchone()
-                            _ci_html_content = _ci_html_row2[0] if _ci_html_row2 else ""
-                            _inv_type_lbl = {"صرف":"الصرف","ارجاع":"الإرجاع","نقل":"النقل"}.get(str(ci_row.get('invoice_type','')),'')
-                            _pc_ins.execute("""INSERT INTO cancel_invoice_requests
-                                             (request_no, invoice_no, invoice_type, warehouse_return, contractor, items_json,
-                                              cancel_reason, boq, requester, status, invoice_html, timestamp)
-                                             VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""",
-                                          (req_no_c, ci_row['invoice_no'], ci_row.get('invoice_type',''),
-                                           st.session_state.get('cancel_wh_return', ''),
-                                           st.session_state.get('cancel_contractor_sel', ''),
-                                           ci_row.get('items_json', '[]'),
-                                           st.session_state.get('cancel_reason_txt', ''),
-                                           st.session_state.get('cancel_boq_txt', ''),
-                                           u['full_name'], "معلق", _ci_html_content, ts_c))
-                            _pc_ins.commit()
-                            _pc_ins.close()
-                            save_log("طلب إلغاء فاتورة", "—", 0,
-                                     f"طلب إلغاء فاتورة [{ci_row['invoice_no']}]", u['full_name'])
-                            st.session_state['cancel_inv_data'] = None
-                            st.session_state['cancel_inv_confirm'] = False
-                            st.session_state['last_cancel_req_no'] = req_no_c
-                            st.session_state['last_cancel_inv_no'] = ci_row['invoice_no']
-                            st.session_state['last_cancel_inv_type'] = _inv_type_lbl
-                            st.rerun()
-                        except Exception as _ce:
-                            st.error(f"❌ خطأ في إرسال الطلب: {_ce}")
-                    if _cn_pressed:
-                        st.session_state['cancel_inv_confirm'] = False
-                        st.session_state['cancel_inv_data'] = None
-                        st.session_state.pop('cancel_show_preview', None)
-                        st.rerun()
+            else:
+                ci=st.session_state['ci_inv_data']
+                try: ci_items=json.loads(ci.get('items_json','[]'))
+                except: ci_items=[]
 
-            # ── إشعار نجاح بعد إرسال الطلب ──
-            if st.session_state.get('last_cancel_req_no') and not st.session_state.get('cancel_inv_data'):
-                _lc_inv  = st.session_state.get('last_cancel_inv_no','')
-                _lc_type = st.session_state.get('last_cancel_inv_type','')
-                st.markdown(f"""
-                <div style='background:rgba(0,60,20,0.65);border:2px solid #1daa60;border-radius:14px;
-                    padding:20px;text-align:center;direction:rtl;margin-top:16px;'>
-                    <div style='font-size:22px;font-weight:900;color:#1dda70;'>✅ تم تقديم طلب إلغاء فاتورة {_lc_type} رقم <b style='color:white;'>{_lc_inv}</b> بنجاح!</div>
-                    <div style='font-size:15px;color:#8aaac8;margin-top:8px;'>رقم الطلب: <b style='color:#4db8ff;'>{st.session_state['last_cancel_req_no']}</b></div>
-                    <div style='font-size:14px;color:#8aaac8;margin-top:4px;'>⏳ بانتظار اعتماد مدير النظام أو مسؤول المستودعات — لن تُرجع المواد إلا بعد الاعتماد</div>
-                </div>""", unsafe_allow_html=True)
-                if st.button("✖️ إغلاق", key="close_cancel_notif"):
-                    for k in ['last_cancel_req_no','last_cancel_inv_no','last_cancel_inv_type']: st.session_state.pop(k,None)
+                # ── عرض بيانات الفاتورة ──
+                st.markdown(f"""<div style='background:rgba(50,0,0,0.40);border:2px solid #c62828;border-radius:10px;
+                    padding:14px 18px;direction:rtl;margin-bottom:12px;color:#ddeeff;'>
+                    📄 <b style='color:#ff6666;font-size:16px;'>فاتورة {ci.get('invoice_type','')} — {ci['invoice_no']}</b><br>
+                    📍 {ci.get('warehouse_from','—')} | 🏗️ {ci.get('contractor','—')} | 👤 {ci.get('employee','—')}<br>
+                    📅 {str(ci.get('timestamp',''))[:16]}
+                    {"| 📋 BOQ: "+str(ci.get('boq','')) if ci.get('boq') else ""}
+                    </div>""",unsafe_allow_html=True)
+
+                # معاينة الفاتورة
+                if st.checkbox("👁️ معاينة الفاتورة",key="ci_prev_chk"):
+                    import sqlite3 as _sq3pv
+                    _pcpv=_sq3pv.connect(DB_NAME,check_same_thread=False,timeout=30)
+                    _hvrow=_pcpv.execute(f"SELECT html_content FROM archived_invoices WHERE id={int(ci['id'])}").fetchone()
+                    _pcpv.close()
+                    if _hvrow and _hvrow[0]:
+                        _hv=str(_hvrow[0]).replace('background:rgba(3,10,28,0.82)','background:white').replace('background:rgba(3,10,28,0.88)','background:white')
+                        if '<body' in _hv and 'background:#f0f4f8' not in _hv:
+                            _hv=_hv.replace('<body>','<body style="background:#f0f4f8;">').replace('<body ','<body style="background:#f0f4f8;" ')
+                        components.html(_hv,height=900,scrolling=True)
+
+                if st.button("✖️ بحث عن فاتورة أخرى",key="ci_clear_btn"):
+                    st.session_state.pop('ci_inv_data',None)
+                    st.session_state.pop('ci_confirm',None)
                     st.rerun()
 
-        with tab_my_cancel:
-            # مسح حالة نموذج الإلغاء لمنع ظهور widgets مكررة
-            for _k in ["cancel_reason_txt","cancel_boq_txt","cancel_wh_return","cancel_contractor_sel","cancel_inv_confirm","cancel_show_preview"]:
-                st.session_state.pop(_k, None)
-            st.markdown(f"<div style='direction:rtl;font-size:18px;font-weight:900;color:#4db8ff;margin-bottom:12px;'>📋 طلبات الإلغاء المقدمة من: {u['full_name']}</div>", unsafe_allow_html=True)
-            df_my_cancel = pd.read_sql(
-                "SELECT * FROM cancel_invoice_requests WHERE requester=? ORDER BY id DESC",
-                conn, params=(u['full_name'],))
-            if df_my_cancel.empty:
-                st.info("ℹ️ لم تقدم أي طلبات إلغاء فواتير حتى الآن.")
-            else:
-                for _, cr in df_my_cancel.iterrows():
-                    cr = cr.to_dict()
-                    sc = "#1daa60" if cr['status']=="معتمد" else ("#d32f2f" if cr['status']=="مرفوض" else "#f9a825")
-                    sc_bg = "rgba(0,50,20,0.45)" if cr['status']=="معتمد" else ("rgba(80,0,0,0.45)" if cr['status']=="مرفوض" else "rgba(80,50,0,0.45)")
-                    import html as _html_mod
-                    _reason_safe = _html_mod.escape(str(cr.get('cancel_reason','—')))
-                    st.markdown(
-                        f"<div style='background:rgba(3,10,28,0.80);border:1px solid rgba(0,140,255,0.20);"
-                        f"border-radius:10px;padding:12px 16px;direction:rtl;margin:6px 0;'>"
-                        f"<div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;'>"
-                        f"<span style='font-size:16px;font-weight:900;color:#ddeeff;'>🚫 طلب إلغاء رقم <span style='color:#ff6666;'>{cr['request_no']}</span></span>"
-                        f"<span style='background:{sc_bg};color:{sc};border:1px solid {sc};border-radius:20px;padding:2px 12px;font-size:14px;font-weight:700;'>{cr['status']}</span>"
-                        f"</div>"
-                        f"<div style='font-size:15px;color:#c8dff4;line-height:1.8;'>"
-                        f"📄 رقم الفاتورة: <b style='color:#7aaac8;'>{cr['invoice_no']}</b> ({cr.get('invoice_type','')}) | "
-                        f"📍 {cr.get('warehouse_return','—')} | 🏗️ {cr.get('contractor','—')}<br>"
-                        f"📅 {str(cr.get('timestamp',''))[:16]} | <b>السبب:</b> <span style='color:#ffaa66;'>{_reason_safe}</span>"
-                        + (f"<br>✅ اعتمده: <b>{_html_mod.escape(str(cr['approved_by']))}</b>" if cr.get('approved_by') else "")
-                        + "</div></div>",
-                        unsafe_allow_html=True)
+                if not st.session_state.get('ci_confirm'):
+                    st.divider()
+                    section_card("📝 بيانات طلب الإلغاء","#c62828")
+                    _wh_opts=[w for w in list_warehouses] if list_warehouses else ["—"]
+                    _ci_wh=st.selectbox("📍 المستودع الذي ستُرجع إليه المواد:",_wh_opts,key="ci_wh_ret")
+                    _ci_reason=st.text_area("📝 سبب الإلغاء *:",key="ci_reason_txt",height=80,placeholder="اكتب سبب الإلغاء بوضوح...")
+                    _ci_boq=st.text_input("📋 رقم BOQ الحالة *:",key="ci_boq_txt",placeholder="BOQ-2026-001")
 
-    # ---------------------------------------------------------
+                    if st.button("🚫 تقديم طلب الإلغاء",key="ci_submit_btn",type="primary",use_container_width=True):
+                        if not _ci_reason.strip():
+                            st.error("❌ سبب الإلغاء إجباري.")
+                        elif not _ci_boq.strip():
+                            st.error("❌ رقم BOQ إجباري.")
+                        else:
+                            st.session_state['ci_confirm']=True
+                            st.session_state['ci_wh_saved']=_ci_wh
+                            st.session_state['ci_reason_saved']=_ci_reason
+                            st.session_state['ci_boq_saved']=_ci_boq
+                            st.rerun()
+                else:
+                    # ── شاشة التأكيد ──
+                    _wh_s=st.session_state.get('ci_wh_saved','')
+                    _rs_s=st.session_state.get('ci_reason_saved','')
+                    _bq_s=st.session_state.get('ci_boq_saved','')
+                    _its_txt="، ".join([f"{i.get('name','?')} ({i.get('qty',0)})" for i in ci_items])
+                    _inv_type_ar={"صرف":"الصرف","ارجاع":"الإرجاع","نقل":"النقل"}.get(ci.get('invoice_type',''),'')
+                    st.markdown(f"""<div style='background:rgba(80,0,0,0.45);border:2px solid #c62828;border-radius:12px;
+                        padding:16px 20px;direction:rtl;margin-bottom:12px;color:#ddeeff;'>
+                        ⚠️ <b style='color:#ff6666;font-size:16px;'>تأكيد طلب إلغاء فاتورة {_inv_type_ar} رقم {ci['invoice_no']}</b><br><br>
+                        📦 <b>المواد:</b> {_its_txt}<br>
+                        📍 <b>مستودع الإرجاع:</b> {_wh_s}<br>
+                        📝 <b>السبب:</b> {_rs_s}<br>
+                        📋 <b>BOQ:</b> {_bq_s}<br><br>
+                        <span style='color:#ffaa66;font-size:14px;'>⚠️ لن تُرجع المواد إلا بعد اعتماد المشرف</span>
+                        </div>""",unsafe_allow_html=True)
+
+                    _cb1,_cb2=st.columns(2)
+                    if _cb1.button("✅ نعم، إرسال الطلب",key="ci_confirm_yes",type="primary",use_container_width=True):
+                        try:
+                            import sqlite3 as _sq3ins2
+                            _pci=_sq3ins2.connect(DB_NAME,check_same_thread=False,timeout=30)
+                            _ts2=now_mecca().strftime("%Y-%m-%d %H:%M:%S")
+                            _rn2="CR"+now_mecca().strftime("%d%H%M%S")
+                            _hrow=_pci.execute(f"SELECT html_content FROM archived_invoices WHERE id={int(ci['id'])}").fetchone()
+                            _html2=_hrow[0] if _hrow else ""
+                            _pci.execute(
+                                "INSERT INTO cancel_invoice_requests (request_no,invoice_no,invoice_type,warehouse_return,contractor,items_json,cancel_reason,boq,requester,status,invoice_html,timestamp) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+                                (_rn2,ci['invoice_no'],ci.get('invoice_type',''),_wh_s,ci.get('contractor',''),
+                                 ci.get('items_json','[]'),_rs_s,_bq_s,u['full_name'],"معلق",_html2,_ts2))
+                            _pci.commit()
+                            _pci.close()
+                            save_log("طلب إلغاء فاتورة","—",0,f"طلب إلغاء [{ci['invoice_no']}]",u['full_name'])
+                            _lbl=f"✅ تم تقديم طلب إلغاء فاتورة {_inv_type_ar} رقم **{ci['invoice_no']}** بنجاح!"
+                            st.session_state['ci_success_msg']=_lbl
+                            for k in ['ci_inv_data','ci_confirm','ci_wh_saved','ci_reason_saved','ci_boq_saved']:
+                                st.session_state.pop(k,None)
+                            st.rerun()
+                        except Exception as _ce2:
+                            st.error(f"❌ خطأ: {_ce2}")
+                    if _cb2.button("🔙 الرجوع للتعديل",key="ci_back_btn",use_container_width=True):
+                        st.session_state['ci_confirm']=False; st.rerun()
+
+        with _ci_tabs[1]:
+            st.markdown(f"<div style='direction:rtl;color:#4db8ff;font-weight:900;font-size:16px;margin-bottom:10px;'>📋 طلبات الإلغاء المقدمة من: {u['full_name']}</div>",unsafe_allow_html=True)
+            import sqlite3 as _sq3my
+            _pcmy=_sq3my.connect(DB_NAME,check_same_thread=False,timeout=30)
+            _pcmy.row_factory=_sq3my.Row
+            _my_rows=_pcmy.execute(f"SELECT * FROM cancel_invoice_requests WHERE requester=\'{u['full_name'].replace(chr(39),chr(39)*2)}\' ORDER BY id DESC").fetchall()
+            _pcmy.close()
+            if not _my_rows:
+                st.info("لا توجد طلبات إلغاء مقدمة منك.")
+            else:
+                for _mr in _my_rows:
+                    _mr=dict(_mr)
+                    _sc={"معتمد":"#1daa60","مرفوض":"#d32f2f","معلق":"#f9a825"}.get(_mr.get('status',''),"#9e9e9e")
+                    st.markdown(f"<div style='background:rgba(3,10,28,0.78);border:1px solid rgba(0,140,255,0.15);border-radius:8px;padding:10px 14px;direction:rtl;margin:4px 0;'>🚫 <b style='color:#ff6666;'>{_mr['request_no']}</b> | فاتورة {_mr['invoice_no']} | 📍 {_mr.get('warehouse_return','—')} | <span style='color:{_sc};font-weight:700;'>{_mr.get('status','')}</span> | 📅 {str(_mr.get('timestamp',''))[:16]}</div>",unsafe_allow_html=True)
+
     # صفحة: اعتماد طلبات إلغاء الفواتير (مسؤول مستودع / مدير نظام)
     # ---------------------------------------------------------
     elif st.session_state.page == "cancel_invoice_admin":
