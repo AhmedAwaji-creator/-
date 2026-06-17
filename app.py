@@ -2,6 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
+<meta name="version" content="v3.1-clean-2026-06-11">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>نظام إدارة مستودعات الطوارئ — السعودية للطاقة</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -67,19 +68,19 @@ body{background:var(--bg);color:var(--t1);font-family:'Cairo',sans-serif;min-hei
 .ldr-pct{font-size:12px;color:var(--t3);font-family:'JetBrains Mono',monospace}
 
 /* ═══ SHELL ═══ */
-#shell{display:none;height:100vh;overflow:hidden}
-#shell.show{display:flex;flex-direction:row;height:100vh;overflow:hidden}
+#shell{display:none;height:100vh}
+#shell.show{display:flex;flex-direction:row;height:100vh}
 
 /* ═══ SIDEBAR ═══ */
-.sidebar{width:290px;background:rgba(5,10,22,.97);backdrop-filter:blur(24px);border-left:1px solid rgba(0,180,80,.15);display:flex;flex-direction:column;position:fixed;right:0;top:0;bottom:0;z-index:200;overflow:hidden}
-.s-logo{padding:10px 12px;border-bottom:1px solid var(--b1)}
+.sidebar{width:290px;min-width:290px;background:rgba(5,10,22,.97);backdrop-filter:blur(24px);border-left:1px solid rgba(0,180,80,.15);display:flex;flex-direction:column;height:100vh;overflow:hidden;flex-shrink:0;align-self:stretch}
+.s-logo{padding:10px 12px;border-bottom:1px solid var(--b1);flex-shrink:0}
 .logo-card{display:flex;align-items:center;gap:12px;padding:10px 12px;background:linear-gradient(135deg,rgba(0,108,53,.18),rgba(0,146,69,.1));border:1px solid rgba(0,180,80,.25);border-radius:14px;cursor:pointer;transition:all .2s}
 .logo-card:hover{border-color:rgba(0,180,80,.45);background:linear-gradient(135deg,rgba(0,108,53,.25),rgba(0,146,69,.15))}
 .logo-emblem{width:64px;height:64px;flex-shrink:0;border-radius:12px;overflow:hidden;background:rgba(0,212,255,.07);border:1px solid rgba(0,212,255,.2)}
 .logo-org{font-size:8.5px;color:var(--gs2);font-weight:700;letter-spacing:1.5px;text-transform:uppercase}
 .logo-sys{font-size:13.5px;font-weight:800;color:var(--t1);line-height:1.3;margin-top:2px}
 .logo-dept{font-size:10.5px;color:var(--t2);margin-top:3px;font-weight:500}
-.s-nav{flex:1;overflow-y:auto;padding:4px 0;scrollbar-width:none}
+.s-nav{flex:1;overflow-y:auto;padding:4px 0;scrollbar-width:none;overscroll-behavior:contain;min-height:0}
 .s-sec{padding:6px 18px 2px;font-size:8.5px;color:var(--t3);font-weight:700;letter-spacing:2px;text-transform:uppercase}
 .s-item{display:flex;align-items:center;gap:10px;padding:7px 12px;margin:1px 6px;border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;color:var(--t2);transition:all .16s;position:relative;border:1px solid transparent;white-space:nowrap}
 .s-item:hover{background:rgba(0,212,255,.06);color:var(--t1);border-color:var(--b1)}
@@ -89,7 +90,7 @@ body{background:var(--bg);color:var(--t1);font-family:'Cairo',sans-serif;min-hei
 .s-badge{position:absolute;left:8px;top:50%;transform:translateY(-50%);background:var(--r1);color:#fff;font-size:8.5px;font-weight:800;min-width:17px;height:17px;padding:0 4px;border-radius:9px;display:flex;align-items:center;justify-content:center;border:1.5px solid var(--bg);animation:badgep 2s ease-in-out infinite}
 @keyframes badgep{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.5)}50%{box-shadow:0 0 0 4px rgba(239,68,68,0)}}
 .s-div{height:1px;background:linear-gradient(90deg,transparent,var(--b2),transparent);margin:2px 10px}
-.s-foot{padding:0;border-top:1px solid var(--b1);flex-shrink:0}
+.s-foot{padding:0;border-top:1px solid var(--b1);flex-shrink:0;background:rgba(5,10,22,.97)}
 .ucard{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card2);border:1px solid var(--b1);border-radius:10px;cursor:pointer;transition:all .2s}
 .ucard:hover{border-color:var(--b2)}
 .uav{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0}
@@ -99,7 +100,7 @@ body{background:var(--bg);color:var(--t1);font-family:'Cairo',sans-serif;min-hei
 @keyframes ulive{0%,100%{opacity:1}50%{opacity:.3}}
 
 /* ═══ MAIN ═══ */
-.main{margin-right:290px;flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.main{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0;overflow:hidden}
 .topbar{padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;background:rgba(6,13,30,.92);backdrop-filter:blur(24px);border-bottom:1px solid var(--b1);position:sticky;top:0;z-index:100}
 .tb-l{display:flex;align-items:center;gap:10px}
 .tb-title{font-size:14.5px;font-weight:700;color:var(--t1)}
@@ -114,7 +115,9 @@ body{background:var(--bg);color:var(--t1);font-family:'Cairo',sans-serif;min-hei
 .ldot{width:6px;height:6px;border-radius:50%;background:var(--g1);animation:ldot 1.5s ease infinite}
 @keyframes ldot{0%,100%{opacity:1}50%{opacity:.3}}
 
-.content{padding:22px 24px;flex:1;overflow-y:auto;overflow-x:hidden}
+.content{padding:22px 24px;flex:1;overflow-y:auto;overflow-x:hidden;min-height:0}
+  .main{position:relative}
+
 .page-in{animation:pgin .3s ease}
 @keyframes pgin{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 
@@ -354,9 +357,10 @@ textarea.form-input{resize:vertical;min-height:80px}
 /* Modal */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);z-index:800;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .28s}
 .overlay.show{opacity:1;pointer-events:all}
-.modal{background:var(--card2);border:1px solid var(--b2);border-radius:18px;padding:26px;width:90%;max-width:520px;transform:scale(.9) translateY(20px);transition:all .28s;box-shadow:0 20px 60px rgba(0,0,0,.7);max-height:90vh;overflow-y:auto}
+.modal{background:var(--card2);border:1px solid var(--b2);border-radius:18px;padding:0;width:92%;max-width:520px;transform:scale(.9) translateY(20px);transition:all .28s;box-shadow:0 20px 60px rgba(0,0,0,.7);max-height:88vh;overflow:hidden;display:flex;flex-direction:column}
 .overlay.show .modal{transform:none}
-.modal-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.modal-hd{display:flex;align-items:center;justify-content:space-between;padding:18px 22px 14px;flex-shrink:0;border-bottom:1px solid var(--b1)}
+.modal-body-scroll{overflow-y:auto;flex:1;padding:16px 22px}
 .modal-title{font-size:15px;font-weight:700;display:flex;align-items:center;gap:9px;color:var(--t1)}
 .modal-close{width:30px;height:30px;border-radius:7px;background:transparent;border:1px solid var(--b1);cursor:pointer;color:var(--t2);font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .14s;font-family:monospace}
 .modal-close:hover{background:var(--b1);color:var(--t1)}
@@ -433,14 +437,6 @@ textarea.form-input{resize:vertical;min-height:80px}
 .alert-safe{background:rgba(16,185,129,.1);color:#34d399;border:1px solid rgba(16,185,129,.2)}
 @keyframes pulse-r{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.4)}50%{box-shadow:0 0 0 5px rgba(239,68,68,0)}}
 
-/* ═══ QUICK FEED BUTTON ═══ */
-.quick-feed-btn{position:fixed;left:24px;bottom:24px;z-index:300;width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,var(--gs),var(--gs2));border:none;cursor:pointer;display:none;align-items:center;justify-content:center;box-shadow:0 8px 28px rgba(0,108,53,.5);transition:all .22s;flex-direction:column;gap:2px}
-.quick-feed-btn:hover{transform:translateY(-3px) scale(1.05);box-shadow:0 14px 36px rgba(0,108,53,.6)}
-.quick-feed-btn:active{transform:scale(.95)}
-#shell.show .quick-feed-btn{display:flex}
-.qfb-ico{font-size:20px;color:#fff}
-.qfb-lbl{font-size:8px;color:rgba(255,255,255,.8);font-weight:600;letter-spacing:.5px}
-.qfb-pulse{position:absolute;inset:-4px;border-radius:20px;border:2px solid rgba(0,146,69,.4);animation:qfp 2s ease infinite}
 @keyframes qfp{0%{transform:scale(1);opacity:.8}100%{transform:scale(1.25);opacity:0}}
 
 /* ═══ WAREHOUSE PAGE ═══ */
@@ -466,13 +462,53 @@ textarea.form-input{resize:vertical;min-height:80px}
 .contr-name{font-size:13.5px;font-weight:700;color:var(--t1)}
 .contr-type{font-size:11px;color:var(--a1);margin-top:2px}
 .contr-tel{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--t2);margin-top:7px;display:flex;align-items:center;gap:5px}@media print{
-  body>*{display:none!important}
-  #print-overlay{display:block!important;position:static!important;background:none!important;padding:0!important;margin:0!important;overflow:visible!important;width:100vw!important}
-  #print-overlay>div:first-child{display:none!important}
-  #print-overlay>div:last-child{width:100%!important;max-width:100%!important;box-shadow:none!important;border-radius:0!important;padding:0!important;overflow:visible!important}
   @page{margin:0;size:A4 portrait}
-  html,body{margin:0!important;padding:0!important}
+  html,body{margin:0!important;padding:0!important;background:#fff!important}
+  body>*:not(#print-overlay){display:none!important}
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important}
+  #print-overlay{display:block!important;position:static!important;background:#fff!important;padding:0!important;margin:0!important;overflow:visible!important;width:100%!important}
+  #print-overlay>div:first-child{display:none!important}
+  #print-overlay>div:last-child{box-shadow:none!important;border-radius:0!important;width:100%!important;margin:0 auto!important}
 }
+
+/* ═══ mywork scroll button ═══ */
+/* ═══ mywork redesign ═══ */
+.mw-nav-btn:hover{color:var(--t1)}
+.mw-nav-btn.active{background:var(--card);color:var(--t1);box-shadow:0 1px 8px rgba(0,0,0,.25);font-weight:800}
+.mw-req-type-btn:hover{border-color:var(--b2);color:var(--t1);transform:translateY(-1px)}
+.mw-req-type-btn.active{background:var(--card);border-color:var(--a1);color:var(--t1);box-shadow:0 0 0 1px var(--a1)}
+/* بطاقة الفاتورة الجديدة */
+.mw-inv-card{background:var(--card);border:1px solid var(--b1);border-radius:12px;padding:12px 16px;cursor:pointer;transition:all .18s;position:relative;overflow:hidden}
+.mw-inv-card::before{content:'';position:absolute;right:0;top:0;bottom:0;width:3px;border-radius:0 3px 3px 0}
+.mw-inv-card.pend::before{background:var(--y1)}
+.mw-inv-card.appr::before{background:var(--g1)}
+.mw-inv-card:hover{border-color:var(--b2);transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,0,0,.12)}
+.mw-req-card{background:var(--card);border:1px solid var(--b1);border-radius:12px;padding:12px 16px;transition:all .18s;border-right:3px solid var(--o1)}
+/* الطلبات */
+@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+/* ═══ اعتماد الطلبات ═══ */
+.appr-type-btn{padding:7px 14px;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid var(--b1);color:var(--t2);background:rgba(255,255,255,.04);font-family:'Cairo',sans-serif;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.appr-type-btn:hover{border-color:var(--b2);color:var(--t1)}
+.appr-type-btn.active{background:rgba(0,212,255,.1);border-color:rgba(0,212,255,.4);color:var(--a1);font-weight:800}
+/* ═══ mywork tabs ═══ */
+.mw-tab{padding:8px 18px;border-radius:10px;font-size:12.5px;font-weight:700;cursor:pointer;border:1px solid var(--b1);color:var(--t2);background:rgba(255,255,255,.04);font-family:'Cairo',sans-serif;transition:all .15s;display:inline-flex;align-items:center;gap:7px}
+.mw-tab:hover{border-color:var(--b2);color:var(--t1)}
+.mw-tab.active{background:rgba(0,212,255,.1);border-color:rgba(0,212,255,.4);color:var(--a1);font-weight:800}
+.mw-new-tab{padding:9px 16px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid var(--b1);color:var(--t2);background:rgba(255,255,255,.04);font-family:'Cairo',sans-serif;transition:all .15s;display:inline-flex;align-items:center;gap:7px}
+.mw-new-tab:hover{border-color:var(--b2);color:var(--t1)}
+.mw-new-tab.active{background:rgba(16,185,129,.1);border-color:rgba(16,185,129,.4);color:var(--g1);font-weight:800}
+.mw-arc-tab{padding:7px 14px;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid var(--b1);color:var(--t2);background:rgba(255,255,255,.04);font-family:'Cairo',sans-serif;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.mw-arc-tab:hover{border-color:var(--b2);color:var(--t1)}
+.mw-arc-tab.active{background:rgba(16,185,129,.1);border-color:rgba(16,185,129,.4);color:var(--g1)}
+.mw-badge{font-size:10px;font-weight:800;border-radius:20px;padding:1px 8px;color:#fff;display:none}
+.mw-inv-card{background:var(--card);border:1px solid var(--b1);border-radius:12px;padding:13px 16px;margin-bottom:9px;cursor:pointer;transition:all .18s}
+.mw-inv-card:hover{border-color:var(--b2);transform:translateY(-1px)}
+.mw-req-card{background:var(--card);border:1px solid var(--b1);border-radius:12px;padding:12px 16px;margin-bottom:9px}
+/* ═══ فئات ═══ */
+.cat-icon-opt{width:36px;height:36px;border-radius:8px;background:var(--bg2);border:2px solid var(--b1);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;margin:3px;transition:.15s}
+.cat-icon-opt:hover,.cat-icon-opt.sel{border-color:var(--a1);background:rgba(0,212,255,.1)}
+.cat-color-opt{width:28px;height:28px;border-radius:50%;cursor:pointer;margin:3px;display:inline-block;border:2px solid transparent;transition:.15s}
+.cat-color-opt.sel{border-color:var(--t1);transform:scale(1.25)}
 </style>
 </head>
 <body>
@@ -497,7 +533,7 @@ textarea.form-input{resize:vertical;min-height:80px}
     <div class="lfield">
       <div class="llabel"><i class="fa fa-mobile-screen" style="color:var(--a1)"></i>رقم الجوال</div>
       <input class="linput" id="lphone" type="tel" placeholder="05XXXXXXXX" maxlength="10"
-        oninput="this.value=this.value.replace(/\D/g,'')" onkeydown="if(event.key==='Enter')document.getElementById('lpass').focus()">
+        oninput="this.value=toEnDigits(this.value).replace(/\D/g,'')" onkeydown="if(event.key==='Enter')document.getElementById('lpass').focus()">
       <div class="lerr" id="lerr-p"><i class="fa fa-circle-xmark"></i><span id="lerr-p-msg"></span></div>
     </div>
     <div class="lfield">
@@ -560,20 +596,17 @@ textarea.form-input{resize:vertical;min-height:80px}
     <div class="s-item" data-p="transfer" data-roles="admin,ameen"><i class="fa fa-right-left"></i>نقل بين المستودعات</div>
     <div class="s-div" id="snav-div-inv"></div>
     <div class="s-sec" id="snav-sec-inv">الفواتير</div>
-    <div class="s-item" data-p="myinv" data-roles="moj,wardia"><i class="fa fa-file-circle-check"></i>فواتيري</div>
-    <div class="s-item" data-p="inv-edit-req" data-roles="moj,wardia"><i class="fa fa-file-pen" style="color:var(--y1)"></i>طلب تعديل فاتورة صرف</div>
-    <div class="s-item" data-p="invoices" data-roles="admin,ameen"><i class="fa fa-file-invoice"></i>أرشيف الفواتير</div>
-    <div class="s-item" data-p="edit" data-roles="admin,ameen"><i class="fa fa-file-pen"></i>تعديل فاتورة</div>
-    <div class="s-item" data-p="cancel" data-roles="admin,ameen"><i class="fa fa-file-circle-xmark"></i>إلغاء فاتورة</div>
+    <div class="s-item" data-p="mywork" data-roles="moj,wardia"><i class="fa fa-file-circle-check"></i>فواتيري وطلباتي</div>
+    <div class="s-item" data-p="invoices" data-roles="admin,ameen,moj,wardia"><i class="fa fa-file-invoice"></i>أرشيف الفواتير</div>
     <div class="s-item" data-p="boq" data-roles="admin,ameen"><i class="fa fa-clipboard-list"></i>قسم BOQ</div>
     <div class="s-div" id="snav-div-req"></div>
     <div class="s-sec" id="snav-sec-req">الطلبات</div>
-    <div class="s-item" data-p="requests" data-roles="all"><i class="fa fa-rotate-left"></i>طلبات الارجاع / الالغاء / النقل<span class="s-badge" id="badge-req">3</span></div>
-    <div class="s-item" data-p="approve" data-roles="admin,ameen"><i class="fa fa-signature"></i>اعتماد فواتير الصرف<span class="s-badge" id="badge-appr">2</span></div>
+    <!-- طلباتي مدمجة في فواتيري وطلباتي -->
+    <div class="s-item" data-p="approve" data-roles="admin,ameen"><i class="fa fa-signature" style="color:var(--y1)"></i>اعتماد الطلبات<span class="s-badge" id="badge-appr"></span></div>
     <div class="s-div" id="snav-div-entities"></div>
     <div class="s-sec" id="snav-sec-entities">الكيانات</div>
     <div class="s-item" data-p="warehouses-pg" data-roles="admin,ameen"><i class="fa fa-warehouse"></i>المستودعات</div>
-    <div class="s-item" data-p="contractors-pg" data-roles="admin,ameen"><i class="fa fa-hard-hat"></i>المقاولون</div>
+
     <div class="s-item" data-p="categories-pg" data-roles="admin,ameen"><i class="fa fa-layer-group"></i>الفئات والحدود</div>
     <div class="s-div" id="snav-div-sys"></div>
     <div class="s-sec" id="snav-sec-sys">النظام</div>
@@ -623,7 +656,7 @@ textarea.form-input{resize:vertical;min-height:80px}
       <span class="tb-sub" id="tb-sub">نظرة عامة</span>
     </div>
     <div class="tb-r">
-      <button onclick="toggleViewMode()" id="view-mode-btn" title="تبديل العرض" style="background:rgba(255,255,255,.06);border:1px solid var(--b1);color:var(--t2);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:13px"><i class="fa fa-desktop" id="view-mode-ico"></i></button>
+      
       <div style="display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.06);border:1px solid var(--b1);border-radius:8px;padding:4px 8px">
         <button onclick="changeBrightness(-5)" title="تخفيض السطوع" style="background:none;border:none;color:var(--t2);cursor:pointer;font-size:13px;padding:0 2px;line-height:1"><i class="fa fa-sun" style="font-size:10px"></i>−</button>
         <input type="range" id="brightness-slider" min="60" max="140" value="100" step="5"
@@ -631,16 +664,13 @@ textarea.form-input{resize:vertical;min-height:80px}
           oninput="applyBrightness(this.value)">
         <button onclick="changeBrightness(5)" title="رفع السطوع" style="background:none;border:none;color:var(--t2);cursor:pointer;font-size:13px;padding:0 2px;line-height:1"><i class="fa fa-sun"></i>+</button>
       </div>
-      <div class="live-pill"><div class="ldot"></div>مباشر</div>
       <div class="tb-btn" id="notif-btn" onclick="openNotifs()" title="الإشعارات">
         <i class="fa fa-bell"></i><div class="tb-dot" id="notif-dot"></div>
       </div>
-      <div class="tb-btn" onclick="openSearch()" title="بحث سريع Ctrl+K"><i class="fa fa-magnifying-glass"></i></div>
-      <div class="tb-btn" onclick="doSync()" title="مزامنة Supabase"><i class="fa fa-rotate" id="sync-ico"></i></div>
       <div class="tb-btn" onclick="toggleFullscreen()" title="ملء الشاشة"><i class="fa fa-expand" id="fs-ico"></i></div>
       <div class="tb-clock" id="clock">00:00:00</div>
       <!-- زر إيقاف الاشعارات مكان زر الخروج -->
-      <button id="notif-toggle-btn" onclick="toggleNotifications()" title="تبديل الاشعارات"
+      <button id="notif-toggle-btn" onclick="toggleNotifMute()" title="إيقاف/تفعيل الإشعارات"
         style="background:rgba(255,255,255,.06);border:1px solid var(--b1);color:var(--a1);border-radius:8px;width:34px;height:34px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s">
         <i class="fa fa-bell" id="notif-toggle-ico"></i>
       </button>
@@ -649,9 +679,254 @@ textarea.form-input{resize:vertical;min-height:80px}
 
   <!-- CONTENT -->
   <div class="content" id="content">
+    <div id="pg-mywork" style="display:none" class="page-in">
+      <div class="pg-hd">
+        <div>
+          <div class="pg-title"><i class="fa fa-file-circle-check" style="color:var(--a1)"></i>فواتيري وطلباتي</div>
+          <div class="pg-sub" id="mywork-sub">سجلك الشخصي الكامل</div>
+        </div>
+        <button class="btn btn-primary" onclick="go('cart')"><i class="fa fa-cart-shopping"></i>فاتورة صرف جديدة</button>
+      </div>
+
+      <!-- تبويبات -->
+      <div style="display:flex;gap:6px;margin-bottom:16px;border-bottom:1px solid var(--b1);padding-bottom:12px">
+        <button class="btn btn-sec" id="mw-tab-current" onclick="mwSetTab('current')" style="font-weight:800">
+          <i class="fa fa-clock" style="color:var(--y1)"></i>الحالية
+          <span class="s-badge" id="mw-cnt-current" style="position:relative;top:0;right:0;display:none;margin-right:4px;background:var(--y1);color:#000"></span>
+        </button>
+        <button class="btn btn-sec" id="mw-tab-new" onclick="mwSetTab('new')">
+          <i class="fa fa-plus-circle" style="color:var(--g1)"></i>طلب جديد
+        </button>
+      </div>
+
+      <!-- ═══ القسم: الحالية ═══ -->
+      <div id="mw-sec-current" style="display:block">
+        <!-- إحصائيات -->
+        <div id="mw-stats-row" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px"></div>
+
+        <!-- بانر الاعتماد -->
+        <div id="mw-action-banner" style="display:none;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);border-radius:10px;padding:10px 14px;margin-bottom:14px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <i class="fa fa-triangle-exclamation" style="color:var(--y1)"></i>
+            <div>
+              <div style="font-size:12px;font-weight:700;color:var(--y1)">فواتير بانتظار الاعتماد</div>
+              <div style="font-size:11px;color:var(--t3)">الكميات محجوزة ولن تُخصم إلا بعد موافقة المدير</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- فواتير معلقة -->
+        <div id="mw-pend-block" style="display:none;margin-bottom:14px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span style="width:8px;height:8px;border-radius:50%;background:var(--y1);display:inline-block"></span>
+            <span style="font-size:13px;font-weight:800;color:var(--t1)">فواتيري المعلقة</span>
+            <span id="mw-pend-cnt" style="background:rgba(245,158,11,.15);color:var(--y1);border-radius:20px;padding:1px 9px;font-size:11px;font-weight:800"></span>
+            <span style="font-size:11px;color:var(--t3)">بانتظار اعتماد المدير</span>
+          </div>
+          <div id="mw-pend-list"></div>
+        </div>
+
+        <!-- فواتير معتمدة -->
+        <div id="mw-appr-block" style="display:none;margin-bottom:14px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span style="width:8px;height:8px;border-radius:50%;background:var(--g1);display:inline-block"></span>
+            <span style="font-size:13px;font-weight:800;color:var(--t1)">فواتيري المعتمدة</span>
+            <span id="mw-appr-cnt" style="background:rgba(16,185,129,.15);color:var(--g1);border-radius:20px;padding:1px 9px;font-size:11px;font-weight:800"></span>
+          </div>
+          <div id="mw-appr-list"></div>
+        </div>
+
+        <!-- طلبات معلقة -->
+        <div id="mw-reqs-block" style="display:none;margin-bottom:14px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span style="width:8px;height:8px;border-radius:50%;background:var(--o1);display:inline-block"></span>
+            <span style="font-size:13px;font-weight:800;color:var(--t1)">طلباتي المعلقة</span>
+            <span id="mw-reqs-cnt" style="background:rgba(249,115,22,.15);color:var(--o1);border-radius:20px;padding:1px 9px;font-size:11px;font-weight:800"></span>
+            <span style="font-size:11px;color:var(--t3)">بانتظار اعتماد المدير</span>
+          </div>
+          <div id="mw-reqs-list"></div>
+        </div>
+
+        <!-- حالة فارغة -->
+        <div id="mw-empty" style="display:none;text-align:center;padding:48px 20px">
+          <i class="fa fa-inbox" style="font-size:40px;display:block;margin-bottom:12px;color:var(--a1);opacity:.3"></i>
+          <div style="font-size:15px;font-weight:700;color:var(--t2);margin-bottom:6px">لا توجد فواتير أو طلبات حالية</div>
+          <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:16px">
+            <button class="btn btn-primary" onclick="go('cart')"><i class="fa fa-cart-shopping"></i>فاتورة صرف</button>
+            <button class="btn btn-sec" onclick="mwSetTab('new')"><i class="fa fa-rotate-left"></i>رفع طلب</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ القسم: طلب جديد ═══ -->
+      <div id="mw-sec-new" style="display:none">
+        <!-- نوع الطلب -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px">
+          <button class="btn btn-sec" id="mw-new-ret" onclick="mwSetNewTab('ret')" style="flex-direction:column;padding:14px;height:auto">
+            <i class="fa fa-rotate-left" style="font-size:20px;color:var(--o1);margin-bottom:4px"></i>
+            <span style="font-size:12px;font-weight:700">طلب ارجاع</span>
+          </button>
+          <button class="btn btn-sec" id="mw-new-can" onclick="mwSetNewTab('can')" style="flex-direction:column;padding:14px;height:auto">
+            <i class="fa fa-ban" style="font-size:20px;color:var(--r1);margin-bottom:4px"></i>
+            <span style="font-size:12px;font-weight:700">طلب الغاء</span>
+          </button>
+          <button class="btn btn-sec" id="mw-new-edit" onclick="mwSetNewTab('edit')" style="flex-direction:column;padding:14px;height:auto">
+            <i class="fa fa-pen" style="font-size:20px;color:var(--y1);margin-bottom:4px"></i>
+            <span style="font-size:12px;font-weight:700">طلب تعديل</span>
+          </button>
+        </div>
+
+        <div style="background:rgba(0,212,255,.05);border:1px solid rgba(0,212,255,.2);border-radius:9px;padding:9px 14px;margin-bottom:14px;font-size:11.5px;color:var(--a1)">
+          <i class="fa fa-shield-halved"></i> جميع الطلبات تحتاج اعتماد المدير — لا تغيير في المخزون إلا بعد الموافقة
+        </div>
+
+        <!-- نموذج الارجاع -->
+        <div id="mw-form-ret">
+          <div class="card">
+            <div class="card-hd" style="margin-bottom:12px">
+              <div class="card-title"><i class="fa fa-rotate-left" style="color:var(--o1)"></i>طلب ارجاع مواد</div>
+            </div>
+            <div class="form-group" style="margin-bottom:12px">
+              <label class="form-label">رقم الفاتورة الأصلية <span style="color:var(--r1)">*</span></label>
+              <div style="display:flex;gap:8px">
+                <input class="form-input" id="mw-ret-no" placeholder="G100..." style="flex:1;font-family:monospace" oninput="mwFillRet()">
+                <button class="btn btn-sec btn-sm" onclick="mwFillRet()"><i class="fa fa-search"></i></button>
+              </div>
+              <div id="mw-ret-info" style="display:none;margin-top:8px;padding:8px;border-radius:8px;font-size:12px"></div>
+            </div>
+            <div class="form-row c2" style="margin-bottom:12px">
+              <div class="form-group">
+                <label class="form-label">المستودع المستلم <span style="color:var(--r1)">*</span></label>
+                <select class="form-select" id="mw-ret-wh"><option value="">-- اختر --</option></select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">المقاول <span style="color:var(--r1)">*</span></label>
+                <input class="form-input" id="mw-ret-cont" placeholder="اسم المقاول...">
+              </div>
+              <div class="form-group">
+                <label class="form-label">رقم BOQ <span style="color:var(--r1)">*</span></label>
+                <input class="form-input" id="mw-ret-boq" placeholder="BOQ-2026-..." style="font-family:monospace">
+              </div>
+              <div class="form-group">
+                <label class="form-label">سبب الارجاع</label>
+                <input class="form-input" id="mw-ret-reason" placeholder="اختياري...">
+              </div>
+            </div>
+            <div style="margin-bottom:10px">
+              <label class="form-label" style="margin-bottom:6px">المواد المراد ارجاعها</label>
+              <div id="mw-ret-items" style="margin-bottom:8px"></div>
+              <div style="background:var(--bg2);border:1px dashed var(--b2);border-radius:9px;padding:10px">
+                <div style="display:flex;gap:7px;align-items:flex-end;flex-wrap:wrap">
+                  <div style="flex:2;min-width:120px">
+                    <label class="form-label" style="font-size:10px">كود المادة</label>
+                    <input class="form-input" id="mw-ret-code" list="inv-datalist" placeholder="908514012..." style="font-family:monospace" onkeydown="if(event.key==='Enter')mwRetAdd()">
+                  </div>
+                  <div style="flex:1;min-width:70px">
+                    <label class="form-label" style="font-size:10px">الكمية</label>
+                    <input class="form-input" id="mw-ret-qty" type="number" min="1" value="1" onkeydown="if(event.key==='Enter')mwRetAdd()">
+                  </div>
+                  <button class="btn btn-warn btn-sm" onclick="mwRetAdd()"><i class="fa fa-plus"></i>إضافة</button>
+                </div>
+              </div>
+            </div>
+            <button class="btn btn-warn" style="width:100%;justify-content:center" onclick="mwSubmitRet()"><i class="fa fa-paper-plane"></i>تقديم طلب الارجاع</button>
+          </div>
+        </div>
+
+        <!-- نموذج الالغاء -->
+        <div id="mw-form-can" style="display:none">
+          <div class="card">
+            <div class="card-hd" style="margin-bottom:12px">
+              <div class="card-title"><i class="fa fa-ban" style="color:var(--r1)"></i>طلب الغاء فاتورة</div>
+            </div>
+            <div class="form-group" style="margin-bottom:12px">
+              <label class="form-label">رقم الفاتورة <span style="color:var(--r1)">*</span></label>
+              <div style="display:flex;gap:8px">
+                <input class="form-input" id="mw-can-no" placeholder="G100..." style="flex:1;font-family:monospace" oninput="mwFillCan()">
+                <button class="btn btn-sec btn-sm" onclick="mwFillCan()"><i class="fa fa-search"></i></button>
+              </div>
+              <div id="mw-can-info" style="display:none;margin-top:8px;padding:8px;border-radius:8px;font-size:12px"></div>
+            </div>
+            <div class="form-row c2" style="margin-bottom:14px">
+              <div class="form-group">
+                <label class="form-label">المستودع المُعاد إليه <span style="color:var(--r1)">*</span></label>
+                <select class="form-select" id="mw-can-wh"><option value="">-- اختر --</option></select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">المقاول <span style="color:var(--r1)">*</span></label>
+                <input class="form-input" id="mw-can-cont" placeholder="اسم المقاول...">
+              </div>
+              <div class="form-group">
+                <label class="form-label">رقم BOQ <span style="color:var(--r1)">*</span></label>
+                <input class="form-input" id="mw-can-boq" placeholder="BOQ-2026-..." style="font-family:monospace">
+              </div>
+              <div class="form-group">
+                <label class="form-label">سبب الإلغاء <span style="color:var(--r1)">*</span></label>
+                <input class="form-input" id="mw-can-reason" placeholder="سبب الالغاء...">
+              </div>
+            </div>
+            <button class="btn btn-danger" style="width:100%;justify-content:center" onclick="mwSubmitCan()"><i class="fa fa-paper-plane"></i>تقديم طلب الإلغاء</button>
+          </div>
+        </div>
+
+        <!-- نموذج التعديل -->
+        <div id="mw-form-edit" style="display:none">
+          <div id="mw-edit-step1">
+            <div class="card">
+              <div class="card-hd" style="margin-bottom:10px">
+                <div class="card-title"><i class="fa fa-pen" style="color:var(--y1)"></i>اختر الفاتورة للتعديل</div>
+              </div>
+              <div class="search-wrap" style="margin-bottom:10px">
+                <input class="form-input" id="mw-edit-q" placeholder="🔍 بحث..." oninput="mwRenderEditList()">
+                <button class="search-clear" onclick="document.getElementById('mw-edit-q').value='';mwRenderEditList()"><i class="fa fa-times-circle"></i></button>
+              </div>
+              <div id="mw-edit-list"></div>
+            </div>
+          </div>
+          <div id="mw-edit-step2" style="display:none">
+            <div class="card" style="margin-bottom:12px">
+              <div class="card-hd" style="margin-bottom:12px">
+                <div class="card-title"><i class="fa fa-pen" style="color:var(--y1)"></i>تعديل <span id="mw-edit-no" class="mono" style="color:var(--a1)"></span></div>
+                <button class="btn btn-sec btn-sm" onclick="mwEditBack()"><i class="fa fa-arrow-right"></i>رجوع</button>
+              </div>
+              <div id="mw-edit-was-appr" style="display:none;background:rgba(255,184,32,.08);border:1px solid rgba(255,184,32,.3);border-radius:9px;padding:9px 14px;margin-bottom:12px;font-size:12px;color:var(--y1)">
+                <i class="fa fa-triangle-exclamation"></i> فاتورة معتمدة — سيُعاد إرسالها للاعتماد بعد التعديل
+              </div>
+              <div id="mw-edit-fields"></div>
+            </div>
+            <div class="card" style="margin-bottom:12px">
+              <div class="card-hd" style="margin-bottom:10px">
+                <div class="card-title"><i class="fa fa-boxes-stacked" style="color:var(--g1)"></i>المواد</div>
+                <span id="mw-edit-cnt" style="font-size:11px;color:var(--t3)"></span>
+              </div>
+              <div id="mw-edit-items"></div>
+              <div style="background:var(--bg2);border:1px dashed var(--b2);border-radius:9px;padding:10px;margin-top:10px">
+                <div style="display:flex;gap:7px;align-items:flex-end;flex-wrap:wrap">
+                  <div style="flex:1;min-width:110px">
+                    <label class="form-label" style="font-size:10px">الكود</label>
+                    <input class="form-input" id="mw-edit-add-code" list="inv-datalist" oninput="mwEditAutoFill()" style="font-family:monospace">
+                  </div>
+                  <div style="flex:2;min-width:130px">
+                    <label class="form-label" style="font-size:10px">الاسم</label>
+                    <input class="form-input" id="mw-edit-add-name" readonly style="color:var(--t2)">
+                  </div>
+                  <div style="width:70px">
+                    <label class="form-label" style="font-size:10px">الكمية</label>
+                    <input class="form-input" id="mw-edit-add-qty" type="number" min="1" value="1">
+                  </div>
+                  <button class="btn btn-primary btn-sm" onclick="mwEditAddItem()"><i class="fa fa-plus"></i></button>
+                </div>
+              </div>
+            </div>
+            <button class="btn btn-primary" id="mw-edit-submit-btn" style="width:100%;justify-content:center" onclick="mwSubmitEdit()"><i class="fa fa-paper-plane"></i>إرسال طلب التعديل للاعتماد</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
 
     <!-- ═══ DASHBOARD ═══ -->
-    <div id="pg-dashboard" class="page-in">
+    <div id="pg-dashboard" style="display:none" class="page-in">
       <div class="stats-row">
         <div class="stat-card" style="--c:var(--a1)" onclick="go('inventory')">
           <div class="st-hd"><span class="st-lbl">إجمالي الكميات</span><div class="st-ico" style="background:rgba(0,212,255,.1);color:var(--a1)"><i class="fa fa-boxes-stacked"></i></div></div>
@@ -753,15 +1028,17 @@ textarea.form-input{resize:vertical;min-height:80px}
 
       <!-- تاب الكل -->
       <div id="inv-tab-all-section">
+      <!-- بطاقات المستودعات -->
+      <div id="inv-wh-summary" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:14px"></div>
       <div class="fbar">
-        <div class="search-wrap"><input class="form-input" placeholder="🔍  ابحث بالكود أو الاسم..." id="inv-q" oninput="renderInventory()"><button class="search-clear" onclick="document.getElementById('inv-q').value='';renderInventory()" title="مسح البحث"><i class="fa fa-times-circle"></i></button></div>
+        <div class="search-wrap"><input class="form-input" placeholder="🔍  ابحث بالكود أو الاسم..." id="inv-q" oninput="this.value=toEnDigits(this.value);renderInventory()"><button class="search-clear" onclick="document.getElementById('inv-q').value='';renderInventory()" title="مسح البحث"><i class="fa fa-times-circle"></i></button></div>
         <select class="form-select" id="inv-wh" onchange="renderInventory()" style="width:auto">
           <option value="">كل المستودعات</option>
           <option>اسناد</option><option>رايكو صبيا</option><option>هيف بني مالك</option>
         </select>
         <select class="form-select" id="inv-cat" onchange="renderInventory()" style="width:auto">
           <option value="">كل الفئات</option>
-          <option>محولات</option><option>كابلات</option><option>قواطع</option><option>عدادات</option><option>صناديق</option><option>إنارة</option>
+          
         </select>
         <select class="form-select" id="inv-stk" onchange="renderInventory()" style="width:auto">
           <option value="">كل المستويات</option>
@@ -838,7 +1115,7 @@ textarea.form-input{resize:vertical;min-height:80px}
             <div style="border-top:1px solid var(--b1);margin-bottom:10px"></div>
             <div class="sum-row"><span style="color:var(--t2)">عدد الأصناف</span><span style="font-weight:700" id="c-count">0</span></div>
             <div class="sum-row"><span style="color:var(--t2)">الكميات</span><span style="font-weight:700" id="c-total">0 وحدة</span></div>
-            <div class="sum-row"><span style="color:var(--t2)">رقم الفاتورة</span><span style="font-weight:700;color:var(--a1)" id="c-no">G49</span></div>
+            <div class="sum-row"><span style="color:var(--t2)">رقم الفاتورة</span><span style="font-weight:700;color:var(--a1)" id="c-no">—</span></div>
             <div style="margin-top:13px;display:flex;flex-direction:column;gap:7px">
               <div id="cart-approval-badge"></div>
               <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="cartIssue()"><i class="fa fa-paper-plane"></i>إصدار الفاتورة</button>
@@ -878,9 +1155,9 @@ textarea.form-input{resize:vertical;min-height:80px}
           <div style="background:var(--bg2);border:1px dashed var(--b2);border-radius:9px;padding:12px">
             <div style="font-size:11.5px;color:var(--g1);font-weight:600;margin-bottom:8px"><i class="fa fa-plus"></i> إضافة مادة</div>
             <div style="display:flex;gap:7px;align-items:flex-end;flex-wrap:wrap">
-              <div class="form-group" style="flex:2;min-width:130px"><label class="form-label">كود المادة</label><input class="form-input" id="feed-code" list="inv-datalist" placeholder="908514012..." oninput="feedAutoFillName()"></div>
-              <div class="form-group" style="flex:2;min-width:130px"><label class="form-label">اسم المادة</label><input class="form-input" id="feed-name" placeholder="يُعبأ تلقائياً..." readonly style="color:var(--t2)"></div>
-              <div class="form-group" style="flex:1;min-width:70px"><label class="form-label">الكمية</label><input class="form-input" id="feed-qty" type="number" min="1" value="1" style="font-family:'JetBrains Mono',monospace"></div>
+              <div class="form-group" style="flex:2;min-width:130px"><label class="form-label">كود المادة</label><input class="form-input" id="feed-code" list="inv-datalist" placeholder="908514012..." oninput="feedAutoFillName()" onkeydown="if(event.key==='Enter'){feedAddItem();}"></div>
+              <div class="form-group" style="flex:2;min-width:130px"><label class="form-label">اسم المادة</label><input class="form-input" id="feed-name" placeholder="يُعبأ تلقائياً..." style="color:var(--t2)"></div>
+              <div class="form-group" style="flex:1;min-width:70px"><label class="form-label">الكمية</label><input class="form-input" id="feed-qty" type="number" min="1" value="1" style="font-family:'JetBrains Mono',monospace" onkeydown="if(event.key==='Enter'){feedAddItem();}"></div>
               <button class="btn btn-green btn-sm" onclick="feedAddItem()"><i class="fa fa-plus"></i>إضافة</button>
             </div>
           </div>
@@ -1000,10 +1277,12 @@ textarea.form-input{resize:vertical;min-height:80px}
 
       <!-- محتوى الزون المختار -->
       <div id="zones-content" style="display:none">
+        <!-- بطاقات المستودعات في الزون -->
+        <div id="zones-wh-summary" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:14px"></div>
         <!-- شريط البحث + التنبيهات -->
         <div class="fbar" style="margin-bottom:14px">
           <div class="search-wrap" style="flex:1">
-            <input class="form-input" id="zones-search" list="inv-datalist" placeholder="🔍 ابحث بكود أو اسم المادة..." oninput="zonesRender()">
+            <input class="form-input" id="zones-search" list="inv-datalist" placeholder="🔍 ابحث بكود أو اسم المادة..." oninput="this.value=toEnDigits(this.value);zonesRender()">
             <button class="search-clear" onclick="document.getElementById('zones-search').value='';zonesRender()"><i class="fa fa-times-circle"></i></button>
           </div>
           <select class="form-select" id="zones-filter-wh" onchange="zonesRender()" style="width:auto">
@@ -1056,17 +1335,15 @@ textarea.form-input{resize:vertical;min-height:80px}
       </div>
 
       <!-- تابات الأقسام الرئيسية -->
-      <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
-        <button class="btn" id="arc-tab-all" onclick="arcSetTab('all')" style="background:rgba(0,212,255,.12);border:1px solid var(--a1);color:var(--a1);border-radius:10px;padding:8px 16px;font-weight:700;font-size:12.5px"><i class="fa fa-layer-group"></i> جميع الفواتير</button>
-        <button class="btn" id="arc-tab-active" onclick="arcSetTab('active')" style="background:rgba(255,255,255,.04);border:1px solid var(--b1);color:var(--t2);border-radius:10px;padding:8px 16px;font-weight:700;font-size:12.5px"><i class="fa fa-file-circle-check" style="color:var(--g1)"></i> الصرف والنقل</button>
-        <button class="btn" id="arc-tab-cancelled" onclick="arcSetTab('cancelled')" style="background:rgba(255,255,255,.04);border:1px solid var(--b1);color:var(--t2);border-radius:10px;padding:8px 16px;font-weight:700;font-size:12.5px"><i class="fa fa-ban" style="color:var(--r1)"></i> الملغية</button>
+      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+        <button class="btn" id="arc-tab-approved" onclick="arcSetTab('approved')" style="background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.4);color:var(--g1);border-radius:10px;padding:8px 18px;font-weight:800;font-size:12.5px"><i class="fa fa-circle-check"></i> معتمدة <span id="arc-cnt-approved" style="background:var(--g1);color:#000;border-radius:20px;padding:1px 8px;font-size:11px;margin-right:4px"></span></button>
+        <button class="btn" id="arc-tab-rejected" onclick="arcSetTab('rejected')" style="background:rgba(255,255,255,.04);border:1px solid var(--b1);color:var(--t2);border-radius:10px;padding:8px 18px;font-weight:700;font-size:12.5px"><i class="fa fa-times-circle" style="color:var(--o1)"></i> مرفوضة <span id="arc-cnt-rejected" style="background:var(--o1);color:#000;border-radius:20px;padding:1px 8px;font-size:11px;margin-right:4px"></span></button>
+        <button class="btn" id="arc-tab-cancelled" onclick="arcSetTab('cancelled')" style="background:rgba(255,255,255,.04);border:1px solid var(--b1);color:var(--t2);border-radius:10px;padding:8px 18px;font-weight:700;font-size:12.5px"><i class="fa fa-ban" style="color:var(--r1)"></i> ملغية <span id="arc-cnt-cancelled" style="background:var(--r1);color:#fff;border-radius:20px;padding:1px 8px;font-size:11px;margin-right:4px"></span></button>
       </div>
-
-      <!-- فلاتر البحث -->
       <div class="fbar" style="margin-bottom:12px">
         <div class="search-wrap"><input class="form-input" placeholder="🔍  بحث برقم الفاتورة أو الموجه أو المقاول..." id="inv-arc-q" oninput="renderArc()"><button class="search-clear" onclick="document.getElementById('inv-arc-q').value='';renderArc()" title="مسح البحث"><i class="fa fa-times-circle"></i></button></div>
         <select class="form-select" id="inv-arc-wh" onchange="renderArc()" style="width:auto"><option value="">كل المستودعات</option></select>
-        <select class="form-select" id="inv-arc-st" onchange="renderArc()" style="width:auto"><option value="">كل الحالات</option><option>معتمد</option><option>معلق</option><option>مرفوض</option><option>ملغي</option></select>
+        <select class="form-select" id="inv-arc-type" onchange="renderArc()" style="width:auto"><option value="">كل الأنواع</option><option>صرف</option><option>ارجاع</option><option>نقل</option></select>
         <select class="form-select" id="inv-arc-emp" onchange="renderArc()" style="width:auto"><option value="">كل الموجهين</option></select>
         <input type="date" class="form-input" id="inv-arc-date" onchange="renderArc()" style="width:auto;font-family:'JetBrains Mono',monospace" title="فلتر بالتاريخ">
         <button class="btn btn-sec btn-sm" onclick="document.getElementById('inv-arc-date').value='';document.getElementById('inv-arc-emp').value='';document.getElementById('inv-arc-q').value='';renderArc()" title="مسح الفلاتر"><i class="fa fa-xmark"></i> مسح</button>
@@ -1165,38 +1442,32 @@ textarea.form-input{resize:vertical;min-height:80px}
       </div>
       <!-- موجه البلاغات: نموذج إنشاء الطلب -->
       <div id="req-mojtahed-view" style="display:none">
-        <div class="g2">
-          <!-- نموذج طلب ارجاع -->
-          <div class="card" id="req-return-form-card">
+
+        <!-- ═══ أقسام النماذج — تبديل بالتابات ═══ -->
+        <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+          <button class="btn btn-warn btn-sm" id="req-form-tab-ret" onclick="setReqFormTab('ret')" style="font-weight:800"><i class="fa fa-rotate-left"></i>طلب ارجاع</button>
+          <button class="btn btn-sec btn-sm" id="req-form-tab-can" onclick="setReqFormTab('can')"><i class="fa fa-ban"></i>طلب الغاء</button>
+          <button class="btn btn-sec btn-sm" id="req-form-tab-tr" id2="wardia-tr-tab" style="display:none" onclick="setReqFormTab('tr')"><i class="fa fa-right-left"></i>طلب نقل</button>
+        </div>
+
+        <!-- نموذج طلب ارجاع -->
+        <div id="req-form-ret" class="card" style="margin-bottom:14px">
             <div class="card-hd"><div class="card-title"><i class="fa fa-rotate-left" style="color:var(--o1)"></i>طلب ارجاع مواد</div></div>
             <div class="form-group" style="margin-bottom:10px">
               <label class="form-label"><i class="fa fa-file-invoice" style="color:var(--a1)"></i> رقم الفاتورة الأصلية <span style="color:var(--r1)">*</span></label>
               <div style="display:flex;gap:6px">
                 <input class="form-input" id="ret-inv-no" placeholder="G100..." style="font-family:'JetBrains Mono',monospace" oninput="fetchReturnInv()">
                 <button class="btn btn-sec btn-sm" onclick="fetchReturnInv()"><i class="fa fa-search"></i></button>
+                <button class="btn btn-primary btn-sm" id="ret-preview-btn" style="display:none" onclick="showInvDetail(document.getElementById('ret-inv-no').value.trim())"><i class="fa fa-eye"></i>معاينة</button>
               </div>
             </div>
             <div id="ret-inv-info" style="display:none;margin-bottom:10px;padding:10px;background:rgba(0,212,255,.06);border:1px solid rgba(0,212,255,.2);border-radius:9px;font-size:12px"></div>
             <div class="form-row c2">
-              <div class="form-group">
-                <label class="form-label"><i class="fa fa-warehouse" style="color:var(--g1)"></i> المستودع المستلم <span style="color:var(--r1)">*</span></label>
-                <select class="form-select" id="ret-wh"><option value="">-- اختر --</option></select>
-              </div>
-              <div class="form-group">
-                <label class="form-label"><i class="fa fa-hard-hat" style="color:var(--o1)"></i> المقاول المُسلِّم <span style="color:var(--r1)">*</span></label>
-                <input class="form-input" id="ret-cont" placeholder="اسم المقاول..." list="contr-datalist">
-                <datalist id="contr-datalist"></datalist>
-              </div>
-              <div class="form-group">
-                <label class="form-label"><i class="fa fa-clipboard-list" style="color:var(--a3)"></i> رقم BOQ <span style="color:var(--r1)">*</span></label>
-                <input class="form-input" id="ret-boq-f" placeholder="BOQ-2026-..." style="font-family:'JetBrains Mono',monospace">
-              </div>
-              <div class="form-group">
-                <label class="form-label"><i class="fa fa-comment" style="color:var(--t3)"></i> سبب الارجاع</label>
-                <input class="form-input" id="ret-reason-f" placeholder="سبب الارجاع...">
-              </div>
+              <div class="form-group"><label class="form-label"><i class="fa fa-warehouse" style="color:var(--g1)"></i> المستودع المستلم <span style="color:var(--r1)">*</span></label><select class="form-select" id="ret-wh"><option value="">-- اختر --</option></select></div>
+              <div class="form-group"><label class="form-label"><i class="fa fa-hard-hat" style="color:var(--o1)"></i> المقاول المُسلِّم <span style="color:var(--r1)">*</span></label><input class="form-input" id="ret-cont" placeholder="اسم المقاول..." list="contr-datalist"><datalist id="contr-datalist"></datalist></div>
+              <div class="form-group"><label class="form-label"><i class="fa fa-clipboard-list" style="color:var(--a3)"></i> رقم BOQ <span style="color:var(--r1)">*</span></label><input class="form-input" id="ret-boq-f" placeholder="BOQ-2026-..." style="font-family:'JetBrains Mono',monospace"></div>
+              <div class="form-group"><label class="form-label"><i class="fa fa-comment" style="color:var(--t3)"></i> سبب الارجاع</label><input class="form-input" id="ret-reason-f" placeholder="سبب الارجاع..."></div>
             </div>
-            <!-- مواد الارجاع -->
             <div style="font-size:11px;font-weight:700;color:var(--t2);letter-spacing:1px;margin:10px 0 7px;border-top:1px solid var(--b1);padding-top:10px">المواد المُراد إرجاعها</div>
             <div id="ret-items-list"></div>
             <div style="background:var(--bg2);border:1px dashed var(--b2);border-radius:9px;padding:11px;margin-top:8px">
@@ -1208,9 +1479,10 @@ textarea.form-input{resize:vertical;min-height:80px}
               </div>
             </div>
             <button class="btn btn-warn" style="width:100%;justify-content:center;margin-top:12px" onclick="submitReturnRequest()"><i class="fa fa-paper-plane"></i>تقديم طلب الارجاع</button>
-          </div>
-          <!-- نموذج طلب الغاء -->
-          <div class="card">
+        </div>
+
+        <!-- نموذج طلب الغاء -->
+        <div id="req-form-can" class="card" style="display:none;margin-bottom:14px">
             <div class="card-hd"><div class="card-title"><i class="fa fa-ban" style="color:var(--r1)"></i>طلب الغاء فاتورة</div></div>
             <div class="form-group" style="margin-bottom:10px">
               <label class="form-label"><i class="fa fa-file-invoice" style="color:var(--a1)"></i> رقم الفاتورة <span style="color:var(--r1)">*</span></label>
@@ -1221,29 +1493,16 @@ textarea.form-input{resize:vertical;min-height:80px}
             </div>
             <div id="can-inv-info" style="display:none;margin-bottom:10px;padding:10px;background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);border-radius:9px;font-size:12px"></div>
             <div class="form-row c2">
-              <div class="form-group">
-                <label class="form-label"><i class="fa fa-warehouse" style="color:var(--g1)"></i> المستودع المستلم للمواد <span style="color:var(--r1)">*</span></label>
-                <select class="form-select" id="can-wh"><option value="">-- اختر --</option><option>اسناد</option><option>رايكو صبيا</option><option>هيف بني مالك</option></select>
-              </div>
-              <div class="form-group">
-                <label class="form-label"><i class="fa fa-hard-hat" style="color:var(--o1)"></i> المقاول المُسلِّم <span style="color:var(--r1)">*</span></label>
-                <input class="form-input" id="can-cont" placeholder="اسم المقاول..." list="contr-datalist">
-              </div>
-              <div class="form-group">
-                <label class="form-label"><i class="fa fa-clipboard-list" style="color:var(--a3)"></i> رقم BOQ <span style="color:var(--r1)">*</span></label>
-                <input class="form-input" id="can-boq-f" placeholder="BOQ-2026-..." style="font-family:'JetBrains Mono',monospace">
-              </div>
-              <div class="form-group">
-                <label class="form-label"><i class="fa fa-comment" style="color:var(--r1)"></i> سبب الالغاء <span style="color:var(--r1)">*</span></label>
-                <input class="form-input" id="can-reason-f" placeholder="سبب طلب الالغاء...">
-              </div>
+              <div class="form-group"><label class="form-label"><i class="fa fa-warehouse" style="color:var(--g1)"></i> المستودع المستلم <span style="color:var(--r1)">*</span></label><select class="form-select" id="can-wh"><option value="">-- اختر --</option></select></div>
+              <div class="form-group"><label class="form-label"><i class="fa fa-hard-hat" style="color:var(--o1)"></i> المقاول المُسلِّم <span style="color:var(--r1)">*</span></label><input class="form-input" id="can-cont" placeholder="اسم المقاول..." list="contr-datalist"></div>
+              <div class="form-group"><label class="form-label"><i class="fa fa-clipboard-list" style="color:var(--a3)"></i> رقم BOQ <span style="color:var(--r1)">*</span></label><input class="form-input" id="can-boq-f" placeholder="BOQ-2026-..." style="font-family:'JetBrains Mono',monospace"></div>
+              <div class="form-group"><label class="form-label"><i class="fa fa-comment" style="color:var(--r1)"></i> سبب الالغاء <span style="color:var(--r1)">*</span></label><input class="form-input" id="can-reason-f" placeholder="سبب طلب الالغاء..."></div>
             </div>
             <button class="btn btn-danger" style="width:100%;justify-content:center;margin-top:12px" onclick="submitCancelRequest()"><i class="fa fa-paper-plane"></i>تقديم طلب الالغاء</button>
-          </div>
         </div>
+
         <!-- نموذج طلب نقل - لمشرف الوردية فقط -->
-        <div id="wardia-transfer-card" style="display:none;margin-top:14px">
-          <div class="card">
+        <div id="req-form-tr" class="card" style="display:none;margin-bottom:14px" id2="wardia-transfer-card">
             <div class="card-hd"><div class="card-title"><i class="fa fa-right-left" style="color:var(--a1)"></i>طلب نقل مواد بين المستودعات</div></div>
             <div class="form-row c2" style="margin-bottom:10px">
               <div class="form-group"><label class="form-label"><i class="fa fa-warehouse" style="color:var(--r1)"></i> من مستودع <span style="color:var(--r1)">*</span></label><select class="form-select" id="wtr-from"><option value="">-- اختر --</option></select></div>
@@ -1263,19 +1522,29 @@ textarea.form-input{resize:vertical;min-height:80px}
             </div>
             <div style="background:rgba(255,184,32,.06);border:1px solid rgba(255,184,32,.2);border-radius:8px;padding:8px 12px;margin-top:8px;font-size:11.5px;color:var(--y1)"><i class="fa fa-info-circle"></i> لن تُنقل الكميات إلا بعد اعتماد مدير النظام أو مسؤول المستودعات</div>
             <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:10px" onclick="submitWardiaTransfer()"><i class="fa fa-paper-plane"></i>إرسال طلب النقل للاعتماد</button>
-          </div>
         </div>
-        <!-- طلباتي السابقة -->
+
+        <!-- طلباتي -->
         <div class="card" style="margin-top:14px">
-          <div class="card-hd"><div class="card-title"><i class="fa fa-clock" style="color:var(--y1)"></i>طلباتي السابقة</div></div>
+          <div class="card-hd"><div class="card-title"><i class="fa fa-clock" style="color:var(--y1)"></i>طلباتي</div></div>
+          <div style="display:flex;gap:6px;margin-bottom:10px">
+            <button class="btn btn-sec btn-sm" id="my-req-tab-pend" onclick="setMyReqTab('pending')" style="font-weight:800"><i class="fa fa-clock"></i>المعلقة <span id="my-req-pend-cnt" class="s-badge" style="position:relative;top:0;right:0;margin-right:4px"></span></button>
+            <button class="btn btn-sec btn-sm" id="my-req-tab-hist" onclick="setMyReqTab('history')"><i class="fa fa-history"></i>السابقة</button>
+          </div>
           <div id="req-mylist"></div>
+          <div id="req-mylist-hist" style="display:none"></div>
         </div>
       </div>
       <!-- مدير النظام / أمين المستودع: قائمة الطلبات -->
       <div id="req-admin-view" style="display:none">
         <div style="display:flex;gap:6px;margin-bottom:12px">
           <button class="btn btn-sec btn-sm" id="req-tab-pending" onclick="setReqTab('pending')" style="font-weight:700"><i class="fa fa-clock"></i>المعلقة <span id="req-pending-cnt" class="s-badge" style="position:relative;top:0;right:0;margin-right:4px"></span></button>
+          <button class="btn btn-warn btn-sm" id="req-tab-edit" onclick="setReqTab('edit')"><i class="fa fa-pen-to-square"></i>طلبات التعديل <span id="req-edit-cnt" class="s-badge" style="position:relative;top:0;right:0;margin-right:4px;background:var(--y1)"></span></button>
           <button class="btn btn-sec btn-sm" id="req-tab-history" onclick="setReqTab('history')"><i class="fa fa-history"></i>السابقة</button>
+        </div>
+        <!-- طلبات التعديل -->
+        <div id="req-edit-section" style="display:none">
+          <div id="req-edit-list"></div>
         </div>
         <!-- المعلقة -->
         <div id="req-pending-section">
@@ -1314,51 +1583,85 @@ textarea.form-input{resize:vertical;min-height:80px}
     <!-- ═══ APPROVE ═══ -->
     <div id="pg-approve" style="display:none" class="page-in">
       <div class="pg-hd">
-        <div><div class="pg-title"><i class="fa fa-signature" style="color:var(--y1)"></i>اعتماد فواتير الصرف</div><div class="pg-sub" id="appr-sub">بانتظار الاعتماد</div></div>
-        <div style="display:flex;gap:6px">
-          <button class="btn btn-sec btn-sm" id="appr-tab-pending" onclick="setApprTab('pending')" style="font-weight:700"><i class="fa fa-clock"></i>معلقة <span id="appr-pending-badge" class="s-badge" style="position:relative;top:0;right:0;margin-right:4px"></span></button>
-          <button class="btn btn-sec btn-sm" id="appr-tab-history" onclick="setApprTab('history')"><i class="fa fa-history"></i>السابقة</button>
+        <div><div class="pg-title"><i class="fa fa-signature" style="color:var(--y1)"></i>اعتماد الطلبات</div><div class="pg-sub" id="appr-sub">الطلبات بانتظار الاعتماد</div></div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn btn-sec btn-sm" id="appr-tab-pending" onclick="apprSetTab('pending')" style="font-weight:800"><i class="fa fa-clock" style="color:var(--y1)"></i>معلقة<span id="badge-appr-all" class="s-badge" style="position:relative;top:0;right:0;margin-right:4px"></span></button>
+          <button class="btn btn-sec btn-sm" id="appr-tab-done" onclick="apprSetTab('done')"><i class="fa fa-history"></i>السابقة</button>
         </div>
-      </div>
-      <!-- قسم المعلقة -->
-      <div id="appr-pending-section">
-      <!-- فلاتر البحث -->
-      <div class="card" style="padding:12px 14px;margin-bottom:12px">
-        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
-          <div class="form-group" style="flex:1;min-width:140px;margin-bottom:0">
-            <label class="form-label"><i class="fa fa-warehouse"></i> فلتر المستودع</label>
-            <select class="form-select" id="appr-filter-wh" onchange="renderApprovals()"><option value="">كل المستودعات</option></select>
-          </div>
-          <div class="form-group" style="flex:1;min-width:140px;margin-bottom:0">
-            <label class="form-label"><i class="fa fa-calendar"></i> فلتر التاريخ</label>
-            <input type="date" class="form-input" id="appr-filter-date" onchange="renderApprovals()" style="font-family:'JetBrains Mono',monospace">
-          </div>
-          <button class="btn btn-sec btn-sm" onclick="document.getElementById('appr-filter-wh').value='';document.getElementById('appr-filter-date').value='';renderApprovals()">
-            <i class="fa fa-xmark"></i>مسح الفلاتر
-          </button>
-        </div>
-      </div>
-      <div id="appr-list"></div>
       </div>
 
-      <!-- قسم الطلبات السابقة -->
-      <div id="appr-history-section" style="display:none">
-        <div class="card" style="padding:12px 14px;margin-bottom:12px">
-          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
-            <div class="search-wrap" style="flex:1">
-              <input class="form-input" id="appr-hist-q" placeholder="🔍 بحث برقم الفاتورة أو المقاول..." oninput="renderApprHistory()">
-              <button class="search-clear" onclick="document.getElementById('appr-hist-q').value='';renderApprHistory()"><i class="fa fa-times-circle"></i></button>
+      <!-- قسم المعلقة -->
+      <div id="appr-sec-pending">
+        <!-- تصنيف حسب النوع -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+          <button class="appr-type-btn active" id="appr-type-all" onclick="apprSetType('all')">
+            الكل <span id="appr-cnt-all" class="s-badge" style="position:relative;top:0;right:0;margin-right:4px;display:none"></span>
+          </button>
+          <button class="appr-type-btn" id="appr-type-sarf" onclick="apprSetType('sarf')">
+            <i class="fa fa-file-invoice" style="color:var(--g1)"></i> صرف
+            <span id="appr-cnt-sarf" class="s-badge" style="position:relative;top:0;right:0;margin-right:4px;display:none;background:var(--g1);color:#000"></span>
+          </button>
+          <button class="appr-type-btn" id="appr-type-ret" onclick="apprSetType('ret')">
+            <i class="fa fa-rotate-left" style="color:var(--o1)"></i> ارجاع
+            <span id="appr-cnt-ret" class="s-badge" style="position:relative;top:0;right:0;margin-right:4px;display:none;background:var(--o1)"></span>
+          </button>
+          <button class="appr-type-btn" id="appr-type-can" onclick="apprSetType('can')">
+            <i class="fa fa-ban" style="color:var(--r1)"></i> الغاء
+            <span id="appr-cnt-can" class="s-badge" style="position:relative;top:0;right:0;margin-right:4px;display:none;background:var(--r1)"></span>
+          </button>
+          <button class="appr-type-btn" id="appr-type-edit" onclick="apprSetType('edit')">
+            <i class="fa fa-pen" style="color:var(--y1)"></i> تعديل
+            <span id="appr-cnt-edit" class="s-badge" style="position:relative;top:0;right:0;margin-right:4px;display:none;background:var(--y1);color:#000"></span>
+          </button>
+        </div>
+        <!-- فلاتر -->
+        <div class="card" style="padding:10px 14px;margin-bottom:12px">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <div class="search-wrap" style="flex:2;min-width:160px">
+              <input class="form-input" id="appr-q" placeholder="🔍 بحث بالرقم أو الموجه أو المقاول..." oninput="renderApprovals()">
+              <button class="search-clear" onclick="document.getElementById('appr-q').value='';renderApprovals()"><i class="fa fa-times-circle"></i></button>
             </div>
-            <select class="form-select" id="appr-hist-st" onchange="renderApprHistory()" style="width:auto">
-              <option value="">كل الحالات</option>
-              <option value="معتمد">✅ معتمد</option>
-              <option value="مرفوض">❌ مرفوض</option>
-            </select>
-            <input type="date" class="form-input" id="appr-hist-date" onchange="renderApprHistory()" style="width:auto;font-family:'JetBrains Mono',monospace">
-            <button class="btn btn-sec btn-sm" onclick="document.getElementById('appr-hist-q').value='';document.getElementById('appr-hist-st').value='';document.getElementById('appr-hist-date').value='';renderApprHistory()"><i class="fa fa-xmark"></i>مسح</button>
+            <select class="form-select" id="appr-filter-wh" onchange="renderApprovals()" style="min-width:130px"><option value="">كل المستودعات</option></select>
+            <input type="date" class="form-input" id="appr-filter-date" onchange="renderApprovals()" style="min-width:130px;font-family:monospace">
+            <button class="btn btn-sec btn-sm" onclick="document.getElementById('appr-q').value='';document.getElementById('appr-filter-wh').value='';document.getElementById('appr-filter-date').value='';renderApprovals()"><i class="fa fa-xmark"></i>مسح</button>
           </div>
         </div>
-        <div id="appr-hist-list"></div>
+        <div id="appr-list"></div>
+        <div id="appr-empty" style="display:none;text-align:center;padding:40px;color:var(--t3)">
+          <i class="fa fa-check-circle" style="font-size:40px;display:block;margin-bottom:12px;color:var(--g1);opacity:.6"></i>
+          <div style="font-size:15px;font-weight:700">لا توجد طلبات معلقة</div>
+          <div style="font-size:12px;margin-top:6px">جميع الطلبات تمت معالجتها</div>
+        </div>
+      </div>
+
+      <!-- قسم السابقة -->
+      <div id="appr-sec-done" style="display:none">
+        <div class="card" style="padding:10px 14px;margin-bottom:12px">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <div class="search-wrap" style="flex:2;min-width:160px">
+              <input class="form-input" id="appr-done-q" placeholder="🔍 بحث..." oninput="renderApprovalsDone()">
+              <button class="search-clear" onclick="document.getElementById('appr-done-q').value='';renderApprovalsDone()"><i class="fa fa-times-circle"></i></button>
+            </div>
+            <select class="form-select" id="appr-done-type" onchange="renderApprovalsDone()" style="min-width:110px">
+              <option value="">كل الأنواع</option>
+              <option value="صرف">صرف</option>
+              <option value="ارجاع">ارجاع</option>
+              <option value="الغاء">الغاء</option>
+              <option value="تعديل">تعديل</option>
+            </select>
+            <select class="form-select" id="appr-done-st" onchange="renderApprovalsDone()" style="min-width:110px">
+              <option value="">كل الحالات</option>
+              <option value="معتمد">معتمدة</option>
+              <option value="مرفوض">مرفوضة</option>
+            </select>
+          </div>
+        </div>
+        <div class="card tbl-wrap">
+          <table class="tbl">
+            <thead><tr><th style="width:88px">الرقم</th><th>النوع</th><th>المستودع</th><th>الموجه</th><th>المقاول</th><th>التاريخ</th><th>القرار</th><th>بواسطة</th></tr></thead>
+            <tbody id="appr-done-tbody"></tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -1366,14 +1669,29 @@ textarea.form-input{resize:vertical;min-height:80px}
     <div id="pg-inv-edit-req" style="display:none" class="page-in">
       <div class="pg-hd">
         <div><div class="pg-title"><i class="fa fa-file-pen" style="color:var(--y1)"></i>طلب تعديل فاتورة صرف</div><div class="pg-sub">اختر فاتورة وعدّل بياناتها — لا خصم إلا بعد الاعتماد</div></div>
+      
+
+    <!-- طلباتي في تعديل فاتورة صرف -->
+    <div class="card" style="margin-top:14px" id="ier-my-requests-card">
+      <div class="card-hd">
+        <div class="card-title"><i class="fa fa-clock-rotate-left" style="color:var(--y1)"></i>طلباتي — تعديل فاتورة صرف</div>
       </div>
+      <div style="display:flex;gap:6px;margin-bottom:10px">
+        <button class="btn btn-sec btn-sm" id="ier-req-tab-pend" onclick="setIerReqTab('pending')" style="font-weight:800"><i class="fa fa-clock"></i>المعلقة <span id="ier-req-pend-cnt" class="s-badge" style="position:relative;top:0;right:0;margin-right:4px"></span></button>
+        <button class="btn btn-sec btn-sm" id="ier-req-tab-hist" onclick="setIerReqTab('history')"><i class="fa fa-history"></i>السابقة</button>
+      </div>
+      <div id="ier-my-pending"></div>
+      <div id="ier-my-history" style="display:none"></div>
+    </div>
+
+    <!-- ═══ MY INVOICES ═══ -->
       <!-- قائمة الفواتير -->
       <div class="card" style="margin-bottom:14px" id="ier-list-card">
         <div class="card-hd"><div class="card-title"><i class="fa fa-file-invoice"></i>فواتيري</div></div>
         <div class="fbar">
           <div class="search-wrap"><input class="form-input" id="ier-search" placeholder="🔍 بحث برقم الفاتورة أو المقاول..." oninput="renderIerList()"></div>
           <select class="form-select" id="ier-filter-st" onchange="renderIerList()" style="width:auto"><option value="">كل الحالات</option><option>معتمد</option><option>معلق</option><option>مرفوض</option></select>
-          <select class="form-select" id="ier-filter-type" onchange="renderIerList()" style="width:auto"><option value="">كل الأنواع</option><option>صرف</option><option>ارجاع</option><option>نقل</option></select>
+          <select class="form-select" id="ier-filter-type" onchange="renderIerList()" style="width:auto"><option value="">كل الأنواع</option><option>صرف</option></select>
         </div>
         <div id="ier-list"></div>
       </div>
@@ -1422,17 +1740,17 @@ textarea.form-input{resize:vertical;min-height:80px}
       </div>
     </div>
 
-    <!-- ═══ MY INVOICES ═══ -->
+    </div><!-- /pg-inv-edit-req -->
     <div id="pg-myinv" style="display:none" class="page-in">
       <div class="pg-hd">
-        <div><div class="pg-title"><i class="fa fa-file-circle-check" style="color:var(--a1)"></i>فواتيري</div><div class="pg-sub" id="myinv-sub">فواتيرك الشخصية</div></div>
+        <div><div class="pg-title"><i class="fa fa-file-circle-check" style="color:var(--a1)"></i>فواتيري</div><div class="pg-sub" id="myinv-sub">الفواتير المعتمدة والمرفوضة والملغية</div></div>
       </div>
       <div class="mi-stats" id="myinv-stats"></div>
 
       <!-- ═══ القسم الأول: المعتمدة والمرفوضة ═══ -->
       <div class="card" style="margin-bottom:14px">
         <div class="card-hd" style="margin-bottom:10px">
-          <div class="card-title"><i class="fa fa-file-invoice" style="color:var(--g1)"></i>الفواتير المنتهية</div>
+          <div class="card-title"><i class="fa fa-file-invoice" style="color:var(--g1)"></i>أرشيف فواتيري <span style="font-size:11px;color:var(--t3);font-weight:400">— معتمدة · مرفوضة · ملغية</span></div>
           <span id="myinv-done-count" style="font-size:11px;color:var(--t3)"></span>
         </div>
         <div class="fbar" style="margin-bottom:10px">
@@ -1450,19 +1768,7 @@ textarea.form-input{resize:vertical;min-height:80px}
         </div>
       </div>
 
-      <!-- ═══ القسم الثاني: المعلقة (بانتظار الاعتماد) ═══ -->
-      <div class="card" style="border:1px solid rgba(245,158,11,.25);background:rgba(245,158,11,.03)">
-        <div class="card-hd" style="margin-bottom:10px">
-          <div class="card-title"><i class="fa fa-clock" style="color:var(--y1)"></i>بانتظار الاعتماد <span id="myinv-pend-badge" style="display:none;background:var(--y1);color:#000;border-radius:20px;padding:1px 8px;font-size:11px;font-weight:700;margin-right:6px"></span></div>
-          <span style="font-size:11px;color:var(--t3)">يمكنك تعديل أو سحب الفاتورة قبل الاعتماد</span>
-        </div>
-        <div class="tbl-wrap">
-          <table class="tbl">
-            <thead><tr><th>الرقم</th><th>النوع</th><th>المستودع</th><th>المقاول</th><th>التاريخ</th><th>إجراء</th></tr></thead>
-            <tbody id="myinv-pend-tbody"></tbody>
-          </table>
-        </div>
-      </div>
+
     </div>
 
     <!-- ═══ BOQ ═══ -->
@@ -1561,6 +1867,24 @@ textarea.form-input{resize:vertical;min-height:80px}
           <button class="btn btn-danger" onclick="manualCleanup()"><i class="fa fa-broom"></i>تنظيف يدوي الآن</button>
         </div>
       </div>
+
+      <!-- قسم النسخ الاحتياطية -->
+      <div class="card" style="margin-top:14px">
+        <div class="card-hd" style="margin-bottom:14px">
+          <div class="card-title"><i class="fa fa-floppy-disk" style="color:var(--a1)"></i>النسخ الاحتياطية</div>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-primary btn-sm" onclick="backupNow()"><i class="fa fa-floppy-disk"></i>نسخة فورية</button>
+            <button class="btn btn-sec btn-sm" onclick="document.getElementById('backup-import-input').click()"><i class="fa fa-upload"></i>رفع نسخة</button>
+            <input type="file" id="backup-import-input" accept=".json" style="display:none" onchange="importBackup(this)">
+          </div>
+        </div>
+        <div style="background:rgba(0,212,255,.05);border:1px solid rgba(0,212,255,.15);border-radius:9px;padding:10px 14px;margin-bottom:12px;font-size:11.5px;color:var(--a1)">
+          <i class="fa fa-circle-info"></i>
+          تُحفظ نسخة تلقائية كل يوم الساعة <strong>08:00</strong> و<strong>20:00</strong> بتوقيت السعودية ·
+          النسخ الأقدم من 30 يوم تُحذف تلقائياً
+        </div>
+        <div id="backups-list"></div>
+      </div>
     </div>
 
     <!-- ═══ WAREHOUSES PAGE ═══ -->
@@ -1579,13 +1903,13 @@ textarea.form-input{resize:vertical;min-height:80px}
           <div class="card-title"><i class="fa fa-map-location-dot" style="color:var(--a1)"></i>الزونات الجغرافية</div>
           <span style="font-size:11px;color:var(--t3)">اضغط تعديل لتغيير اسم أو لون الزون</span>
         </div>
-        <div id="zones-manage-list" style="display:flex;gap:10px;flex-wrap:wrap"></div>
+        <div id="zones-manage-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px"></div>
       </div>
 
       <div class="fbar">
         <div class="search-wrap"><input class="form-input" placeholder="🔍  بحث عن مستودع..." id="whs-q" oninput="renderWarehouses()"><button class="search-clear" onclick="document.getElementById('whs-q').value='';renderWarehouses()" title="مسح البحث"><i class="fa fa-times-circle"></i></button></div>
       </div>
-      <div class="wh-cards" id="whs-cards"></div>
+      <div class="wh-cards" id="whs-cards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px"></div>
     </div>
 
     <!-- ═══ CONTRACTORS PAGE ═══ -->
@@ -1604,93 +1928,40 @@ textarea.form-input{resize:vertical;min-height:80px}
     <!-- ═══ CATEGORIES PAGE ═══ -->
     <div id="pg-categories-pg" style="display:none" class="page-in">
       <div class="pg-hd">
-        <div><div class="pg-title"><i class="fa fa-layer-group" style="color:var(--a3)"></i>الفئات وحدود الإشعار</div><div class="pg-sub">تحديد حدود التنبيه لكل فئة من المواد</div></div>
-        <button class="btn btn-green" onclick="saveCategoryLimits()"><i class="fa fa-save"></i>حفظ الحدود</button>
+        <div><div class="pg-title"><i class="fa fa-layer-group" style="color:var(--a3)"></i>الفئات وحدود الإشعار</div><div class="pg-sub" id="cat-sub">إدارة الفئات وضبط حدود التنبيه</div></div>
+        <button class="btn btn-green" onclick="catNewModal()"><i class="fa fa-plus"></i>فئة جديدة</button>
       </div>
-      <div class="g2">
-        <div class="card">
-          <div class="card-hd"><div class="card-title"><i class="fa fa-sliders" style="color:var(--a3)"></i>ضبط حدود الفئات</div></div>
-          <div id="cat-limits-list"></div>
-        </div>
-        <div class="card">
-          <div class="card-hd"><div class="card-title"><i class="fa fa-gauge" style="color:var(--y1)"></i>مقياس المخزون الحالي</div></div>
-          <div class="cat-meter" id="cat-meter"></div>
-        </div>
-      </div>
+      <div id="cat-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px"></div>
     </div>
 
-  </div><!-- /content -->
+  
 
-  <!-- FOOTER -->
-  <div class="copyright">
-    <span>© 2026 جميع الحقوق محفوظة</span>
-    <span style="color:var(--t4)">|</span>
-    <span>أحمد سعيد عواجي — <span style="color:var(--a1)">مدير النظام</span></span>
-    <span style="color:var(--t4)">|</span>
-    <span>دائرة شرق منطقة جازان</span>
-  </div>
-</div><!-- /main -->
-
-<!-- QUICK FEED FLOATING BUTTON -->
-<button class="quick-feed-btn" onclick="go('cart')" title="صرف سريع">
-  <div class="qfb-pulse"></div>
-  <i class="fa fa-cart-shopping qfb-ico"></i>
-  <span class="qfb-lbl">صرف</span>
-</button>
-
-</div><!-- /shell -->
-
-<!-- ═══ MODALS ═══ -->
-<!-- Search Modal -->
-<div class="overlay" id="modal-search" onclick="if(event.target===this)closeModal('modal-search')">
-  <div class="modal">
-    <div class="modal-hd"><div class="modal-title"><i class="fa fa-magnifying-glass"></i>بحث سريع</div><button class="modal-close" onclick="closeModal('modal-search')">✕</button></div>
-    <input class="form-input" id="search-q" placeholder="ابحث عن فاتورة، مادة، موجه..." oninput="renderSearchResults(this.value)" autofocus>
-    <div id="search-results" style="margin-top:12px"></div>
-  </div>
-</div>
-<!-- Notifications Modal -->
-<div class="overlay" id="modal-notifs" onclick="if(event.target===this)closeModal('modal-notifs')">
-  <div class="modal">
-    <div class="modal-hd"><div class="modal-title"><i class="fa fa-bell"></i>الإشعارات</div><button class="modal-close" onclick="closeModal('modal-notifs')">✕</button></div>
-    <div id="notifs-list"></div>
-    <div style="margin-top:12px;text-align:center"><button class="btn btn-sec btn-sm" onclick="clearNotifs()"><i class="fa fa-check-double"></i>تعيين الكل كمقروء</button></div>
-  </div>
-</div>
-<!-- Generic Form Modal -->
-<div class="overlay" id="modal-form" onclick="if(event.target===this)closeModal('modal-form')">
-  <div class="modal" id="modal-form-inner">
-    <div class="modal-hd"><div class="modal-title" id="modal-form-title"></div><button class="modal-close" onclick="closeModal('modal-form')">✕</button></div>
-    <div id="modal-form-body"></div>
-    <div id="modal-form-actions" style="display:flex;gap:8px;margin-top:16px"></div>
-  </div>
-</div>
-<!-- Confirm Modal -->
-<div class="overlay" id="modal-confirm" onclick="if(event.target===this)closeModal('modal-confirm')">
-  <div class="modal" style="max-width:380px">
-    <div class="modal-hd"><div class="modal-title" id="confirm-title"></div><button class="modal-close" onclick="closeModal('modal-confirm')">✕</button></div>
-    <div id="confirm-body" style="font-size:13.5px;color:var(--t2);line-height:1.7;margin-bottom:16px"></div>
-    <div style="display:flex;gap:8px;justify-content:flex-end">
-      <button class="btn btn-sec" onclick="closeModal('modal-confirm')">إلغاء</button>
-      <button class="btn" id="confirm-ok-btn" onclick="confirmOK()">تأكيد</button>
-    </div>
-  </div>
-</div>
-<!-- Invoice Detail Modal -->
-<div class="overlay" id="modal-inv" onclick="if(event.target===this)closeModal('modal-inv')">
-  <div class="modal" style="max-width:560px">
-    <div class="modal-hd"><div class="modal-title" id="inv-detail-title"></div><button class="modal-close" onclick="closeModal('modal-inv')">✕</button></div>
-    <div id="inv-detail-body"></div>
-  </div>
-</div>
-
-<div id="toasts"></div>
 
 
 
 
 
 <script>
+// ══ تحويل الأرقام العربية لإنجليزية ══
+function toEnDigits(str){
+  if(!str&&str!==0)return str;
+  return String(str).replace(/[٠-٩]/g,function(d){return d.charCodeAt(0)-1632;})
+    .replace(/[۰-۹]/g,function(d){return d.charCodeAt(0)-1776;});
+}
+// تحويل الأرقام العربية في كل حقول الإدخال
+document.addEventListener('input',function(e){
+  var el=e.target;
+  if(el.tagName==='INPUT'||el.tagName==='TEXTAREA'){
+    var cur=el.value;
+    var conv=toEnDigits(cur);
+    if(conv!==cur){
+      var pos=el.selectionStart;
+      el.value=conv;
+      try{el.setSelectionRange(pos,pos);}catch(x){}
+    }
+  }
+},{passive:true});
+
 // ══ تعبئة قوائم المستودعات ديناميكياً ══
 function getWhOptions(includeEmpty){
   var opts=includeEmpty?'<option value="">-- اختر --</option>':'';
@@ -1814,27 +2085,16 @@ function submitWardiaTransfer(){
   document.getElementById('wtr-from').value='';
   document.getElementById('wtr-to').value='';
   document.getElementById('wtr-reason').value='';
-  updateBadges();renderMyRequests();
+  // تحديث كامل النظام
+  syncInvoiceStatus(reqNo,'معلق');
+  updateBadges();
+  try{renderRequests();}catch(e){}
+  try{renderMyRequests();}catch(e){}
   toast('ok','✓ طلب نقل '+reqNo,'أُرسل للاعتماد — '+from+' → '+to,'fa-right-left');
 }
 
 
-function dashReject(no,id){
-  if(currentUser?.role==='مشرف وردية'){toast('err','غير مصرح','ليس لديك صلاحية الرفض','fa-lock');return;}
-  var a=DB.approvals.find(function(x){return x.id===id;});
-  if(!a)return;
-  showConfirm('<i class="fa fa-times" style="color:var(--r1)"></i> رفض '+no,
-    'رفض فاتورة الصرف <strong>'+no+'</strong>؟<br>سيتم حفظها كمرفوضة.',
-    'رفض','btn-danger',function(){
-      a.st='مرفوض';a.approvedDate=today();a.approvedBy=currentUser.name;
-      syncInvoiceStatus(no,'مرفوض');
-      addLog('رفض','رفض فاتورة صرف '+no+' من لوحة التحكم',a.wh,{no:no});
-      addNotif('warn','رُفضت فاتورة '+no,'تم رفض فاتورة الصرف من لوحة التحكم','fa-times',a.emp);
-      updateBadges();
-      renderDashboard();
-      toast('ok','رُفضت '+no,'تم حفظها كمرفوضة','fa-times');
-    });
-}
+
 
 
 // ══ طلب تعديل فاتورة ══
@@ -1865,8 +2125,8 @@ function renderIerList(){
       });
       if(hasCancelReq) return false;
     }
-    if(isWardia) return i.type==='صرف'||i.type==='ارجاع'||i.type==='نقل';
-    return i.type==='صرف'||i.type==='ارجاع';
+    if(isWardia) return i.type==='صرف';
+    return i.type==='صرف';
   });
   if(q)mine=mine.filter(function(i){return i.no.toLowerCase().includes(q)||(i.cont&&i.cont.toLowerCase().includes(q));});
   if(st)mine=mine.filter(function(i){return i.st===st;});
@@ -1877,8 +2137,12 @@ function renderIerList(){
     var ti=typeMap[inv.type]||{i:'fa-file',c:'var(--t2)',b:'rgba(255,255,255,.05)'};
     var sc=inv.st==='معتمد'?'var(--g1)':inv.st==='معلق'?'var(--y1)':'var(--r1)';
     var isMoj=currentUser?.role==='موجه بلاغات';
-    var isWardiaApproved=currentUser?.role==='مشرف وردية'&&(inv.st==='معتمد'||inv.st==='مرفوض'||inv.st==='ملغي');
-    var canEdit=!isMoj&&!isWardiaApproved;
+    var isWardia=currentUser?.role==='مشرف وردية';
+    // موجه البلاغات ومشرف الوردية: يمكنهم تعديل أي فاتورة من فواتيرهم (معلقة أو معتمدة)
+    // الفاتورة الملغية أو المرفوضة لا يمكن تعديلها
+    var canEdit = inv.st!=='ملغي' && inv.st!=='مرفوض';
+    var isWardiaApproved=isWardia&&(inv.st==='معتمد'||inv.st==='مرفوض'||inv.st==='ملغي')&&inv.type==='نقل';
+    if(isWardiaApproved) canEdit=false;
     var clickFn=canEdit?'onclick="loadIerForm(\''+inv.no+'\')"':'onclick="toast(\'warn\',\'غير مسموح\',\'لا يمكنك تعديل هذه الفاتورة\',\'fa-lock\')"';
     var lockIcon=canEdit?'':'<i class="fa fa-lock" style="color:var(--t3);font-size:11px;margin-right:4px"></i>';
     return '<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--b1);cursor:'+(canEdit?'pointer':'not-allowed')+';opacity:'+(canEdit?'1':'.7')+';transition:background .15s" onmouseenter="this.style.background=\'rgba(255,200,0,.04)\'" onmouseleave="this.style.background=\'\'" '+clickFn+'>'+
@@ -1942,15 +2206,24 @@ function ierBuildFields(inv){
 function loadIerForm(no){
   var inv=DB.invoices.find(function(i){return i.no===no;});
   if(!inv){toast('err','غير موجودة','الفاتورة غير موجودة','fa-ban');return;}
-  // موجه البلاغات لا يمكنه تعديل أي فاتورة
-  if(currentUser?.role==='موجه بلاغات'){
-    toast('warn','غير مسموح','موجه البلاغات لا يملك صلاحية تعديل الفواتير','fa-lock');return;
-  }
-  // مشرف الوردية لا يمكنه تعديل فاتورة نقل معتمدة أو مرفوضة أو ملغية
-  if(currentUser?.role==='مشرف وردية' && inv.type==='نقل'){
-    if(inv.st==='معتمد'||inv.st==='مرفوض'||inv.st==='ملغي'){
-      toast('warn','غير مسموح','لا يمكن تعديل فاتورة نقل بحالة «'+inv.st+'»','fa-lock');return;
+  
+  var role=currentUser?.role;
+  var isMoj=role==='موجه بلاغات';
+  var isWardia=role==='مشرف وردية';
+  
+  // موجه البلاغات ومشرف الوردية: يمكنهم تعديل أي فاتورة من فواتيرهم ما عدا الملغية والمرفوضة
+  if(isMoj||isWardia){
+    if(inv.emp!==currentUser.name){
+      toast('warn','غير مصرح','يمكنك تعديل فواتيرك فقط','fa-lock');return;
     }
+    if(inv.st==='ملغي'||inv.st==='مرفوض'){
+      toast('warn','غير مسموح','لا يمكن تعديل فاتورة '+inv.st,'fa-lock');return;
+    }
+  }
+  
+  // مشرف الوردية لا يمكنه تعديل فاتورة نقل معتمدة
+  if(isWardia && inv.type==='نقل' && inv.st==='معتمد'){
+    toast('warn','غير مسموح','لا يمكن تعديل فاتورة نقل معتمدة','fa-lock');return;
   }
   fillWhSelects();
   ierCurrentInv=inv;
@@ -2057,6 +2330,7 @@ function submitIerRequest(){
   if(inv.type==='نقل'){if(!whRecv||whRecv===wh){toast('err','خطأ','اختر مستودعَيْن مختلفين','fa-ban');return;}}
 
   var wasApproved=inv.st==='معتمد';
+
   // ══ حفظ القيم القديمة ══
   var oldValues={
     cont:inv.cont,boq:inv.boq,notes:inv.notes,
@@ -2064,37 +2338,30 @@ function submitIerRequest(){
     items:JSON.parse(JSON.stringify(inv.items))
   };
 
-  // ══ تحديث الفاتورة نفسها فوراً ══
-  inv.cont  = cont;
-  inv.boq   = boq;
-  inv.notes = notes;
-  inv.wh    = wh;
-  if(whRecv) inv.whRecv = whRecv;
-  inv.items = JSON.parse(JSON.stringify(ierItems));
-
-  // ══ تحديث DB.approvals فوراً (ما يراه الموجه ومشرف الوردية والمدير) ══
-  DB.approvals.forEach(function(a){
-    if(a.no===no){
-      a.cont     = cont;
-      a.wh       = wh;
-      a.boq      = boq;
-      a.notes    = notes;
-      a.items    = JSON.parse(JSON.stringify(ierItems));
-      a.itemsStr = ierItems.map(function(i){return i.name+' ×'+i.qty;}).join(' + ');
-      if(whRecv) a.whRecv = whRecv;
-      // إعادة الاعتماد لمعلق إذا كان معتمداً
-      if(wasApproved) a.st = 'معلق';
-    }
-  });
-
-  // ══ تحديث أي طلب سابق بنفس رقم الفاتورة في DB.requests ══
-  DB.requests.forEach(function(r){
-    if((r.no===no||r.origInv===no)&&r.type!=='تعديل'){
-      r.cont  = cont;
-      r.wh    = wh;
-      r.items = JSON.parse(JSON.stringify(ierItems));
-    }
-  });
+  if(!wasApproved){
+    // ══ فاتورة معلقة: تحديث مباشر ══
+    inv.cont  = cont;
+    inv.boq   = boq;
+    inv.notes = notes;
+    inv.wh    = wh;
+    if(whRecv) inv.whRecv = whRecv;
+    inv.items = JSON.parse(JSON.stringify(ierItems));
+    // تحديث DB.approvals
+    DB.approvals.forEach(function(a){
+      if(a.no===no){
+        a.cont=cont;a.wh=wh;a.boq=boq;a.notes=notes;
+        a.items=JSON.parse(JSON.stringify(ierItems));
+        a.itemsStr=ierItems.map(function(i){return i.name+' ×'+i.qty;}).join(' + ');
+        if(whRecv) a.whRecv=whRecv;
+      }
+    });
+    DB.requests.forEach(function(r){
+      if((r.no===no||r.origInv===no)&&r.type!=='تعديل'){
+        r.cont=cont;r.wh=wh;r.items=JSON.parse(JSON.stringify(ierItems));
+      }
+    });
+  }
+  // فاتورة معتمدة: لا نعدّلها مباشرة — ننتظر موافقة المدير
 
   // ══ حذف أي طلب تعديل معلق سابق لنفس الفاتورة ══
   DB.requests = DB.requests.filter(function(r){
@@ -2102,6 +2369,23 @@ function submitIerRequest(){
   });
 
   // ══ إضافة طلب التعديل الجديد ══
+    // ── فحص الرصيد للمواد الجديدة/المزادة ──
+  if(wasApproved){
+    var ierStockErrors=[];
+    (ierItems||[]).forEach(function(it){
+      var oldIt=(inv?inv.items:[]).find(function(o){return o.code===it.code;});
+      var oldQty=oldIt?oldIt.qty:0;
+      var diff=it.qty-oldQty;
+      if(diff>0){
+        var avail=getAvailableStock(it.code,wh);
+        if(avail<diff) ierStockErrors.push(it.name+': متاح '+avail+' مطلوب إضافة '+diff);
+      }
+    });
+    if(ierStockErrors.length){
+      toast('err','رصيد غير كافٍ لبعض المواد',ierStockErrors.join(' | '),'fa-triangle-exclamation');
+      return;
+    }
+  }
   DB.requests.unshift({
     id:Date.now(),no:no,type:'تعديل',emp:currentUser.name,
     origInv:no,invType:inv.type,wasApproved:wasApproved,
@@ -2113,7 +2397,21 @@ function submitIerRequest(){
   });
 
   // ══ مزامنة الحالة في كل النظام ══
-  syncInvoiceStatus(no,'معلق');
+  // عند تقديم طلب تعديل على فاتورة معتمدة → تصبح معلقة بانتظار إعادة الاعتماد
+  syncInvoiceStatus(no, wasApproved ? 'معلق' : 'معلق');
+  // إذا كانت الفاتورة معتمدة → أضفها لـ DB.approvals حتى تظهر للمدير
+  if(wasApproved){
+    var existAppr=DB.approvals.find(function(a){return a.no===no;});
+    if(existAppr){existAppr.st='معلق';}
+    else{
+      DB.approvals.unshift({
+        id:Date.now(),no:no,emp:inv.emp,wh:wh,cont:cont,
+        items:JSON.parse(JSON.stringify(ierItems)),
+        itemsStr:ierItems.map(function(i){return i.name+' x'+i.qty;}).join(' + '),
+        boq:boq,notes:notes,d:today(),time:nowTime(),st:'معلق'
+      });
+    }
+  }
 
   addLog('تعديل','طلب تعديل ('+inv.type+') '+no+' — '+ierItems.length+' أصناف'+(ierDeleted.length?' — حذف '+ierDeleted.length:''),wh,{no:no,origInv:no,cont:cont,wh:wh});
   if(wasApproved) addNotif('warn','فاتورة '+no+' أُعيدت للمراجعة',currentUser.name+' طلب تعديل فاتورة '+inv.type+' معتمدة','fa-rotate-left',null);
@@ -2135,13 +2433,27 @@ function saveUserBaskets(){
 }
 
 function loadUserBaskets(){
-  // دائماً سلة فارغة عند الدخول
-  cart=[];trItems=[];feedItems=[];drItems=[];wtrItems=[];
+  // تصفير كل المتغيرات
+  cart=[];trItems=[];retItems=[];feedItems=[];drItems=[];wtrItems=[];
+  window.feedItems=[];
+  // تصفير حقول سلة الصرف في DOM
+  ['cart-contractor','cart-boq','cart-add-q','cart-notes',
+   'feed-code','feed-name','feed-po','feed-notes',
+   'mw-ret-no','mw-ret-cont','mw-ret-boq','mw-ret-reason',
+   'mw-can-no','mw-can-cont','mw-can-boq','mw-can-reason'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el)el.value='';
+  });
+  // تحديث واجهة السلة
+  try{if(typeof renderCart==='function')renderCart();}catch(e){}
 }
 
 function clearAllBaskets(){
-  cart=[];trItems=[];feedItems=[];drItems=[];wtrItems=[];
+  cart=[];trItems=[];retItems=[];feedItems=[];drItems=[];wtrItems=[];
+  window.feedItems=[];
 }
+
+
 
 // ══════════════════════ DATABASE ══════════════════════
 const DB = {
@@ -2151,111 +2463,30 @@ const DB = {
     {id:3,phone:'0508765432',pass:'wardia2',name:'م. علي عريبي',role:'مشرف وردية',photo:'',av:'سع',color:'linear-gradient(135deg,#f59e0b,#d97706)',dept:'مشرفون',active:true},
     {id:4,phone:'0509876543',pass:'ameen123',name:'ماجد رضوان',role:'أمين مستودع',photo:'',av:'خا',color:'linear-gradient(135deg,#8b5cf6,#7c3aed)',dept:'أمناء مستودعات',active:true},
     {id:5,phone:'0501234567',pass:'ameen456',name:'يزيد عطيف',role:'أمين مستودع',photo:'',av:'عب',color:'linear-gradient(135deg,#ec4899,#be185d)',dept:'أمناء مستودعات',active:true},
-    {id:6,phone:'0502345678',pass:'ameen789',name:'سامي مجممي',role:'أمين مستودع',av:'فه',color:'linear-gradient(135deg,#14b8a6,#0d9488)',dept:'أمناء مستودعات',active:false},
+    {id:6,phone:'0502345678',pass:'ameen789',name:'سامي مجممي',role:'أمين مستودع',photo:'',av:'سم',color:'linear-gradient(135deg,#06b6d4,#0891b2)',dept:'أمناء مستودعات',active:true}
   ],
-  contacts: [
-    {id:1,name:'أحمد سعيد عواجي',role:'مدير النظام',tel:'0506543210',av:'أح',color:'linear-gradient(135deg,#3b82f6,#1d4ed8)',dept:'إدارة'},
-    {id:2,name:'محمد صميلي',role:'موجه بلاغات',tel:'0507654321',av:'مح',color:'linear-gradient(135deg,#10b981,#059669)',dept:'موجهون'},
-    {id:3,name:'م. علي عريبي',role:'موجه بلاغات',tel:'0508765432',av:'سع',color:'linear-gradient(135deg,#f59e0b,#d97706)',dept:'موجهون'},
-    {id:4,name:'ماجد رضوان',role:'أمين مستودع اسناد',tel:'0509876543',av:'خا',color:'linear-gradient(135deg,#8b5cf6,#7c3aed)',dept:'أمناء مستودعات'},
-    {id:5,name:'يزيد عطيف',role:'أمين مستودع رايكو صبيا',tel:'0501234567',av:'عب',color:'linear-gradient(135deg,#ec4899,#be185d)',dept:'أمناء مستودعات'},
-    {id:6,name:'سامي مجممي',role:'أمين مستودع هيف بني مالك',tel:'0502345678',av:'فه',color:'linear-gradient(135deg,#14b8a6,#0d9488)',dept:'أمناء مستودعات'},
-    ],
-  inventory: [
-    {code:'908514012',name:'محول 100KVA',cat:'محولات',asnad:10,raiko:4,manatiq:2,min:3},
-    {code:'908514023',name:'محول 250KVA',cat:'محولات',asnad:6,raiko:3,manatiq:1,min:2},
-    {code:'908514034',name:'محول 500KVA',cat:'محولات',asnad:3,raiko:1,manatiq:0,min:1},
-    {code:'912300011',name:'كابل 3x185 مم',cat:'كابلات',asnad:220,raiko:85,manatiq:30,min:50},
-    {code:'912300022',name:'كابل 3x95 مم',cat:'كابلات',asnad:180,raiko:70,manatiq:25,min:40},
-    {code:'912300033',name:'كابل 3x50 مم',cat:'كابلات',asnad:95,raiko:40,manatiq:12,min:20},
-    {code:'915100001',name:'قاطع 630A',cat:'قواطع',asnad:8,raiko:5,manatiq:2,min:2},
-    {code:'915100002',name:'قاطع 400A',cat:'قواطع',asnad:12,raiko:7,manatiq:3,min:3},
-    {code:'920200001',name:'عداد احادي',cat:'عدادات',asnad:45,raiko:22,manatiq:8,min:10},
-    {code:'920200002',name:'عداد ثلاثي',cat:'عدادات',asnad:30,raiko:15,manatiq:5,min:8},
-    {code:'930100001',name:'صندوق توزيع 8 دائرة',cat:'صناديق',asnad:14,raiko:8,manatiq:3,min:3},
-    {code:'930100002',name:'صندوق توزيع 16 دائرة',cat:'صناديق',asnad:9,raiko:4,manatiq:1,min:2},
-    {code:'940500001',name:'برج انارة 9م',cat:'انارة',asnad:20,raiko:10,manatiq:4,min:4},
-    {code:'940500002',name:'لمبة LED 150W',cat:'انارة',asnad:60,raiko:30,manatiq:8,min:15},
-  ],
-  invoices: [
-    {no:'G48',type:'صرف',wh:'رايكو صبيا',emp:'أحمد سعيد عواجي',cont:'بن دلامة',st:'معتمد',d:'2026-06-04',items:[{code:'908514012',name:'محول 100KVA',qty:2}],notes:'',boq:''},
-    {no:'R12',type:'ارجاع',wh:'اسناد',emp:'محمد صميلي',cont:'اعسار السعودية',st:'معلق',d:'2026-06-04',items:[{code:'908514012',name:'محول 100KVA',qty:3}],notes:'مواد زائدة',boq:''},
-    {no:'G47',type:'صرف',wh:'اسناد',emp:'م. علي عريبي',cont:'قوى البيئة',st:'معتمد',d:'2026-06-03',items:[{code:'912300011',name:'كابل 3x185',qty:50}],notes:'',boq:'BOQ-2026-041'},
-    {no:'T05',type:'نقل',wh:'هيف بني مالك',emp:'أحمد سعيد عواجي',cont:'—',st:'معتمد',d:'2026-06-03',items:[{code:'908514012',name:'محول 100KVA',qty:2}],notes:'نقل طارئ',boq:''},
-    {no:'G46',type:'صرف',wh:'رايكو صبيا',emp:'محمد صميلي',cont:'بن دلامة',st:'مرفوض',d:'2026-06-02',items:[{code:'915100001',name:'قاطع 630A',qty:3}],notes:'رصيد غير كاف',boq:''},
-    {no:'CR08',type:'الغاء',wh:'اسناد',emp:'م. علي عريبي',cont:'اعسار السعودية',st:'معلق',d:'2026-06-01',items:[{code:'920200001',name:'عداد احادي',qty:5}],notes:'خطأ في البيانات',boq:''},
-    {no:'G45',type:'صرف',wh:'اسناد',emp:'أحمد سعيد عواجي',cont:'شبكات النجم',st:'معتمد',d:'2026-05-31',items:[{code:'940500001',name:'برج انارة',qty:4}],notes:'',boq:'BOQ-2026-038'},
-    {no:'R11',type:'ارجاع',wh:'هيف بني مالك',emp:'محمد صميلي',cont:'بن دلامة',st:'معتمد',d:'2026-05-30',items:[{code:'912300022',name:'كابل 3x95',qty:20}],notes:'',boq:''},
-    {no:'T04',type:'نقل',wh:'رايكو صبيا',emp:'أحمد سعيد عواجي',cont:'—',st:'معتمد',d:'2026-05-29',items:[{code:'930100001',name:'صندوق توزيع',qty:3}],notes:'',boq:''},
-    {no:'G44',type:'صرف',wh:'اسناد',emp:'م. علي عريبي',cont:'اعسار السعودية',st:'معتمد',d:'2026-05-28',items:[{code:'920200002',name:'عداد ثلاثي',qty:8}],notes:'',boq:''},
-  ],
-  requests: [
-    {id:1,no:'R12',type:'ارجاع',emp:'محمد صميلي',wh:'اسناد',cont:'اعسار السعودية',origInv:'R12',retItems:[{code:'908514012',name:'محول 100KVA',qty:3}],reason:'مواد زائدة عن الحاجة',d:'2026-06-04',time:'09:47',st:'معلق'},
-    {id:2,no:'R11B',type:'ارجاع',emp:'م. علي عريبي',wh:'رايكو صبيا',cont:'قوى البيئة',origInv:'R11B',retItems:[{code:'908585001',name:'كابل 3x95مم',qty:20}],reason:'طلب المقاول اعادتها',d:'2026-06-03',time:'14:22',st:'معلق'},
-    {id:3,no:'CR08',type:'الغاء',emp:'م. علي عريبي',wh:'اسناد',cont:'اعسار السعودية',origInv:'CR08',retItems:[],reason:'خطأ في الكميات المدخلة',d:'2026-06-01',time:'11:05',st:'معلق'},
-  ],
-  approvals: [
-    {id:1,no:'G49',emp:'محمد صميلي',wh:'اسناد',cont:'بن دلامة',items:[{code:'915100001',name:'قاطع 630A',qty:2},{code:'930100001',name:'كابل 185مم',qty:5}],itemsStr:'قاطع 630A x2 + كابل 185مم x5',d:'2026-06-05',time:'08:30',st:'معلق'},
-    {id:2,no:'G50',emp:'م. علي عريبي',wh:'رايكو صبيا',cont:'فوى البلاة',items:[{code:'920200001',name:'عداد احادي',qty:3}],itemsStr:'عداد احادي x3',d:'2026-06-03',time:'14:20',st:'معلق'},
-  ],
-  boq: [
-    {no:'BOQ-2026-041',desc:'إصلاح خط 33KV منطقة صبيا',wh:'رايكو صبيا',inv:['G48','G47'],st:'جاري',d:'2026-06-01',tech:'أحمد سعيد عواجي'},
-    {no:'BOQ-2026-038',desc:'توصيل محول جديد حي الورود',wh:'اسناد',inv:['G45','G44'],st:'مغلق',d:'2026-05-25',tech:'م. علي عريبي'},
-    {no:'BOQ-2026-035',desc:'صيانة شبكة هيف بني مالك الريفية',wh:'هيف بني مالك',inv:['G43'],st:'مفتوح',d:'2026-05-20',tech:'محمد صميلي'},
-    {no:'BOQ-2026-033',desc:'توسعة شبكة الضغط المنخفض',wh:'اسناد',inv:['G42','G41'],st:'جاري',d:'2026-05-15',tech:'أحمد سعيد عواجي'},
-  ],
-  logs: [
-    {type:'صرف',act:'اصدار فاتورة G48',emp:'أحمد سعيد عواجي',wh:'رايكو صبيا',t:'11:23',d:'2026-06-04',c:'var(--g1)',i:'fa-file-invoice'},
-    {type:'ارجاع',act:'طلب ارجاع R12',emp:'محمد صميلي',wh:'اسناد',t:'09:47',d:'2026-06-04',c:'var(--o1)',i:'fa-rotate-left'},
-    {type:'صرف',act:'اعتماد فاتورة G47',emp:'أحمد سعيد عواجي',wh:'اسناد',t:'08:15',d:'2026-06-03',c:'var(--a1)',i:'fa-signature'},
-    {type:'تغذية',act:'تغذية 100 وحدة كابل 3x185',emp:'أحمد سعيد عواجي',wh:'رايكو صبيا',t:'07:30',d:'2026-06-03',c:'#009245',i:'fa-cubes'},
-    {type:'صرف',act:'رفض فاتورة G46',emp:'أحمد سعيد عواجي',wh:'رايكو صبيا',t:'06:18',d:'2026-06-02',c:'var(--r1)',i:'fa-xmark'},
-    {type:'نقل',act:'نقل T05 من اسناد الى هيف بني مالك',emp:'أحمد سعيد عواجي',wh:'هيف بني مالك',t:'15:40',d:'2026-06-03',c:'var(--a3)',i:'fa-right-left'},
-    {type:'صرف',act:'اصدار فاتورة G45',emp:'أحمد سعيد عواجي',wh:'اسناد',t:'11:00',d:'2026-05-31',c:'var(--g1)',i:'fa-file-invoice'},
-    {type:'ارجاع',act:'اعتماد طلب ارجاع R11',emp:'أحمد سعيد عواجي',wh:'هيف بني مالك',t:'09:00',d:'2026-05-30',c:'var(--g1)',i:'fa-check'},
-    {type:'نظام',act:'نسخة احتياطية تلقائية',emp:'النظام',wh:'—',t:'04:00',d:'2026-06-04',c:'var(--t3)',i:'fa-hard-drive'},
-    {type:'تعديل',act:'تعديل فاتورة G44',emp:'أحمد سعيد عواجي',wh:'اسناد',t:'13:30',d:'2026-05-28',c:'var(--y1)',i:'fa-pen'},
-  ],
-  notifications: [
-    {id:1,type:'warn',title:'طلب ارجاع جديد',msg:'محمد صميلي — اسناد — 3 محولات 100KVA',i:'fa-rotate-left',read:false,time:'09:47'},
-    {id:2,type:'err',title:'تنبيه مخزون منخفض',msg:'محول 500KVA وصل للحد الادنى في هيف بني مالك',i:'fa-triangle-exclamation',read:false,time:'08:00'},
-    {id:3,type:'ok',title:'مزامنة Supabase ناجحة',msg:'تمت مزامنة 24 عملية جديدة بنجاح',i:'fa-database',read:true,time:'07:30'},
-    {id:4,type:'info',title:'فاتورة جديدة بانتظار الاعتماد',msg:'G49 — محمد صميلي — اسناد',i:'fa-signature',read:false,time:'08:30'},
-  ],
-  settings:{autoNotif:true,supabaseSync:true,autoBackup:true,logAll:true,autoApproveFeed:false,maintenance:false,twoFA:true,ipRestrict:false,sessionTimeout:true},
-  warehouses: [
-    {id:1,name:'اسناد',key:'asnad',location:'جازان — اسناد',manager:'ماجد رضوان',phone:'0501111111',active:true,color:'#0066ff',zone:'south'},
-    {id:2,name:'رايكو صبيا',key:'raiko',location:'صبيا — رايكو',manager:'يزيد عطيف',phone:'0502222222',active:true,color:'#10b981',zone:'north'},
-    {id:3,name:'هيف بني مالك',key:'manatiq',location:'مناطق متفرقة',manager:'سامي مجممي',phone:'0503333333',active:true,color:'#f59e0b',zone:'east'},
-  ],
-  zones: [
-    {id:'south',name:'المستودعات الجنوبية',icon:'fa-arrow-down',color:'#10b981',bg:'rgba(16,185,129,.1)',border:'rgba(16,185,129,.3)'},
-    {id:'north',name:'المستودعات الشمالية',icon:'fa-arrow-up',color:'#3b82f6',bg:'rgba(59,130,246,.1)',border:'rgba(59,130,246,.3)'},
-    {id:'east', name:'المستودعات الشرقية',icon:'fa-arrow-right',color:'#f59e0b',bg:'rgba(245,158,11,.1)',border:'rgba(245,158,11,.3)'},
-  ],
-  contractors: [
-    {id:1,name:'شركة بن دلامة',contact:'0501112223',active:true},
-    {id:2,name:'اعسار السعودية',contact:'0502223334',active:true},
-    {id:3,name:'قوى البيئة',contact:'0503334445',active:true},
-    {id:4,name:'شبكات النجم',contact:'0504445556',active:true},
-    {id:5,name:'الراشد للمقاولات',contact:'0505556667',active:false},
-  ],
-  categories: [
-    {id:1,name:'محولات',icon:'fa-bolt',color:'#f59e0b',criticalLimit:3,warningLimit:8,safeLimit:15},
-    {id:2,name:'كابلات',icon:'fa-cable-car',color:'#3b82f6',criticalLimit:30,warningLimit:80,safeLimit:200},
-    {id:3,name:'قواطع',icon:'fa-toggle-on',color:'#8b5cf6',criticalLimit:3,warningLimit:8,safeLimit:20},
-    {id:4,name:'عدادات',icon:'fa-gauge',color:'#10b981',criticalLimit:5,warningLimit:15,safeLimit:40},
-    {id:5,name:'صناديق',icon:'fa-box',color:'#ec4899',criticalLimit:2,warningLimit:6,safeLimit:15},
-    {id:6,name:'انارة',icon:'fa-lightbulb',color:'#f97316',criticalLimit:5,warningLimit:20,safeLimit:60},
-  ],
+  contacts:    [],
+  inventory:   [],
+  invoices:    [],
+  requests:    [],
+  approvals:   [],
+  boq:         [],
+  logs:        [],
+  notifications: [],
+  warehouses: [],
+  zones: [],
+  contractors: [],
+  categories:  []
 };
 
-let currentUser=null, cart=[], invNextNo=51, editingInv=null, confirmCB=null, arcFilter='all', reqFilter='all';
+let currentUser=null, cart=[], invNextNo=1, editingInv=null, confirmCB=null, arcFilter='all', reqFilter='all';
+var CAT_ICONS=['fa-bolt','fa-cable-car','fa-toggle-on','fa-gauge','fa-box','fa-lightbulb','fa-wrench','fa-gear','fa-plug','fa-shield','fa-fire','fa-droplet','fa-wind','fa-tag','fa-layer-group','fa-cube','fa-network-wired','fa-microchip','fa-transformer-bolt','fa-battery-full','fa-solar-panel','fa-tower-cell'];
+var CAT_COLORS=['#f59e0b','#3b82f6','#8b5cf6','#10b981','#ec4899','#f97316','#00d4ff','#ef4444','#14b8a6','#84cc16','#6366f1','#06b6d4','#a855f7','#22c55e'];
 
 // ══ توليد رقم الفاتورة/الطلب الموحد ══
 function genInvNo(type){
-  var prefix={صرف:'G',ارجاع:'R',نقل:'T',الغاء:'CL',تعديل:'ED'};
-  var p=prefix[type]||'INV';
+  var prefix={صرف:'G',ارجاع:'R',نقل:'T',الغاء:'CR',تعديل:'ED',CL:'CR',G:'G',R:'R',T:'T'};
+  var p=prefix[type]||type||'INV';
   var used=DB.invoices.concat(DB.requests).map(function(x){return x.no;});
   var n=1;
   while(used.indexOf(p+n)>=0)n++;
@@ -2307,7 +2538,10 @@ function syncInvoiceStatus(no,newStatus,extra){
   // 4. أعد رسم كل الواجهات المفتوحة + انتقل للتاب الصحيح
   updateBadges();
   try{if(currentPage==='dashboard')renderDashboard();}catch(e){}
-  try{if(currentPage==='myinv')renderMyInv();}catch(e){}
+  try{if(currentPage==='inv-edit-req'&&typeof renderIerList==='function')renderIerList();}catch(e){}
+  try{if(currentPage==='inv-edit-req'&&typeof renderIerMyPending==='function')renderIerMyPending();}catch(e){}
+  try{if(currentPage==='requests'&&typeof renderEditRequests==='function')renderEditRequests();}catch(e){}
+  try{if(currentPage==='myinv'&&typeof renderMyInv==='function')renderMyInv();}catch(e){}
   try{if(currentPage==='invoices')renderArc();}catch(e){}
   try{if(currentPage==='approve'){
     // إذا الحالة انتهت → اعرض السابقة تلقائياً
@@ -2406,17 +2640,28 @@ var reqHistTab='pending';
 function setReqTab(t){
   reqHistTab=t;
   var ps=document.getElementById('req-pending-section');
+  var es=document.getElementById('req-edit-section');
   var hs=document.getElementById('req-history-section');
   var tp=document.getElementById('req-tab-pending');
+  var te=document.getElementById('req-tab-edit');
   var th=document.getElementById('req-tab-history');
   if(ps)ps.style.display=t==='pending'?'block':'none';
+  if(es)es.style.display=t==='edit'?'block':'none';
   if(hs)hs.style.display=t==='history'?'block':'none';
   if(tp)tp.style.fontWeight=t==='pending'?'800':'400';
+  if(te)te.style.fontWeight=t==='edit'?'800':'400';
   if(th)th.style.fontWeight=t==='history'?'800':'400';
-  var cnt=DB.requests.filter(function(r){return r.st==='معلق';}).length;
+  // تحديث badge المعلقة
+  var cnt=DB.requests.filter(function(r){return r.st==='معلق'&&['ارجاع','الغاء','نقل'].includes(r.type);}).length;
   var badge=document.getElementById('req-pending-cnt');
   if(badge){badge.textContent=cnt;badge.style.display=cnt?'inline-flex':'none';}
+  // تحديث badge التعديل
+  var ecnt=DB.requests.filter(function(r){return r.st==='معلق'&&r.type==='تعديل';}).length;
+  var ebadge=document.getElementById('req-edit-cnt');
+  if(ebadge){ebadge.textContent=ecnt;ebadge.style.display=ecnt?'inline-flex':'none';}
   if(t==='history')renderReqHistory();
+  else if(t==='edit')renderEditRequests();
+  else renderAdminRequests();
 }
 
 function renderReqHistory(){
@@ -2425,7 +2670,9 @@ function renderReqHistory(){
   var tp=(document.getElementById('req-hist-type')?.value||'').trim();
   var st=(document.getElementById('req-hist-st')?.value||'').trim();
   var dt=(document.getElementById('req-hist-date')?.value||'').trim();
-  var items=DB.requests.filter(function(r){return r.st!=='معلق';});
+  var items=DB.requests.filter(function(r){
+    return r.st!=='معلق' && ['ارجاع','الغاء','نقل'].includes(r.type);
+  });
   if(q)items=items.filter(function(r){return r.no.toLowerCase().includes(q)||(r.cont||'').toLowerCase().includes(q)||(r.emp||'').toLowerCase().includes(q);});
   if(tp)items=items.filter(function(r){return r.type===tp;});
   if(st)items=items.filter(function(r){return r.st===st;});
@@ -2498,22 +2745,46 @@ function setInvTab(t){
 
 function getReservationsForItem(code, wh){
   var out=[];
-  // فواتير صرف معلقة
+  var counted=new Set();
+  // فواتير صرف معلقة (DB.approvals)
   DB.approvals.filter(function(a){return a.st==='معلق'&&(!wh||a.wh===wh);}).forEach(function(a){
+    if(counted.has(a.no)) return;
     var items=Array.isArray(a.items)?a.items:[];
     var it=items.find(function(x){return x.code===code;});
-    if(it) out.push({no:a.no,type:'صرف',wh:a.wh,qty:it.qty,emp:a.emp,d:a.d,color:'var(--r1)',icon:'fa-cart-shopping'});
+    if(it){counted.add(a.no);out.push({no:a.no,type:'صرف',wh:a.wh,qty:it.qty,emp:a.emp,d:a.d,color:'var(--r1)',icon:'fa-cart-shopping'});}
   });
+  // فواتير صرف معلقة (DB.invoices) — منع التكرار
   DB.invoices.filter(function(inv){return inv.st==='معلق'&&inv.type==='صرف'&&(!wh||inv.wh===wh);}).forEach(function(inv){
+    if(counted.has(inv.no)) return;
     var it=inv.items.find(function(x){return x.code===code;});
-    if(it&&!out.find(function(o){return o.no===inv.no;}))
-      out.push({no:inv.no,type:'صرف',wh:inv.wh,qty:it.qty,emp:inv.emp,d:inv.d,color:'var(--r1)',icon:'fa-cart-shopping'});
+    if(it){counted.add(inv.no);out.push({no:inv.no,type:'صرف',wh:inv.wh,qty:it.qty,emp:inv.emp,d:inv.d,color:'var(--r1)',icon:'fa-cart-shopping'});}
   });
   // طلبات نقل معلقة
-  DB.requests.filter(function(r){return r.st==='معلق'&&r.type==='نقل'&&(!wh||r.wh===wh);}).forEach(function(r){
+  DB.requests.filter(function(r){return r.st==='معلق'&&r.type==='نقل'&&(!wh||(r.wh||r.from)===wh);}).forEach(function(r){
+    if(counted.has(r.no)) return;
     var items=Array.isArray(r.items)?r.items:(r.retItems||[]);
     var it=items.find(function(x){return x.code===code;});
-    if(it) out.push({no:r.no,type:'نقل',wh:r.wh,to:r.to||r.whRecv||'',qty:it.qty,emp:r.emp,d:r.d,color:'var(--a1)',icon:'fa-right-left'});
+    if(it){counted.add(r.no);out.push({no:r.no,type:'نقل',wh:r.wh||r.from,to:r.to||r.whRecv||'',qty:it.qty,emp:r.emp,d:r.d,color:'var(--a1)',icon:'fa-right-left'});}
+  });
+  // طلبات إلغاء معلقة — تُظهر في الحجوزات كتنبيه
+  // (المواد محجوزة في الفاتورة الأصلية بانتظار قرار الإلغاء)
+  DB.requests.filter(function(r){return r.st==='معلق'&&r.type==='الغاء';}).forEach(function(r){
+    var origInv=DB.invoices.find(function(i){return i.no===r.origInv;});
+    if(!origInv||origInv.st==='ملغي') return;
+    var origWh=r.origWh||origInv.wh;
+    if(wh&&origWh!==wh) return;
+    if(counted.has('CAN_'+r.no)) return;
+    var invItems=Array.isArray(r.retItems)?r.retItems:Array.isArray(r.items)?r.items:origInv.items||[];
+    var it=invItems.find(function(x){return x.code===code;});
+    if(it){
+      counted.add('CAN_'+r.no);
+      out.push({
+        no:r.no,type:'إلغاء معلق',wh:origWh,
+        qty:it.qty,emp:r.emp,d:r.d,
+        color:'var(--y1)',icon:'fa-ban',
+        returnWh:r.wh // المستودع الذي ستُعاد إليه المواد
+      });
+    }
   });
   return out;
 }
@@ -2670,6 +2941,49 @@ function addLog(type,act,wh,extra){
   DB.logs.unshift({type,act,emp:currentUser?currentUser.name:'النظام',wh:wh||'—',t:nowTime(),d:today(),c:cols[type]||'var(--t3)',i:icos[type]||'fa-circle-info',...(extra||{})});
   if(DB.logs.length>200)DB.logs.pop();
 }
+// ══ إضافة إشعار ══
+function addNotif(type,title,msg,icon,targetEmp){
+  var id=Date.now();
+  DB.notifications.unshift({id:id,type:type,title:title,msg:msg,i:icon||'fa-bell',
+    read:false,time:nowTime(),d:today(),emp:targetEmp||null});
+  if(DB.notifications.length>100) DB.notifications.pop();
+  updateBadges();
+}
+
+// ══ ارجاع مباشر — يضيف للمخزون فوراً ══
+function doDirectReturn(){
+  var wh=document.getElementById('dr-wh')?.value;
+  var cont=(document.getElementById('dr-cont')?.value||'').trim();
+  var boq=(document.getElementById('dr-boq')?.value||'').trim();
+  var notes=(document.getElementById('dr-notes')?.value||'').trim();
+  var origNo=(document.getElementById('dr-inv-no')?.value||'').trim();
+  var reason=(document.getElementById('dr-reason')?.value||'').trim();
+  if(!wh){toast('err','حقل مطلوب','اختر المستودع المستلم','fa-warehouse');return;}
+  if(!cont){toast('err','حقل مطلوب','أدخل اسم المقاول','fa-ban');return;}
+  var drItems=window.drItems||[];
+  if(!drItems.length){toast('err','لا توجد مواد','أضف مواد للارجاع أولاً','fa-ban');return;}
+  var no=genInvNo('R');
+  // إضافة للمخزون فوراً
+  drItems.forEach(function(it){setStock(it.code,wh,it.qty);});
+  // إنشاء الفاتورة
+  DB.invoices.unshift({no:no,type:'ارجاع',wh:wh,emp:currentUser.name,cont:cont,
+    st:'معتمد',d:today(),items:drItems.map(function(it){return Object.assign({},it);}),
+    boq:boq,notes:notes,origInv:origNo,reason:reason,approvedDate:today(),approvedBy:currentUser.name});
+  addLog('ارجاع','ارجاع مباشر '+no+' — '+cont,wh,{no:no});
+  addNotif('ok','✓ ارجاع مباشر '+no,'تم استلام المواد وإضافتها للمستودع '+wh,'fa-rotate-left',null);
+  updateBadges();
+  // مسح النموذج
+  window.drItems=[];
+  ['dr-cont','dr-boq','dr-notes','dr-inv-no','dr-reason'].forEach(function(id){
+    var el=document.getElementById(id);if(el)el.value='';
+  });
+  var drEl=document.getElementById('dr-items-list');if(drEl)drEl.innerHTML='';
+  renderDrHist();
+  toast('ok','✓ تم الارجاع المباشر','فاتورة '+no+' — المواد أُضيفت للمستودع '+wh,'fa-rotate-left');
+  syncInvoiceStatus(no,'معتمد');
+}
+
+
 function getWhKey(wh){var w=DB.warehouses.find(function(x){return x.name===wh;});return w?w.key:null;}
 function getStock(code,wh){const i=DB.inventory.find(x=>x.code===code);if(!i)return 0;var k=getWhKey(wh);return k?(i[k]||0):0;}
 function setStock(code,wh,delta){const i=DB.inventory.find(x=>x.code===code);if(!i)return;var k=getWhKey(wh);if(k)i[k]=Math.max(0,(i[k]||0)+delta);}
@@ -2916,33 +3230,42 @@ function renderEmpMonth(){
 }
 
 function updateBadges(){updateZonesBadge();updateReservedBadge();
-  // تحديث بطاقات لوحة التحكم
+  var isM=currentUser?.role==='موجه بلاغات';
+  var isW=currentUser?.role==='مشرف وردية';
+  var isMW=isM||isW;
+  var isAdmin=currentUser?.role==='مدير النظام'||currentUser?.role==='أمين مستودع';
+  // لوحة التحكم
   var sv3=document.getElementById('sv3');
   var sv4=document.getElementById('sv4');
   if(sv3) sv3.textContent=DB.approvals.filter(function(a){return a.st==='معلق';}).length;
   if(sv4) sv4.textContent=DB.requests.filter(function(r){return r.st==='معلق'&&r.type==='ارجاع';}).length;
-  var isM=currentUser?.role==='موجه بلاغات';
-  var isW=currentUser?.role==='مشرف وردية';
-  // badge الطلبات: للموجه ومشرف الوردية = طلباتهم المعلقة فقط، للمدير/أمين = كل المعلقة
-  var rCount = (isM||isW)
-    ? DB.requests.filter(function(x){return x.st==='معلق'&&x.emp===currentUser.name;}).length
-    : DB.requests.filter(function(x){return x.st==='معلق';}).length;
-  var a=DB.approvals.filter(function(x){return x.st==='معلق';}).length;
-  var rb=document.getElementById('badge-req');var ab=document.getElementById('badge-appr');
-  if(rb){rb.textContent=rCount;rb.style.display=rCount?'flex':'none';}
-  if(ab){ab.textContent=a;ab.style.display=a?'flex':'none';}
+  // badge "اعتماد الطلبات" = كل الطلبات المعلقة (صرف + ارجاع + الغاء + تعديل)
+  var totalPending=DB.approvals.filter(function(x){return x.st==='معلق';}).length+
+    DB.requests.filter(function(x){return x.st==='معلق'&&['ارجاع','الغاء','تعديل'].includes(x.type);}).length;
+  var ab=document.getElementById('badge-appr');
+  if(ab){ab.textContent=totalPending;ab.style.display=totalPending?'flex':'none';}
+  // badge "طلباتي" = طلبات الموجه/المشرف فقط
+  var myPending=isMW
+    ? (DB.invoices.filter(function(x){return x.st==='معلق'&&x.emp===currentUser.name;}).length+
+       DB.requests.filter(function(x){return x.st==='معلق'&&x.emp===currentUser.name&&['ارجاع','الغاء','تعديل'].includes(x.type);}).length)
+    : 0;
+  var rb=document.getElementById('badge-req');
+  if(rb){rb.textContent=myPending;rb.style.display=myPending?'flex':'none';}
+  // mw badge
+  if(isMW){var mwb=document.getElementById('mw-cnt-current');if(mwb){mwb.textContent=myPending||'';mwb.style.display=myPending?'inline':'none';}}
   var nd=document.getElementById('notif-dot');
   if(nd)nd.style.display=DB.notifications.filter(function(n){return !n.read;}).length?'block':'none';
+  // إعادة عرض لو الصفحة مفتوحة
+  if(currentPage==='approve'&&isAdmin){try{renderApprovals();}catch(e){}}
 }
 function fillDL(){const dl=document.getElementById('inv-datalist');if(dl)dl.innerHTML=DB.inventory.map(i=>`<option value="${i.code}">${i.name}</option>`).join('');}
 
 // حساب الكمية المحجوزة (فواتير معلقة لم تُعتمد بعد)
 function getReservedStock(code,wh){
-  // جمع أرقام الفواتير المحسوبة لتجنب التكرار
   var counted=new Set();
   var total=0;
 
-  // 1. DB.approvals المعلقة (فواتير الصرف بانتظار الاعتماد) — الأولوية للاعتماد
+  // 1. DB.approvals المعلقة (فواتير الصرف بانتظار الاعتماد)
   DB.approvals
     .filter(function(a){return a.st==='معلق'&&a.wh===wh;})
     .forEach(function(a){
@@ -2950,28 +3273,46 @@ function getReservedStock(code,wh){
       counted.add(a.no);
       var items=Array.isArray(a.items)?a.items:[];
       var item=items.find(function(it){return it.code===code;});
-      if(item) total+=item.qty;
+      if(item) total+=Number(item.qty)||0;
     });
 
-  // 2. DB.invoices المعلقة من نوع صرف — فقط التي لم تُحسب من approvals
+  // 2. DB.invoices المعلقة من نوع صرف
   DB.invoices
     .filter(function(inv){return inv.st==='معلق'&&inv.type==='صرف'&&inv.wh===wh;})
     .forEach(function(inv){
-      if(counted.has(inv.no)) return; // تجنب التكرار مع approvals
+      if(counted.has(inv.no)) return;
       counted.add(inv.no);
       var item=(inv.items||[]).find(function(it){return it.code===code;});
-      if(item) total+=item.qty;
+      if(item) total+=Number(item.qty)||0;
     });
 
-  // 3. طلبات النقل المعلقة من هذا المستودع (أولوية أدنى)
+  // 3. طلبات النقل المعلقة من هذا المستودع
   DB.requests
-    .filter(function(r){return r.st==='معلق'&&r.type==='نقل'&&r.wh===wh;})
+    .filter(function(r){return r.st==='معلق'&&r.type==='نقل'&&(r.wh||r.from)===wh;})
     .forEach(function(r){
       if(counted.has(r.no)) return;
       counted.add(r.no);
       var items=Array.isArray(r.items)?r.items:(r.retItems||[]);
       var item=items.find(function(it){return it.code===code;});
-      if(item) total+=item.qty;
+      if(item) total+=Number(item.qty)||0;
+    });
+
+  // 4. طلبات الإلغاء المعلقة — تحجز من المستودع الأصلي للفاتورة
+  // الفاتورة المعتمدة: مواد مخصومة فعلاً، نمنع التلاعب بها حتى البت في الطلب
+  // الفاتورة المعلقة: مواد محجوزة أصلاً (مشمولة في بند 1 أو 2)، لا حاجة لحجز إضافي
+  DB.requests
+    .filter(function(r){return r.st==='معلق'&&r.type==='الغاء';})
+    .forEach(function(r){
+      var origInv=DB.invoices.find(function(i){return i.no===r.origInv;});
+      if(!origInv||origInv.st!=='معتمد') return; // الفاتورة المعلقة محجوزة أصلاً
+      var origWh=r.origWh||origInv.wh;
+      if(origWh!==wh) return; // نحجز من المستودع الأصلي
+      if(counted.has('CAN_'+r.no)) return;
+      counted.add('CAN_'+r.no);
+      // نحجز المواد: الفاتورة معتمدة والمواد "قيد الإلغاء" — لا تكون متاحة للصرف
+      var items=Array.isArray(r.retItems)?r.retItems:Array.isArray(r.items)?r.items:(origInv.items||[]);
+      var item=items.find(function(it){return it.code===code;});
+      if(item) total+=Number(item.qty)||0;
     });
 
   return total;
@@ -3023,10 +3364,21 @@ function confirmOK(){closeModal('modal-confirm');if(confirmCB)confirmCB();confir
 function showFormModal(title,body,actions){
   document.getElementById('modal-form-title').innerHTML=title;
   document.getElementById('modal-form-body').innerHTML=body;
-  const ab=document.getElementById('modal-form-actions');
-  ab.innerHTML=actions.map((a,i)=>`<button class="btn ${a.cls}" id="mfa${i}">${a.lbl}</button>`).join('');
-  actions.forEach((a,i)=>document.getElementById('mfa'+i).onclick=a.fn);
+  var ab=document.getElementById('modal-form-actions');
+  ab.innerHTML='';
+  actions.forEach(function(a,i){
+    var btn=document.createElement('button');
+    btn.className='btn '+a.cls;
+    btn.innerHTML=a.lbl;
+    btn.onclick=a.fn;
+    ab.appendChild(btn);
+  });
   openModal('modal-form');
+  // تمرير للأعلى وإعادة حساب الحجم
+  setTimeout(function(){
+    var body=document.getElementById('modal-form-body');
+    if(body)body.scrollTop=0;
+  },50);
 }
 
 // ══════════════════════ LOGIN ══════════════════════
@@ -3060,6 +3412,8 @@ function doLogin(){
       else{document.getElementById('lpass').classList.add('err');document.getElementById('lerr-w-msg').textContent='كلمة السر غير صحيحة';document.getElementById('lerr-w').classList.add('show');}
       btn.disabled=false;btn.innerHTML='<i class="fa fa-right-to-bracket"></i>  تسجيل الدخول';return;
     }
+    // تصفير السلة فوراً قبل تغيير المستخدم
+    cart=[];trItems=[];retItems=[];feedItems=[];drItems=[];wtrItems=[];window.feedItems=[];
     // حفظ سلة المستخدم السابق إن وجد
     if(currentUser)saveUserBaskets();
     currentUser=user;
@@ -3106,16 +3460,26 @@ function startLoader(){
     fill.style.width=pct+'%';pctEl.textContent=Math.round(pct)+'%';
     if(pct>=100){clearInterval(t);setTimeout(()=>{
       loader.classList.add('done');
-      setTimeout(()=>{loader.classList.remove('show','done');document.getElementById('shell').classList.add('show');loadUserBaskets();cleanOldInvoices();fillWhSelects();go(currentUser?.role==='موجه بلاغات'||currentUser?.role==='مشرف وردية'?'inventory':'dashboard');autoBackup();initNotifToggle();applySidebarRole();updateBadges();renderEmpMonth();startLiveNotifs();initBrightness();},600);
+      setTimeout(()=>{loader.classList.remove('show','done');document.getElementById('shell').classList.add('show');loadUserBaskets();cleanOldInvoices();fillWhSelects();
+        var startPage=currentUser?.role==='موجه بلاغات'||currentUser?.role==='مشرف وردية'?'mywork':'dashboard';
+        go(startPage);autoBackup();initNotifToggle();applySidebarRole();updateBadges();renderEmpMonth();startLiveNotifs();initBrightness();tick();if(!window._clockInterval){window._clockInterval=setInterval(tick,1000);}
+        // إصلاح التمرير: المحتوى يستقبل الـ scroll عند مرور الماوس فوقه
+        var cnt=document.getElementById('content');
+        if(cnt){
+          cnt.addEventListener('mouseenter',function(){this.focus();},{passive:true});
+          cnt.setAttribute('tabindex','0');
+          cnt.style.outline='none';
+        }
+        },600);
     },300);}
   },100);
 }
 
 // ══════════════════════ NAVIGATION ══════════════════════
-const PAGES={dashboard:{t:'لوحة التحكم',s:'نظرة عامة'},inventory:{t:'رصيد المستودعات',s:'المخزون'},cart:{t:'سلة الصرف',s:'اصدار فواتير'},feed:{t:'تغذية المستودع',s:'اضافة مواد'},transfer:{t:'نقل بين المستودعات',s:'نقل داخلي'},zones:{t:'رصيد الزونات',s:'عرض المواد حسب الزون الجغرافي'},invoices:{t:'أرشيف الفواتير',s:'جميع الفواتير'},'direct-return':{t:'ارجاع مواد',s:'إرجاع مواد للمستودع مباشرة'},edit:{t:'تعديل فاتورة',s:'تعديل'},cancel:{t:'الغاء فاتورة',s:'الغاء مباشر'},requests:{t:'طلبات الارجاع / الالغاء / النقل',s:'الطلبات'},approve:{t:'اعتماد فواتير الصرف',s:'الاعتماد'},myinv:{t:'فواتيري',s:'فواتيرك الشخصية'},'inv-edit-req':{t:'طلب تعديل فاتورة صرف',s:'إرسال طلب تعديل فاتورة صرف'},boq:{t:'قسم BOQ',s:'البلاغات'},logs:{t:'سجل العمليات',s:'المراقبة'},contact:{t:'أرقام التواصل',s:'الدليل'},users:{t:'إدارة المستخدمين',s:'الصلاحيات'},settings:{t:'إعدادات النظام',s:'الإعدادات'},'warehouses-pg':{t:'إدارة المستودعات',s:'المستودعات'},'contractors-pg':{t:'إدارة المقاولين',s:'المقاولون'},'categories-pg':{t:'الفئات وحدود الإشعار',s:'إدارة الفئات'}};
+const PAGES={dashboard:{t:'لوحة التحكم',s:'نظرة عامة'},inventory:{t:'رصيد المستودعات',s:'المخزون'},cart:{t:'سلة الصرف',s:'اصدار فواتير'},feed:{t:'تغذية المستودع',s:'اضافة مواد'},transfer:{t:'نقل بين المستودعات',s:'نقل داخلي'},zones:{t:'رصيد الزونات',s:'عرض المواد حسب الزون الجغرافي'},invoices:{t:'أرشيف الفواتير',s:'جميع الفواتير'},'direct-return':{t:'ارجاع مواد',s:'إرجاع مواد للمستودع مباشرة'},edit:{t:'تعديل فاتورة',s:'تعديل'},cancel:{t:'الغاء فاتورة',s:'الغاء مباشر'},requests:{t:'طلبات الارجاع / الالغاء / النقل',s:'الطلبات'},approve:{t:'اعتماد فواتير الصرف',s:'الاعتماد'},myinv:{t:'فواتيري',s:'فواتيرك الشخصية'},'inv-edit-req':{t:'طلب تعديل فاتورة صرف',s:'إرسال طلب تعديل فاتورة صرف'},boq:{t:'قسم BOQ',s:'البلاغات'},logs:{t:'سجل العمليات',s:'المراقبة'},contact:{t:'أرقام التواصل',s:'الدليل'},users:{t:'إدارة المستخدمين',s:'الصلاحيات'},settings:{t:'إعدادات النظام',s:'الإعدادات'},'warehouses-pg':{t:'إدارة المستودعات',s:'المستودعات'},'contractors-pg':{t:'إدارة المقاولين',s:'المقاولون'},'categories-pg':{t:'الفئات وحدود الإشعار',s:'إدارة الفئات'},mywork:{t:'فواتيري وطلباتي',s:'متابعة الفواتير والطلبات'}};
 // صفحات موجه البلاغات المسموح بها
-const MOJTAHED_PAGES=['inventory','zones','cart','requests','myinv','logs','contact','direct-return','inv-edit-req'];
-const WARDIA_PAGES=['inventory','zones','cart','transfer','direct-return','requests','myinv','logs','contact','inv-edit-req'];
+const MOJTAHED_PAGES=['inventory','zones','cart','mywork','logs','contact','invoices'];
+const WARDIA_PAGES=['inventory','zones','cart','mywork','logs','contact','invoices'];
 
 function applySidebarRole(){
   if(!currentUser)return;
@@ -3178,11 +3542,22 @@ function go(page){
   const info=PAGES[page]||PAGES.dashboard;
   document.getElementById('tb-title').textContent=info.t;
   document.getElementById('tb-sub').textContent=info.s;
-  Object.keys(PAGES).forEach(p=>{const el=document.getElementById('pg-'+p);if(el)el.style.display='none';});
+  document.querySelectorAll('[id^="pg-"]').forEach(function(el){el.style.display='none';});
+  // إخفاء زر التمرير عند الانتقال لصفحة أخرى
+  var sb=document.getElementById('mw-scroll-btn');if(sb)sb.classList.remove('show');
+  // إخفاء العناصر المرتبطة بصفحات محددة
+  var extraHide=['ier-my-requests-card'];
+  extraHide.forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='none';});
   const pg=document.getElementById('pg-'+page);
   if(pg){pg.style.display='block';pg.className='page-in';}
-  const init={dashboard:renderDashboard,'direct-return':()=>{fillWhSelects();renderDrPage();},inventory:renderInventory,cart:()=>{fillWhSelects();renderCart();},feed:()=>{fillWhSelects();renderFeedHist();},transfer:()=>{fillWhSelects();renderTrHist();},invoices:renderArc,requests:()=>{fillWhSelects();renderRequests();},approve:()=>{fillWhSelects();renderApprovals();},myinv:renderMyInv,'inv-edit-req':()=>{fillWhSelects();var lc=document.getElementById('ier-list-card'),fc=document.getElementById('ier-form-card');if(lc)lc.style.display='block';if(fc)fc.style.display='none';renderIerList();},boq:renderBOQ,logs:renderLogs,contact:renderContacts,users:renderUsers,settings:renderSettings,zones:renderZonesPage,'warehouses-pg':function(){renderWarehouses();renderZonesManage();},'contractors-pg':renderContractors,'categories-pg':renderCategories};
+  // إعادة توجيه myinv لـ mywork للموجه ومشرف الوردية
+  const isMW2=currentUser?.role==='موجه بلاغات'||currentUser?.role==='مشرف وردية';
+  if(page==='myinv'&&isMW2){page='mywork';currentPage='mywork';}
+  const init={dashboard:renderDashboard,'direct-return':()=>{fillWhSelects();renderDrPage();},inventory:renderInventory,cart:()=>{fillWhSelects();renderCart();},feed:()=>{fillWhSelects();renderFeedHist();},transfer:()=>{fillWhSelects();renderTrHist();},invoices:()=>{arcSetTab('approved');},requests:()=>{fillWhSelects();renderRequests();},approve:()=>{fillWhSelects();renderApprovals();},myinv:renderMyInv,'inv-edit-req':()=>{fillWhSelects();var lc=document.getElementById('ier-list-card'),fc=document.getElementById('ier-form-card');if(lc)lc.style.display='block';if(fc)fc.style.display='none';var mc=document.getElementById('ier-my-requests-card');if(mc)mc.style.display='block';var mc=document.getElementById('ier-my-requests-card');if(mc)mc.style.display='block';renderIerList();renderIerMyPending();},boq:renderBOQ,logs:renderLogs,contact:renderContacts,users:renderUsers,settings:renderSettings,zones:renderZonesPage,'warehouses-pg':function(){renderWarehouses();renderZonesManage();},'contractors-pg':renderContractors,'categories-pg':renderCategories,mywork:renderMyWork};
   if(init[page])init[page]();
+  // ضبط scroll للأعلى عند كل انتقال
+  var cnt=document.getElementById('content');
+  if(cnt){cnt.scrollTop=0;cnt.style.overflowY='auto';}
 }
 document.querySelectorAll('.s-item').forEach(el=>el.addEventListener('click',()=>go(el.dataset.p)));
 
@@ -3267,59 +3642,108 @@ function renderInventory(){
     return true;
   });
   document.getElementById('inv-sub').textContent=items.length+' مادة';
-  // تحديث رأس الجدول ديناميكياً
+  // ═══ بطاقات ملخص المستودعات ═══
+  var summaryEl=document.getElementById('inv-wh-summary');
+  if(summaryEl){
+    summaryEl.innerHTML=whList.map(function(w){
+      var wTot=DB.inventory.reduce(function(s,i){return s+(i[w.key]||0);},0);
+      var wRes=DB.inventory.reduce(function(s,i){return s+getReservedStock(i.code,w.name);},0);
+      var wAv=Math.max(0,wTot-wRes);
+      var pctAv=wTot>0?Math.round(wAv/wTot*100):0;
+      var pctRes=100-pctAv;
+      var wc=w.color||'#00d4ff';
+      return '<div style="background:var(--card);border:1px solid var(--b1);border-radius:14px;padding:14px;border-top:3px solid '+wc+'">'+
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">'+
+          '<i class="fa fa-warehouse" style="color:'+wc+'"></i>'+
+          '<span style="font-weight:800;font-size:13px;flex:1">'+w.name+'</span>'+
+        '</div>'+
+        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px">'+
+          '<div style="background:rgba(16,185,129,.08);border-radius:8px;padding:8px;text-align:center">'+
+            '<div class="mono" style="font-size:20px;font-weight:900;color:var(--g1)">'+wAv+'</div>'+
+            '<div style="font-size:9px;color:var(--g1);margin-top:2px;font-weight:600">✓ متاح</div></div>'+
+          '<div style="background:rgba(239,68,68,.08);border-radius:8px;padding:8px;text-align:center">'+
+            '<div class="mono" style="font-size:20px;font-weight:900;color:var(--r1)">'+wRes+'</div>'+
+            '<div style="font-size:9px;color:var(--r1);margin-top:2px;font-weight:600">🔒 محجوز</div></div>'+
+          '<div style="background:var(--bg2);border-radius:8px;padding:8px;text-align:center">'+
+            '<div class="mono" style="font-size:20px;font-weight:900;color:var(--t2)">'+wTot+'</div>'+
+            '<div style="font-size:9px;color:var(--t3);margin-top:2px">الكلي</div></div>'+
+        '</div>'+
+        '<div style="height:7px;background:var(--bg2);border-radius:5px;overflow:hidden;display:flex">'+
+          '<div style="width:'+pctAv+'%;background:var(--g1);transition:.4s"></div>'+
+          '<div style="width:'+pctRes+'%;background:var(--r1);transition:.4s"></div>'+
+        '</div>'+
+        '<div style="display:flex;justify-content:space-between;font-size:9px;margin-top:3px">'+
+          '<span style="color:var(--g1)">متاح '+pctAv+'%</span>'+
+          '<span style="color:var(--r1)">محجوز '+pctRes+'%</span>'+
+        '</div></div>';
+    }).join('');
+  }
+  // ═══ جدول المواد ═══
   var thead=document.querySelector('#inv-full-tbody')?.closest('table')?.querySelector('thead tr');
   if(thead){
-    var whHeaders=whList.map(function(w){return '<th>'+w.name+'</th>';}).join('');
-    thead.innerHTML='<th>كود المادة</th><th>اسم المادة</th><th>الفئة</th>'+whHeaders+'<th>الإجمالي</th><th>المستوى</th><th></th>';
+    var whH=whList.map(function(w){return '<th style="text-align:center;min-width:100px"><div>'+w.name+'</div><div style="font-size:9px;font-weight:400;color:var(--t3);margin-top:1px">متاح 🟢 / محجوز 🔴</div></th>';}).join('');
+    thead.innerHTML='<th>كود المادة</th><th>اسم المادة</th><th>الفئة</th>'+whH+'<th style="text-align:center">الحالة</th><th></th>';
   }
   const tbody=document.getElementById('inv-full-tbody');if(!tbody)return;
   tbody.innerHTML=items.map(i=>{
     const tot=whList.reduce(function(s,w){return s+(i[w.key]||0);},0);
-    // إجمالي المحجوز والمتاح لكل المستودعات
-    const totalReserved=whList.reduce(function(s,w){return s+getReservedStock(i.code,w.name);},0);
-    const totalAvail=Math.max(0,tot-totalReserved);
-    const pct=Math.min(Math.round(totalAvail/Math.max(tot,1)*100),100);
-    const cls=tot===0?'stk-lo':totalAvail===0?'stk-lo':totalAvail<i.min?'stk-mid':'stk-hi';
-    const bc=tot===0?'var(--r1)':totalAvail===0?'var(--r1)':totalAvail<i.min?'var(--y1)':'var(--g1)';
+    const totalRes=whList.reduce(function(s,w){return s+getReservedStock(i.code,w.name);},0);
+    const totalAv=Math.max(0,tot-totalRes);
     const whCols=whList.map(function(w){
       var qty=i[w.key]||0;
       var res=getReservedStock(i.code,w.name);
       var av=Math.max(0,qty-res);
-      var pendRet=getPendingReturnStock(i.code,w.name);
-      var cell='';
-      if(!wh||wh===w.name){
-        var qColor=qty===0?'var(--r1)':av===0?'var(--r1)':qty<i.min?'var(--y1)':'var(--t1)';
-        cell='<td class="mono" style="color:'+qColor+'">';
-        cell+=qty;
-        if(res>0) cell+='<br><span style="font-size:9px;color:var(--r1)">🔒'+res+'</span>';
-        if(pendRet>0) cell+='<br><span style="font-size:9px;color:var(--g1)">↩+'+pendRet+'</span>';
-        cell+='</td>';
-      } else {
-        cell='<td style="color:var(--t3)">—</td>';
-      }
-      return cell;
+      if(wh&&wh!==w.name)return '<td style="text-align:center;color:var(--b2)">—</td>';
+      if(qty===0)return '<td style="text-align:center"><span style="color:var(--t4);font-size:11px">فارغ</span></td>';
+      var avC=av===0?'var(--r1)':av<(i.min||0)?'var(--y1)':'var(--g1)';
+      return '<td style="padding:5px 8px">'+
+        '<div style="display:flex;align-items:center;justify-content:center;gap:5px">'+
+          '<span style="background:rgba(16,185,129,.1);color:var(--g1);border-radius:6px;padding:2px 8px;font-weight:800;font-size:13px" class="mono">'+av+'</span>'+
+          (res>0?'<span style="background:rgba(239,68,68,.1);color:var(--r1);border-radius:6px;padding:2px 7px;font-size:11px" class="mono">🔒'+res+'</span>':'')+
+        '</div>'+
+        '<div style="height:3px;background:var(--bg2);border-radius:2px;margin-top:4px;overflow:hidden">'+
+          '<div style="width:'+Math.round(av/Math.max(qty,1)*100)+'%;height:100%;background:'+avC+'"></div>'+
+        '</div></td>';
     }).join('');
-    const totColor=tot===0?'var(--r1)':totalAvail===0?'var(--r1)':tot<i.min?'var(--y1)':'var(--a1)';
-    const resCol='<td class="mono" style="font-weight:700;color:'+(totalReserved>0?'var(--r1)':'var(--t3)')+'">'+
-      (totalReserved>0?'🔒'+totalReserved:'—')+'</td>';
-    const availCol='<td class="mono" style="font-weight:800;color:'+(totalAvail===0?'var(--r1)':totalAvail<i.min?'var(--y1)':'var(--g1)')+'">'+
-      totalAvail+'</td>';
-    return '<tr onclick="invDetail(\''+i.code+'\')" style="cursor:pointer">'+
-      '<td class="mono">'+i.code+'</td>'+
-      '<td style="font-weight:600;color:var(--t1)">'+i.name+'</td>'+
-      '<td>'+tag(i.cat)+'</td>'+
-      whCols+
-      '<td class="mono" style="font-weight:800;color:'+totColor+'">'+tot+'</td>'+
-      resCol+availCol+
-      '<td style="min-width:90px"><div style="font-size:9px;color:var(--t3);margin-bottom:2px">متاح '+pct+'%</div><div class="stock-bar"><div class="stock-bar-fill" style="width:'+pct+'%;background:'+bc+'"></div></div></td>'+
-      '<td><button class="btn btn-sec btn-xs" onclick="event.stopPropagation();invDetail(\''+i.code+'\')"><i class="fa fa-info-circle"></i></button></td>'+
-    '</tr>';
+    var stC=totalAv===0&&tot>0?'var(--r1)':tot===0?'var(--t4)':totalAv<(i.min||0)?'var(--y1)':'var(--g1)';
+    var stL=tot===0?'نفذ':totalAv===0?'محجوز':totalAv<(i.min||0)?'منخفض':'متاح';
+    // ربط الفئات — تحقق من حدود الفئة
+    var catObj=DB.categories.find(function(c){return c.name===i.cat;});
+    var critLimit=catObj?catObj.criticalLimit:0;
+    var warnLimit=catObj?catObj.warningLimit:0;
+    var catAlert='';
+    if(critLimit>0&&tot<=critLimit){
+      stC='var(--r1)';stL='حرج';
+      catAlert='<span style="background:rgba(239,68,68,.15);color:var(--r1);border-radius:5px;padding:2px 7px;font-size:10px;font-weight:700;margin-right:4px">⚠ حرج</span>';
+    } else if(warnLimit>0&&tot<=warnLimit){
+      stC='var(--y1)';stL='تحذير';
+      catAlert='<span style="background:rgba(245,158,11,.15);color:var(--y1);border-radius:5px;padding:2px 7px;font-size:10px;font-weight:700;margin-right:4px">⚡ تحذير</span>';
+    }
+    return '<tr onclick="invDetail(\''+i.code+'\')" style="cursor:pointer;'+(critLimit>0&&tot<=critLimit?'background:rgba(239,68,68,.04)':warnLimit>0&&tot<=warnLimit?'background:rgba(245,158,11,.04)':'')+'">' +
+      '<td class="mono" style="font-size:11px;color:var(--a1)">'+i.code+'</td>'+
+      '<td style="font-weight:600">'+i.name+catAlert+'</td><td>'+tag(i.cat)+'</td>'+whCols+
+      '<td style="text-align:center"><span style="background:'+stC+'18;color:'+stC+';border-radius:7px;padding:3px 10px;font-size:11px;font-weight:800">'+stL+'</span></td>'+
+      '<td><button class="btn btn-sec btn-xs" onclick="event.stopPropagation();invDetail(\''+i.code+'\')"><i class="fa fa-info-circle"></i></button></td></tr>';
   }).join('');
 }
 // ══════════════════════════════════════════════
 // INVENTORY ITEM MANAGEMENT — إدارة المواد
-// ══════════════════════════════════════════════
+// ═════════════════════════════════════════════        var qty=i[w.key]||0;
+        var res=getReservedStock(i.code,w.name);
+        var av=Math.max(0,qty-res);
+        var pendRet=getPendingReturnStock(i.code,w.name);
+        var qColor=qty===0?'var(--r1)':av===0?'var(--r1)':qty<i.min?'var(--y1)':'var(--t1)';
+        var cell='<td style="padding:4px 6px;min-width:80px">';
+        cell+='<div class="mono" style="font-size:14px;font-weight:800;color:'+qColor+'">'+qty+'</div>';
+        if(res>0){
+          cell+='<div style="display:flex;gap:3px;margin-top:2px">';
+          cell+='<span style="font-size:9px;background:rgba(239,68,68,.12);color:var(--r1);border-radius:4px;padding:1px 5px;font-weight:700">🔒'+res+'</span>';
+          cell+='<span style="font-size:9px;background:rgba(16,185,129,.12);color:var(--g1);border-radius:4px;padding:1px 5px;font-weight:700">✓'+av+'</span>';
+          cell+='</div>';
+        } else if(pendRet>0){
+          cell+='<div style="margin-top:2px"><span style="font-size:9px;background:rgba(16,185,129,.12);color:var(--g1);border-radius:4px;padding:1px 5px">+'+pendRet+'↩</span></div>';
+        }
+        cell+='</td>';
 function getCatOptions(selected=''){
   return DB.categories.map(cat=>`<option value="${cat.name}" ${cat.name===selected?'selected':''}>${cat.name}</option>`).join('');
 }
@@ -3535,7 +3959,8 @@ function cartAdd(){
   fillDL();
   const q=(document.getElementById('cart-add-q')?.value||'').trim();
   const wh=document.getElementById('cart-add-wh')?.value||'اسناد';
-  const qty=parseInt(document.getElementById('cart-add-qty')?.value)||0;
+  const rawQty=toEnDigits(document.getElementById('cart-add-qty')?.value||'0');
+  const qty=parseInt(rawQty)||0;
   if(qty===0){toast('err','أدخل الكمية','الكمية يجب أن تكون أكبر من صفر','fa-triangle-exclamation');return;}
   if(!q){toast('err','حقل مطلوب','ادخل كود او اسم المادة','fa-triangle-exclamation');return;}
   const found=validateItemExists(q);
@@ -3582,7 +4007,6 @@ function cartIssue(){
     toast('err','حقل مطلوب','رقم BOQ إجباري عند الصرف','fa-clipboard-list');return;
   }
   document.getElementById('cart-boq').classList.remove('err');
-  const no=genInvNo('صرف');
   const notes=(document.getElementById('cart-notes')?.value||'').trim();
   if(!notes){
     document.getElementById('cart-notes').classList.add('err');
@@ -3594,6 +4018,34 @@ function cartIssue(){
   const wh=cart[0].wh;
   const items=cart.map(c=>({code:c.code,name:c.name,qty:c.qty}));
 
+  // ══ تعديل فاتورة معلقة موجودة ══
+  if(window._editingPendingInvNo){
+    const origNo=window._editingPendingInvNo;
+    window._editingPendingInvNo=null;
+    // إزالة البانر
+    var banner=document.getElementById('pending-edit-banner');if(banner)banner.remove();
+    const origInv=DB.invoices.find(i=>i.no===origNo);
+    const origAppr=DB.approvals.find(a=>a.no===origNo);
+    if(origInv){
+      origInv.items=items;origInv.cont=cont;origInv.boq=boq;
+      origInv.notes=notes;origInv.wh=wh;origInv.editDate=today();
+    }
+    if(origAppr){
+      origAppr.items=items;
+      origAppr.itemsStr=items.map(i=>i.name+' x'+i.qty).join(' + ');
+      origAppr.cont=cont;origAppr.boq=boq;origAppr.wh=wh;
+    }
+    addLog('تعديل','تعديل مباشر على فاتورة معلقة '+origNo+' — '+cont,wh,{no:origNo});
+    addNotif('ok','✓ تعديل '+origNo,currentUser.name+' — تم تحديث الفاتورة مباشرة','fa-pen',null);
+    cart=[];renderCart();updateBadges();
+    try{renderApprovals();}catch(e){}
+    go('mywork');
+    toast('ok','✓ تم التعديل '+origNo,'حُدّثت الفاتورة بالكميات الجديدة — بانتظار الاعتماد','fa-pen');
+    return;
+  }
+
+  // ══ فاتورة جديدة ══
+  const no=genInvNo('صرف');
   // مدير النظام وأمين المستودع → معتمد فوراً + خصم فوري
   // موجه البلاغات ومشرف الوردية → معلق، لا خصم حتى الاعتماد
   const needsApproval = currentUser.role === 'موجه بلاغات' || currentUser.role === 'مشرف وردية';
@@ -3647,7 +4099,7 @@ function cartIssue(){
   setTimeout(()=>printInvoice(no),300);
   // موجه البلاغات: انتقل أيضاً لـ "فواتيري"
   if(needsApproval){
-    setTimeout(()=>go('myinv'),350);
+    setTimeout(()=>go(currentUser?.role==='مدير النظام'||currentUser?.role==='أمين مستودع'?'myinv':'mywork'),350);
   }
 }
 function renderCart(){
@@ -3713,7 +4165,7 @@ function renderFeedHist(){
 
 // ══════════════════════ TRANSFER ══════════════════════
 // ── مواد النقل ──
-let trItems=[];
+var trItems=[];
 function trCheckWh(){
   const from=document.getElementById('tr-from')?.value;
   const to=document.getElementById('tr-to')?.value;
@@ -3833,110 +4285,100 @@ function initArcChips(){
 }
 function setArcFilter(f,btn){arcFilter=f;document.querySelectorAll('#inv-arc-chips .fchip').forEach(b=>b.classList.remove('on'));btn.classList.add('on');renderArc();}
 // ══ متغير التاب الحالي ══
-var arcTab='all'; // all | active | cancelled
+var arcTab='approved'; // approved | rejected | cancelled
 
-function arcSetTab(tab){
-  arcTab=tab;
-  var tabs={all:'arc-tab-all',active:'arc-tab-active',cancelled:'arc-tab-cancelled'};
-  Object.keys(tabs).forEach(function(k){
-    var btn=document.getElementById(tabs[k]);if(!btn)return;
-    var isActive=k===tab;
-    btn.style.background=isActive?'rgba(0,212,255,.12)':'rgba(255,255,255,.04)';
-    btn.style.borderColor=isActive?'var(--a1)':'var(--b1)';
-    btn.style.color=isActive?'var(--a1)':'var(--t2)';
+function arcSetTab(t){
+  arcTab=t;
+  var tabs={approved:'arc-tab-approved',rejected:'arc-tab-rejected',cancelled:'arc-tab-cancelled'};
+  var active={approved:{bg:'rgba(16,185,129,.12)',border:'rgba(16,185,129,.4)',color:'var(--g1)'},
+              rejected:{bg:'rgba(249,115,22,.12)',border:'rgba(249,115,22,.4)',color:'var(--o1)'},
+              cancelled:{bg:'rgba(239,68,68,.12)',border:'rgba(239,68,68,.4)',color:'var(--r1)'}};
+  Object.keys(tabs).forEach(function(tab){
+    var btn=document.getElementById(tabs[tab]);if(!btn)return;
+    if(tab===t){btn.style.background=active[tab].bg;btn.style.borderColor=active[tab].border;btn.style.color=active[tab].color;btn.style.fontWeight='800';}
+    else{btn.style.background='rgba(255,255,255,.04)';btn.style.borderColor='var(--b1)';btn.style.color='var(--t2)';btn.style.fontWeight='600';}
   });
   renderArc();
 }
 
 function renderArc(){
-  initArcChips();
+  var isMW=currentUser?.role==='موجه بلاغات'||currentUser?.role==='مشرف وردية';
+  var sub=document.getElementById('inv-arc-sub');
+  // تعبئة فلتر الموجهين (للمدير فقط)
+  var empSel=document.getElementById('inv-arc-emp');
+  if(empSel&&empSel.options.length<=1&&!isMW){
+    var emps=[...new Set(DB.invoices.map(function(i){return i.emp;}).filter(Boolean))];
+    emps.forEach(function(e){empSel.innerHTML+='<option>'+e+'</option>';});
+  }
+  if(empSel)empSel.style.display=isMW?'none':'inline-block';
+  // تعبئة فلتر المستودعات
+  var whSel=document.getElementById('inv-arc-wh');
+  if(whSel&&whSel.options.length<=1){
+    DB.warehouses.filter(function(w){return w.active;}).forEach(function(w){whSel.innerHTML+='<option>'+w.name+'</option>';});
+  }
+  var tab=arcTab||'approved';
   var q=(document.getElementById('inv-arc-q')?.value||'').toLowerCase();
   var wh=document.getElementById('inv-arc-wh')?.value||'';
-  var st=document.getElementById('inv-arc-st')?.value||'';
+  var type=document.getElementById('inv-arc-type')?.value||'';
   var emp=document.getElementById('inv-arc-emp')?.value||'';
-  var dt=document.getElementById('inv-arc-date')?.value||'';
-  // تعبئة قائمة الموجهين
-  var empSel=document.getElementById('inv-arc-emp');
-  if(empSel){
-    var curEmp=empSel.value;
-    var emps=[...new Set(DB.invoices.map(function(i){return i.emp;}))].sort();
-    empSel.innerHTML='<option value="">كل الموجهين</option>'+emps.map(function(e){return '<option value="'+e+'"'+(e===curEmp?' selected':'')+'>'+e+'</option>';}).join('');
-  }
-  // تطبيق التاب
-  var base=DB.invoices.filter(function(i){
-    // الأرشيف يعرض المعتمدة والمرفوضة والملغية فقط — المعلقة لها قسمها
+  var date=document.getElementById('inv-arc-date')?.value||'';
+  // الحالة المستهدفة
+  var stMap={approved:'معتمد',rejected:'مرفوض',cancelled:'ملغي'};
+  var targetSt=stMap[tab];
+  // جمع الفواتير المنتهية
+  var invs=DB.invoices.filter(function(i){
     if(i.st==='معلق') return false;
-    if(arcTab==='active') return i.type==='صرف'||i.type==='نقل'||i.type==='ارجاع';
-    if(arcTab==='cancelled') return i.st==='ملغي';
+    if(targetSt&&i.st!==targetSt) return false;
+    // الموجه يرى فواتيره فقط
+    if(isMW&&i.emp!==currentUser.name) return false;
+    if(wh&&i.wh!==wh) return false;
+    if(type&&i.type!==type) return false;
+    if(emp&&i.emp!==emp) return false;
+    if(date&&i.d!==date) return false;
+    if(q&&!(i.no+i.cont+i.wh+i.emp).toLowerCase().includes(q)) return false;
     return true;
   });
-  var items=base.filter(function(i){
-    if(arcFilter!=='all'&&i.type!==arcFilter)return false;
-    if(q&&!i.no.toLowerCase().includes(q)&&!i.emp.toLowerCase().includes(q)&&!(i.cont||'').toLowerCase().includes(q))return false;
-    if(wh&&i.wh!==wh)return false;
-    if(st&&i.st!==st)return false;
-    if(emp&&i.emp!==emp)return false;
-    if(dt&&i.d!==dt)return false;
-    return true;
-  });
-  document.getElementById('inv-arc-sub').textContent=items.length+' فاتورة';
-
-  // إحصائيات
-  var statsEl=document.getElementById('inv-arc-stats');
-  if(statsEl){
-    var counts={معتمد:0,معلق:0,مرفوض:0,ملغي:0};
-    items.forEach(function(i){if(counts[i.st]!==undefined)counts[i.st]++;});
-    var statsHtml=[
-      {l:'معتمد',c:'var(--g1)',b:'rgba(16,185,129,.08)',n:counts.معتمد},
-      {l:'معلق',c:'var(--y1)',b:'rgba(245,158,11,.08)',n:counts.معلق},
-      {l:'مرفوض',c:'var(--o1)',b:'rgba(249,115,22,.08)',n:counts.مرفوض},
-      {l:'ملغي',c:'var(--r1)',b:'rgba(239,68,68,.08)',n:counts.ملغي}
-    ].filter(function(s){return s.n>0;}).map(function(s){
-      return '<div style="background:'+s.b+';border:1px solid '+s.c+'33;border-radius:9px;padding:6px 14px;display:flex;align-items:center;gap:8px">'+
-        '<span style="font-size:16px;font-weight:800;color:'+s.c+';font-family:monospace">'+s.n+'</span>'+
-        '<span style="font-size:11px;color:var(--t2)">'+s.l+'</span>'+
-      '</div>';
-    }).join('');
-    statsEl.innerHTML=statsHtml;
-  }
-
+  invs.sort(function(a,b){return (b.d||'').localeCompare(a.d||'');});
+  // تحديث العدادات
+  var allMine=DB.invoices.filter(function(i){return i.st!=='معلق'&&(!isMW||i.emp===currentUser.name);});
+  function setBadge(id,n){var e=document.getElementById(id);if(e){e.textContent=n||'';e.style.display=n?'inline':'none';}}
+  setBadge('arc-cnt-approved',allMine.filter(function(i){return i.st==='معتمد';}).length);
+  setBadge('arc-cnt-rejected',allMine.filter(function(i){return i.st==='مرفوض';}).length);
+  setBadge('arc-cnt-cancelled',allMine.filter(function(i){return i.st==='ملغي';}).length);
+  if(sub)sub.textContent=(isMW?'أرشيفي — ':'أرشيف الفواتير — ')+invs.length+' فاتورة';
   var tbody=document.getElementById('inv-arc-tbody');if(!tbody)return;
-  if(!items.length){
-    tbody.innerHTML='<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--t3)"><i class="fa fa-search"></i> لا توجد نتائج</td></tr>';
+  if(!invs.length){
+    tbody.innerHTML='<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--t3)"><i class="fa fa-inbox" style="font-size:28px;display:block;margin-bottom:10px;opacity:.4"></i>لا توجد فواتير</td></tr>';
     return;
   }
-
-  var isAdmin=currentUser?.role==='مدير النظام'||currentUser?.role==='أمين مستودع';
-  tbody.innerHTML=items.map(function(r){
-    var stColor=r.st==='معتمد'?'var(--g1)':r.st==='معلق'?'var(--y1)':r.st==='ملغي'?'var(--r1)':'var(--o1)';
-    var actionBtns=
-      '<button class="btn btn-sec btn-xs" onclick="event.stopPropagation();showInvDetail(\''+r.no+'\')"><i class="fa fa-eye"></i></button>'+
-      '<button class="btn btn-primary btn-xs" onclick="event.stopPropagation();printInvoice(\''+r.no+'\')"><i class="fa fa-print"></i></button>';
-    if(isAdmin){
-      if(r.st!=='ملغي'){
-        if(r.type!=='الغاء') actionBtns+='<button class="btn btn-warn btn-xs" onclick="event.stopPropagation();arcEditInvoice(\''+r.no+'\')" title="تعديل"><i class="fa fa-pen"></i></button>';
-      }
-      if(r.st==='ملغي'){
-        actionBtns+='<button class="btn btn-green btn-xs" onclick="event.stopPropagation();arcRestoreInvoice(\''+r.no+'\')" title="إعادة تفعيل"><i class="fa fa-rotate-left"></i> استعادة</button>';
-      }
-      if(r.st==='معتمد'||r.st==='معلق'){
-        actionBtns+='<button class="btn btn-danger btn-xs" onclick="event.stopPropagation();arcCancelInvoice(\''+r.no+'\')" title="إلغاء"><i class="fa fa-ban"></i></button>';
-      }
-    }
-    return '<tr style="cursor:pointer" onclick="showInvDetail(\''+r.no+'\')">'+
-      '<td class="mono" style="color:var(--a1);font-weight:700">'+r.no+'</td>'+
-      '<td>'+tag(r.type)+'</td>'+
-      '<td style="font-size:12px">'+r.wh+'</td>'+
-      '<td style="color:var(--t1);font-size:12px">'+r.emp.split(' ').slice(0,2).join(' ')+'</td>'+
-      '<td style="font-size:12px">'+(r.cont||'—')+'</td>'+
-      '<td><span style="font-size:11px;font-weight:700;color:'+stColor+'">'+r.st+'</span></td>'+
-      '<td style="font-size:11px;font-family:\'JetBrains Mono\',monospace;color:var(--t3)">'+r.d+'</td>'+
-      '<td onclick="event.stopPropagation()"><div style="display:flex;gap:4px;flex-wrap:wrap">'+actionBtns+'</div></td>'+
+  var stC={معتمد:'var(--g1)',مرفوض:'var(--r1)',ملغي:'var(--t3)'};
+  tbody.innerHTML=invs.map(function(inv){
+    var btns='<button class="btn btn-sec btn-xs" onclick="event.stopPropagation();showInvDetail(this.dataset.no)" data-no="'+inv.no+'"><i class="fa fa-eye"></i></button>'+
+      '<button class="btn btn-primary btn-xs" onclick="event.stopPropagation();printInvoice(this.dataset.no)" data-no="'+inv.no+'"><i class="fa fa-print"></i></button>';
+    if(!isMW&&inv.st==='معتمد'&&inv.type==='صرف')
+      btns+='<button class="btn btn-warn btn-xs" onclick="event.stopPropagation();adminEditInvoice(this.dataset.no)" data-no="'+inv.no+'"><i class="fa fa-pen"></i></button>';
+    return '<tr class="arc-row" data-no="'+inv.no+'" style="cursor:pointer">'+
+      '<td class="mono" style="color:var(--a1);font-weight:700">'+inv.no+'</td>'+
+      '<td>'+tag(inv.type)+'</td>'+
+      '<td style="font-size:12px">'+inv.wh+'</td>'+
+      '<td style="font-size:11px;color:var(--t2)">'+inv.emp+'</td>'+
+      '<td style="font-size:12px">'+inv.cont+'</td>'+
+      '<td><span style="color:'+(stC[inv.st]||'var(--t1)')+';font-weight:700;font-size:12px">'+inv.st+'</span></td>'+
+      '<td style="font-family:monospace;font-size:11px;color:var(--t3)">'+inv.d+'</td>'+
+      '<td><div style="display:flex;gap:4px">'+btns+'</div></td>'+
     '</tr>';
   }).join('');
+  // ربط النقر على صفوف الأرشيف
+  var arcTbody=document.getElementById('inv-arc-tbody');
+  if(arcTbody){
+    arcTbody.querySelectorAll('.arc-row').forEach(function(row){
+      row.addEventListener('click',function(e){
+        if(!e.target.closest('button'))showInvDetail(this.dataset.no);
+      });
+    });
+  }
 }
 
-// ══ إجراءات الأرشيف للمدير ══
 function arcEditInvoice(no){
   closeModal('modal-inv');
   adminEditInvoice(no,'archive');
@@ -3945,143 +4387,197 @@ function arcEditInvoice(no){
 function arcCancelInvoice(no){
   var inv=DB.invoices.find(function(i){return i.no===no;});
   if(!inv)return;
-  var wasApproved=inv.st==='معتمد';
+  var wasApproved=inv.st==='معتمد'&&inv.type==='صرف';
   showConfirm(
     '<i class="fa fa-ban" style="color:var(--r1)"></i> إلغاء فاتورة '+no,
     'إلغاء الفاتورة <strong>'+no+'</strong> ('+inv.type+')?'+
     (wasApproved?'<br><span style="color:var(--y1);font-size:12px">⚠ سيتم إعادة المواد للمستودع '+inv.wh+'</span>':''),
     'تأكيد الإلغاء','btn-danger',function(){
-      // إعادة المواد للمستودع فقط إذا كانت معتمدة
       if(wasApproved){
         (inv.items||[]).forEach(function(it){setStock(it.code,inv.wh,+it.qty);});
       }
-      // وضع ختم الإلغاء
-      inv.cancelled   = true;
-      inv.cancelledBy = currentUser.name;
-      inv.cancelDate  = today();
-      inv.cancelNote  = 'إلغاء مباشر من الأرشيف';
+      inv.cancelled=true;inv.cancelledBy=currentUser.name;
+      inv.cancelDate=today();inv.cancelNote='إلغاء مباشر من الأرشيف';
+      DB.requests.forEach(function(r){if((r.origInv===no||r.no===no)&&r.st==='معلق')r.st='ملغي';});
+      DB.approvals.forEach(function(a){if(a.no===no)a.st='ملغي';});
       syncInvoiceStatus(no,'ملغي');
-      addLog('الغاء','إلغاء مباشر للفاتورة '+no+' من الأرشيف',inv.wh,{no:no,cont:inv.cont});
-      addNotif('err','تم إلغاء فاتورة '+no,currentUser.name+' — أُلغيت '+(wasApproved?'وأُعيدت المواد للمستودع':''),'fa-ban',inv.emp);
-      closeModal('modal-inv');
-      // الانتقال لتاب الملغية
+      addLog('الغاء','إلغاء مباشر للفاتورة '+no,inv.wh,{no:no});
+      addNotif('err','إلغاء '+no,currentUser.name+(wasApproved?' — أُعيدت المواد':''),'fa-ban',inv.emp);
+      closeModal('modal-inv');updateBadges();
       arcTab='cancelled';renderArc();
-      toast('ok','✓ تم الإلغاء','الفاتورة '+no+' في قسم الملغية'+(wasApproved?' — أُعيدت المواد للمستودع':''),'fa-ban');
+      toast('ok','✓ تم الإلغاء',no+(wasApproved?' — أُعيدت المواد للمستودع':''),'fa-ban');
     });
 }
 
 function arcRestoreInvoice(no){
   var inv=DB.invoices.find(function(i){return i.no===no;});
   if(!inv)return;
-  // لا استعادة إذا أُلغيت عبر طلب معتمد من الموجه
-  var approvedCancelReq=DB.requests.find(function(r){
-    return (r.origInv===no||r.no===no) && r.type==='الغاء' && r.st==='معتمد';
-  });
-  if(approvedCancelReq){
-    toast('err','غير مسموح','هذه الفاتورة أُلغيت بطلب معتمد — لا يمكن استعادتها','fa-ban');
-    return;
+  var isIssue=inv.type==='صرف';
+  window._restoreNo=no;
+  var infoHtml='<div style="background:var(--bg2);border-radius:10px;padding:12px;margin-bottom:12px;font-size:12px">'+
+    '<div style="font-weight:700;color:var(--t1);margin-bottom:4px">'+inv.no+' — '+inv.type+'</div>'+
+    '<div style="color:var(--t3)">المستودع: <strong>'+inv.wh+'</strong></div></div>';
+  var optHtml='';
+  if(isIssue){
+    optHtml='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">'+
+      '<div class="restore-opt" data-action="معتمد" style="background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.3);border-radius:10px;padding:12px;text-align:center;cursor:pointer">'+
+        '<i class="fa fa-check-circle" style="color:var(--g1);font-size:22px;display:block;margin-bottom:4px"></i>'+
+        '<div style="font-weight:700;color:var(--g1);font-size:12px">اعتماد</div>'+
+        '<div style="font-size:10px;color:var(--t3);margin-top:3px">تُخصم المواد</div></div>'+
+      '<div class="restore-opt" data-action="مرفوض" style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.3);border-radius:10px;padding:12px;text-align:center;cursor:pointer">'+
+        '<i class="fa fa-times-circle" style="color:var(--r1);font-size:22px;display:block;margin-bottom:4px"></i>'+
+        '<div style="font-weight:700;color:var(--r1);font-size:12px">رفض</div>'+
+        '<div style="font-size:10px;color:var(--t3);margin-top:3px">تُعاد المواد + ختم مرفوض</div></div>'+
+      '<div class="restore-opt" data-action="معلق" style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);border-radius:10px;padding:12px;text-align:center;cursor:pointer">'+
+        '<i class="fa fa-clock" style="color:var(--y1);font-size:22px;display:block;margin-bottom:4px"></i>'+
+        '<div style="font-weight:700;color:var(--y1);font-size:12px">إعادة معلقة</div>'+
+        '<div style="font-size:10px;color:var(--t3);margin-top:3px">بانتظار الاعتماد</div></div>'+
+      '</div>';
+  } else {
+    optHtml='<div class="restore-opt" data-action="معلق" style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);border-radius:10px;padding:14px;text-align:center;cursor:pointer">'+
+      '<i class="fa fa-clock" style="color:var(--y1);font-size:22px;display:block;margin-bottom:4px"></i>'+
+      '<div style="font-weight:700;color:var(--y1)">إعادة الفاتورة للمعلقة</div></div>';
   }
-  var typeLabel = inv.type==='صرف'?'الصرف':inv.type==='ارجاع'?'الارجاع':inv.type==='نقل'?'النقل':'الفاتورة';
-  showConfirm(
+  showFormModal(
     '<i class="fa fa-rotate-left" style="color:var(--g1)"></i> استعادة فاتورة '+no,
-    'استعادة فاتورة <strong>'+no+'</strong> ('+inv.type+') وإلغاء ختم الإلغاء عنها؟'+
-    '<br><span style="color:var(--a1);font-size:12px">ستعود الفاتورة <strong>معلقة</strong> بانتظار الاعتماد — بدون خصم من المخزون</span>',
-    'استعادة','btn-green',function(){
-      // إزالة ختم الإلغاء وإعادة الفاتورة معلقة
-      inv.cancelled   = false;
-      inv.cancelledBy = null;
-      inv.cancelDate  = null;
-      inv.cancelNote  = null;
-      // حذف طلب الإلغاء المرتبط إن وجد (غير معتمد)
-      DB.requests = DB.requests.filter(function(r){
-        return !((r.origInv===no||r.no===no) && r.type==='الغاء' && r.st!=='معتمد');
+    infoHtml+optHtml,
+    [{lbl:'إغلاق',cls:'btn-sec',fn:function(){closeModal('modal-form');}}]
+  );
+  setTimeout(function(){
+    document.querySelectorAll('.restore-opt').forEach(function(el){
+      el.addEventListener('click',function(){
+        arcRestoreAction(window._restoreNo,this.dataset.action);
       });
-      // حذف من approvals إن وجد
-      DB.approvals = DB.approvals.filter(function(a){
-        return !(a.no===no && a.type==='الغاء');
-      });
-      // تزامن الحالة: معلق
-      syncInvoiceStatus(no,'معلق');
-      addLog('استعادة','استعادة فاتورة '+inv.type+' ملغية '+no+' — أصبحت معلقة بانتظار الاعتماد',inv.wh,{no:no,cont:inv.cont});
-      addNotif('ok','✓ استعادة فاتورة '+no,'تمت الاستعادة — الفاتورة معلقة بانتظار الاعتماد','fa-rotate-left',inv.emp);
-      closeModal('modal-inv');
-      renderArc();
-      toast('ok','✓ استُعيدت '+no,'الفاتورة معلقة الآن — يمكن اعتمادها أو تعديلها','fa-circle-check');
     });
+  },100);
 }
+
+function arcRestoreAction(no,newSt){
+  var inv=DB.invoices.find(function(i){return i.no===no;});
+  if(!inv)return;
+  closeModal('modal-form');
+  if(newSt==='معتمد'){
+    if(inv.type==='صرف')(inv.items||[]).forEach(function(it){setStock(it.code,inv.wh,-it.qty);});
+    inv.approvedDate=today();inv.approvedBy=currentUser.name;
+  } else if(newSt==='مرفوض'){
+    if(inv.type==='صرف')(inv.items||[]).forEach(function(it){setStock(it.code,inv.wh,+it.qty);});
+    inv.rejectedDate=today();inv.rejectedBy=currentUser.name;
+  }
+  inv.cancelled=false;inv.cancelledBy=null;inv.cancelDate=null;inv.cancelNote=null;
+  // تنظيف طلبات الالغاء
+  DB.requests=DB.requests.filter(function(r){
+    return !((r.origInv===no||r.no===no)&&r.type==='الغاء'&&r.st!=='معتمد');
+  });
+  // تحديث أو إعادة إنشاء سجل الاعتماد
+  var existAppr=DB.approvals.find(function(a){return a.no===no;});
+  if(existAppr){
+    existAppr.st=newSt;
+    if(newSt==='معتمد'){existAppr.approvedDate=today();existAppr.approvedBy=currentUser.name;}
+  } else if(newSt==='معلق'&&inv.type==='صرف'){
+    // أعد إنشاء سجل الاعتماد → تظهر في اعتماد فواتير الصرف
+    DB.approvals.unshift({
+      id:Date.now(),no:no,emp:inv.emp,wh:inv.wh,cont:inv.cont,
+      items:JSON.parse(JSON.stringify(inv.items||[])),
+      itemsStr:(inv.items||[]).map(function(it){return it.name+' x'+it.qty;}).join(' + '),
+      boq:inv.boq||'',notes:inv.notes||'',d:inv.d||today(),time:nowTime(),st:'معلق'
+    });
+  }
+  syncInvoiceStatus(no,newSt);
+  var msg=newSt==='معتمد'?'خُصمت المواد من '+inv.wh:newSt==='مرفوض'?'أُعيدت المواد لـ '+inv.wh:'معلقة — ستظهر في اعتماد الصرف';
+  var logType=newSt==='معتمد'?'اعتماد':newSt==='مرفوض'?'رفض':'استعادة';
+  addLog(logType,'استعادة ملغية '+no+' → '+newSt,inv.wh,{no:no});
+  addNotif(newSt==='مرفوض'?'warn':'ok','✓ '+no+' → '+newSt,msg,
+    newSt==='معتمد'?'fa-check':newSt==='مرفوض'?'fa-times':'fa-clock',inv.emp);
+  updateBadges();renderArc();
+  toast('ok','✓ '+no+' → '+newSt,msg,'fa-circle-check');
+}
+
+function arcRestoreAction(no,newSt){
+  var inv=DB.invoices.find(function(i){return i.no===no;});
+  if(!inv)return;
+  closeModal('modal-form');
+  if(newSt==='معتمد'){
+    if(inv.type==='صرف')(inv.items||[]).forEach(function(it){setStock(it.code,inv.wh,-it.qty);});
+    inv.approvedDate=today();inv.approvedBy=currentUser.name;
+  } else if(newSt==='مرفوض'){
+    if(inv.type==='صرف')(inv.items||[]).forEach(function(it){setStock(it.code,inv.wh,+it.qty);});
+    inv.rejectedDate=today();inv.rejectedBy=currentUser.name;
+  }
+  inv.cancelled=false;inv.cancelledBy=null;inv.cancelDate=null;inv.cancelNote=null;
+  DB.requests=DB.requests.filter(function(r){
+    return !((r.origInv===no||r.no===no)&&r.type==='الغاء'&&r.st!=='معتمد');
+  });
+  DB.approvals.forEach(function(a){if(a.no===no)a.st=newSt;});
+  syncInvoiceStatus(no,newSt);
+  var msg=newSt==='معتمد'?'خُصمت المواد من '+inv.wh:newSt==='مرفوض'?'أُعيدت المواد لـ '+inv.wh:'معلقة بانتظار الاعتماد';
+  addLog(newSt==='معتمد'?'اعتماد':newSt==='مرفوض'?'رفض':'استعادة','استعادة ملغية '+no+' → '+newSt,inv.wh,{no:no});
+  addNotif(newSt==='مرفوض'?'warn':'ok','✓ '+no+' → '+newSt,msg,newSt==='معتمد'?'fa-check':newSt==='مرفوض'?'fa-times':'fa-clock',inv.emp);
+  updateBadges();renderArc();
+  toast('ok','✓ '+no+' → '+newSt,msg,'fa-circle-check');
+}
+
 function showInvDetail(no){
-  // دائماً اقرأ الحالة الأحدث من DB مباشرة
-  let inv=DB.invoices.find(i=>i.no===no);
-  let fromApproval=false;
+  if(!no){toast('err','خطأ','رقم الفاتورة غير محدد','fa-ban');return;}
+
+  // 1. ابحث في DB.invoices
+  var inv=DB.invoices.find(function(i){return i.no===no;});
+
+  // 2. ابحث في DB.approvals
   if(!inv){
-    const a=DB.approvals.find(x=>x.no===no);
+    var a=DB.approvals.find(function(x){return x.no===no;});
     if(a){
-      fromApproval=true;
-      var parsedItems=[];
-      if(Array.isArray(a.items)) parsedItems=a.items;
-      else if(typeof a.items==='string'){
-        parsedItems=a.items.split(' + ').map(function(s){
-          var m=s.match(/(.+) x(\d+)/);
-          return m?{code:'—',name:m[1],qty:parseInt(m[2])}:{code:'—',name:s,qty:0};
-        });
-      }
-      inv={no:a.no,type:'صرف',wh:a.wh,cont:a.cont,emp:a.emp,st:a.st,d:a.d,
-           items:parsedItems,boq:a.boq||'',notes:a.notes||''};
+      var pi=Array.isArray(a.items)?a.items:
+             typeof a.items==='string'?a.items.split(' + ').map(function(s){
+               var m=s.match(/(.+) x(\d+)/);return m?{code:'—',name:m[1],qty:parseInt(m[2])}:{code:'—',name:s,qty:0};
+             }):[];
+      inv={no:a.no,type:'صرف',wh:a.wh,cont:a.cont,emp:a.emp,st:a.st,d:a.d,items:pi,boq:a.boq||'',notes:a.notes||''};
     }
   }
-  if(!inv){toast('err','غير موجودة','لا توجد فاتورة بهذا الرقم في النظام','fa-ban');return;}
-  // تلوين الحالة
-  var stColor=inv.st==='معتمد'?'var(--g1)':inv.st==='معلق'?'var(--y1)':inv.st==='ملغي'?'var(--r1)':'var(--o1)';
-  var stBg=inv.st==='معتمد'?'rgba(16,185,129,.1)':inv.st==='معلق'?'rgba(245,158,11,.1)':inv.st==='ملغي'?'rgba(239,68,68,.1)':'rgba(249,115,22,.1)';
 
-  document.getElementById('inv-detail-title').innerHTML='<i class="fa fa-file-invoice" style="color:var(--a1)"></i> فاتورة '+no;
-  var itemsHtml=inv.items.map(function(it){
-    return '<div class="hist-item" style="margin-bottom:6px">'+
-      '<div class="hist-ico" style="background:rgba(0,102,255,.1);color:var(--a1)"><i class="fa fa-box"></i></div>'+
-      '<div class="hist-info"><div class="hist-code">'+(it.code||'—')+'</div><div class="hist-name">'+it.name+'</div></div>'+
-      '<div class="hist-qty" style="color:var(--a1)">x '+it.qty+'</div>'+
-    '</div>';
-  }).join('');
-  var btns='';
-  var fromDash=(currentPage==='dashboard');
-  var canEdit=(currentUser?.role==='مدير النظام'||currentUser?.role==='أمين مستودع');
-  var fromMyInv=(currentPage==='myinv');
-  var fromRequests=(currentPage==='requests');
-  if(!fromApproval&&!fromDash&&!fromMyInv&&inv.st!=='ملغي'&&canEdit&&inv.type!=='الغاء') btns+='<button class="btn btn-warn btn-sm" onclick="closeModal(\'modal-inv\');arcEditInvoice(\''+no+'\')"><i class="fa fa-pen"></i>تعديل</button>';
-  if(!fromApproval&&!fromDash&&!fromMyInv&&!fromRequests&&inv.st!=='ملغي'&&canEdit) btns+='<button class="btn btn-danger btn-sm" onclick="arcCancelInvoice(\''+no+'\')"><i class="fa fa-ban"></i>إلغاء</button>';
-  var hasApprovedCancel=DB.requests.some(function(r){return (r.origInv===no||r.no===no)&&r.type==='الغاء'&&r.st==='معتمد';});
-  if(!fromApproval&&!fromDash&&inv.st==='ملغي'&&!hasApprovedCancel&&(currentUser?.role==='مدير النظام'||currentUser?.role==='أمين مستودع')) btns+='<button class="btn btn-green btn-sm" onclick="arcRestoreInvoice(\''+no+'\')"><i class="fa fa-rotate-left"></i>استعادة</button>';
-  btns+='<button class="btn btn-sec btn-sm" onclick="closeModal(\'modal-inv\')"><i class="fa fa-times"></i>اغلاق</button>';
-  // زر الطباعة - يعمل للفواتير المعلقة وغير المعلقة
-  if(fromApproval){
-    // فاتورة معلقة - اطبع من بيانات الاعتماد مباشرة
-    var _a=DB.approvals.find(function(x){return x.no===no;});
-    if(_a)btns+='<button class="btn btn-primary btn-sm" onclick="closeModal(\'modal-inv\');printApprovalInvoice(\''+no+'\')"><i class="fa fa-print"></i>طباعة / PDF</button>';
-  } else {
-    btns+='<button class="btn btn-primary btn-sm" onclick="closeModal(\'modal-inv\');printInvoice(\''+no+'\')"><i class="fa fa-print"></i>طباعة / PDF</button>';
+  // 3. ابحث في DB.requests (طلب تعديل/ارجاع/الغاء)
+  if(!inv){
+    // ابحث عن الفاتورة الأصلية عبر origInv في أي طلب
+    var req=DB.requests.find(function(r){return (r.origInv===no||r.no===no)&&r.type==='تعديل';});
+    if(req){
+      // عرض الكميات الجديدة المطلوبة
+      var rItems=Array.isArray(req.newItems)&&req.newItems.length?req.newItems:
+                 Array.isArray(req.items)?req.items:[];
+      // ابحث عن الفاتورة الأصلية في الأرشيف
+      var origNo=req.origInv||req.no;
+      var origInvData=DB.invoices.find(function(i){return i.no===origNo;})||
+                      DB.approvals.find(function(a){return a.no===origNo;});
+      inv={
+        no:origNo,
+        type:'صرف',
+        wh:(req.changes&&req.changes.wh)||req.wh||(origInvData&&origInvData.wh)||'—',
+        cont:(req.changes&&req.changes.cont)||req.cont||(origInvData&&origInvData.cont)||'—',
+        boq:(req.changes&&req.changes.boq)||req.boq||(origInvData&&origInvData.boq)||'',
+        notes:(req.changes&&req.changes.notes)||req.notes||(origInvData&&origInvData.notes)||'',
+        emp:req.emp,st:'معلق (طلب تعديل)',d:req.d,
+        items:rItems.length?rItems:(origInvData&&Array.isArray(origInvData.items)?origInvData.items:[])
+      };
+    }
+    if(!inv){
+      var req2=DB.requests.find(function(r){return r.origInv===no||r.no===no;});
+      if(req2){
+        var rItems2=Array.isArray(req2.newItems)?req2.newItems:Array.isArray(req2.retItems)?req2.retItems:Array.isArray(req2.items)?req2.items:[];
+        inv={no:no,type:req2.type==='ارجاع'?'ارجاع':'صرف',wh:req2.wh||'—',cont:req2.cont||'—',
+             emp:req2.emp,st:req2.st,d:req2.d,items:rItems2,boq:req2.boq||'',notes:req2.reason||''};
+      }
+    }
   }
-  document.getElementById('inv-detail-body').innerHTML=
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;font-size:12.5px">'+
-      '<div><span style="color:var(--t3)">النوع: </span>'+tag(inv.type)+'</div>'+
-      '<div><span style="color:var(--t3)">الحالة: </span><span style="font-weight:700;color:'+stColor+';background:'+stBg+';padding:2px 10px;border-radius:6px;font-size:12px">'+inv.st+'</span></div>'+
-      (inv.st==="ملغي"?'<div style="grid-column:span 2;text-align:center;margin:8px 0">'+
-        '<div style="display:inline-block;border:5px solid rgba(220,38,38,.4);border-radius:8px;padding:4px 22px;transform:rotate(-4deg);font-size:28px;font-weight:900;color:rgba(220,38,38,.5);letter-spacing:4px">ملغـي</div>'+
-        (inv.cancelledBy?'<div style="margin-top:6px;font-size:11px;color:var(--r1)"><i class="fa fa-user-slash"></i> ألغاها: <strong>'+inv.cancelledBy+'</strong>'+(inv.cancelDate?' — '+inv.cancelDate:'')+'</div>':'')+
-        (inv.cancelNote?'<div style="font-size:10px;color:var(--t3);margin-top:2px">'+inv.cancelNote+'</div>':'')+
-      '</div>':'')+
 
-      '<div><span style="color:var(--t3)">المستودع: </span><strong>'+inv.wh+'</strong></div>'+
-      '<div><span style="color:var(--t3)">المقاول: </span><strong>'+inv.cont+'</strong></div>'+
-      '<div><span style="color:var(--t3)">الموجه: </span>'+inv.emp+'</div>'+
-      '<div><span style="color:var(--t3)">التاريخ: </span><span style="font-family:\'JetBrains Mono\',monospace">'+inv.d+'</span></div>'+
-      (inv.boq?'<div><span style="color:var(--t3)">BOQ: </span>'+inv.boq+'</div>':'')+
-      (inv.notes?'<div style="grid-column:span 2"><span style="color:var(--t3)">وصف البلاغ: </span>'+inv.notes+'</div>':'')+
-    '</div>'+
-    '<div style="font-size:10px;color:var(--t3);font-weight:700;letter-spacing:1.5px;margin-bottom:8px">المواد</div>'+
-    itemsHtml+
-    '<div style="display:flex;gap:7px;margin-top:14px;flex-wrap:wrap">'+btns+'</div>';
-  openModal('modal-inv');
+  if(!inv){toast('err','غير موجودة','لا توجد فاتورة برقم '+no,'fa-ban');return;}
+
+  // أضف مؤقتاً إذا لم تكن موجودة ثم اطبع
+  var existed=!!DB.invoices.find(function(i){return i.no===no;});
+  if(!existed)DB.invoices.unshift(inv);
+  printInvoice(no);
+  if(!existed)setTimeout(function(){
+    DB.invoices=DB.invoices.filter(function(i){return i.no!==no;});
+  },5000);
 }
+
 
 // ══════════════════════ EDIT ══════════════════════
 function editSearch(){
@@ -4222,21 +4718,35 @@ function doCancel(){
     'تأكيد الالغاء','btn-danger',()=>{
       const inv=DB.invoices.find(i=>i.no===cancelTarget);
       if(inv){
+        // إعادة المخزون فقط إذا كانت الفاتورة معتمدة (خُصم منها المخزون)
+        if(inv.st==='معتمد'&&inv.type==='صرف'){
+          inv.items.forEach(it=>setStock(it.code,inv.wh,+it.qty));
+        }
         inv.st='ملغي';
-        inv.items.forEach(it=>setStock(it.code,inv.wh,it.qty));
-        addLog('الغاء','الغاء فاتورة '+cancelTarget+' — '+reason,inv.wh);
+        inv.cancelDate=today();
+        inv.cancelBy=currentUser.name;
+        inv.cancelReason=reason;
+        // إلغاء الاعتماد المرتبط
+        DB.approvals.forEach(function(a){if(a.no===cancelTarget)a.st='ملغي';});
+        // إلغاء الطلبات المرتبطة
+        DB.requests.forEach(function(r){if(r.origInv===cancelTarget&&r.st==='معلق')r.st='ملغي';});
+        addLog('الغاء','الغاء فاتورة '+cancelTarget+' — '+reason,inv.wh,{no:cancelTarget});
+        addNotif('warn','إلغاء '+cancelTarget,'تم إلغاء الفاتورة'+(inv.type==='صرف'?' وإعادة المواد للمستودع':''),'fa-ban',inv.emp);
+        syncInvoiceStatus(cancelTarget,'ملغي');
       }
-      toast('ok','✓ الغاء '+cancelTarget,'تم الالغاء واعادة المواد للمستودع','fa-ban');
+      toast('ok','✓ الغاء '+cancelTarget,'تم الالغاء'+(inv?.type==='صرف'?' واعادة المواد للمستودع':''),'fa-ban');
       document.getElementById('cancel-form').style.display='none';
       document.getElementById('cancel-results').innerHTML='';
       document.getElementById('cancel-q').value='';
-      cancelTarget=null;renderDashboard();
+      cancelTarget=null;
+      updateBadges();
+      try{renderDashboard();}catch(e){}
     });
 }
 
 // ══════════════════════ REQUESTS ══════════════════════
 // ══ متغيرات طلب الارجاع ══
-let retItems=[];
+var retItems=[];
 
 function renderRequests(){
   const isM=currentUser?.role==='موجه بلاغات';
@@ -4248,165 +4758,227 @@ function renderRequests(){
   const wc=document.getElementById('wardia-transfer-card');
   if(mv)mv.style.display=isMojOrW?'block':'none';
   if(av)av.style.display=isMojOrW?'none':'block';
-  if(wc)wc.style.display=isW?'block':'none';
+  // إظهار تاب النقل لمشرف الوردية فقط
+  var trTab=document.getElementById('req-form-tab-tr');
+  if(trTab)trTab.style.display=isW?'inline-flex':'none';
+  // تهيئة التابات
+  if(isMojOrW) setReqFormTab('ret');
   document.getElementById('req-pg-title').textContent=isMojOrW?'إنشاء طلب ارجاع / الغاء / نقل':'طلبات الارجاع / الالغاء / النقل';
 
   if(isMojOrW){
     // تعبئة قائمة المقاولين
     const cd=document.getElementById('contr-datalist');
     if(cd)cd.innerHTML=DB.contractors.map(cc=>`<option value="${cc.name}">`).join('');
-    renderRetItems();renderMyRequests();wtrRenderItems();
+    setMyReqTab('pending');renderRetItems();wtrRenderItems();
     document.getElementById('req-sub').textContent='إنشاء طلب جديد';
   } else {
     renderAdminRequests();
   }
 }
 
-function renderMyRequests(){
-  var mine=DB.requests.filter(function(r){
-    return r.emp===currentUser.name && r.st==='معلق';
+function setReqFormTab(t){
+  var formIds={ret:'req-form-ret',can:'req-form-can',tr:'req-form-tr'};
+  var btnIds={ret:'req-form-tab-ret',can:'req-form-tab-can',tr:'req-form-tab-tr'};
+  var icons={ret:'fa-rotate-left',can:'fa-ban',tr:'fa-right-left'};
+  var labels={ret:'طلب ارجاع',can:'طلب الغاء',tr:'طلب نقل'};
+  var typeMap={ret:'ارجاع',can:'الغاء',tr:'نقل'};
+  Object.keys(formIds).forEach(function(tab){
+    var el=document.getElementById(formIds[tab]);
+    var btn=document.getElementById(btnIds[tab]);
+    if(el)el.style.display=t===tab?'block':'none';
+    if(btn){
+      btn.className='btn btn-'+(t===tab?'warn':'sec')+' btn-sm';
+      btn.innerHTML='<i class="fa '+icons[tab]+'"></i>'+labels[tab];
+    }
   });
-  var el=document.getElementById('req-mylist');if(!el)return;
-  if(!mine.length){el.innerHTML='<div class="empty-state" style="padding:20px"><i class="fa fa-inbox"></i><p>لا توجد طلبات مقدمة بعد</p></div>';return;}
-  var typeIco={ارجاع:'fa-rotate-left',الغاء:'fa-ban',نقل:'fa-right-left',تعديل:'fa-pen'};
-  var isMoj=currentUser?.role==='موجه بلاغات';
-  var isW=currentUser?.role==='مشرف وردية';
+  currentReqFormType=typeMap[t]||'ارجاع';
+  renderMyRequests();
+}
 
+function setMyReqTab(t){
+  var pendEl=document.getElementById('req-mylist');
+  var histEl=document.getElementById('req-mylist-hist');
+  var tpBtn=document.getElementById('my-req-tab-pend');
+  var thBtn=document.getElementById('my-req-tab-hist');
+  if(pendEl)pendEl.style.display=t==='pending'?'block':'none';
+  if(histEl)histEl.style.display=t==='history'?'block':'none';
+  if(tpBtn)tpBtn.style.fontWeight=t==='pending'?'800':'400';
+  if(thBtn)thBtn.style.fontWeight=t==='history'?'800':'400';
+  if(t==='history')renderMyReqHistory();
+  else renderMyRequests();
+}
+
+function renderMyReqHistory(){
+  var el=document.getElementById('req-mylist-hist');if(!el)return;
+  var mine=DB.requests.filter(function(r){
+    return r.emp===currentUser.name && r.st!=='معلق' && r.type===currentReqFormType;
+  });
+  if(!mine.length){
+    el.innerHTML='<div class="empty-state" style="padding:20px"><i class="fa fa-inbox"></i><p>لا توجد طلبات سابقة</p></div>';
+    return;
+  }
+  var typeIco={ارجاع:'fa-rotate-left',الغاء:'fa-ban',نقل:'fa-right-left'};
   el.innerHTML=mine.map(function(r){
     var ico=typeIco[r.type]||'fa-file';
     var invNo=r.origInv||r.no;
-    var isPending=r.st==='معلق';
-
-    // ─ ملخص التعديل
-    var editSummary='';
-    if(r.type==='تعديل'&&r.newItems){
-      editSummary='<div style="margin-top:6px;font-size:11px;color:var(--t2)">'+
-        '<span style="color:var(--t3)">التعديل: </span>'+
-        (r.changes?.cont?'مقاول: <strong>'+r.changes.cont+'</strong> &nbsp;':'')+
-        (r.changes?.wh?'مستودع: <strong>'+r.changes.wh+'</strong> &nbsp;':'')+
-        r.newItems.length+' أصناف'+(r.deletedItems?.length?' — حذف '+r.deletedItems.length+' أصناف':'')+
-      '</div>';
-    }
-
-    // ─ قائمة المواد
+    var stColor=r.st==='معتمد'?'var(--g1)':r.st==='مرفوض'?'var(--r1)':'var(--t3)';
     var itemsHtml='';
     if(r.retItems&&r.retItems.length){
       itemsHtml='<div style="margin-top:6px">'+r.retItems.map(function(it){
         return '<div style="display:flex;align-items:center;gap:8px;padding:4px 8px;background:var(--bg2);border-radius:6px;margin-bottom:3px;font-size:11px">'+
           '<span class="mono" style="color:var(--a1)">'+it.code+'</span><span>'+it.name+'</span>'+
-          '<span style="margin-right:auto;font-family:monospace;color:var(--o1)">x '+it.qty+'</span>'+
-        '</div>';
+          '<span style="margin-right:auto;color:var(--o1);font-weight:700">x '+it.qty+'</span></div>';
       }).join('')+'</div>';
     }
+    return '<div class="req-card" style="margin-bottom:10px;opacity:.9">'+
+      '<div class="req-hd">'+
+        '<div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">'+
+          '<span class="req-no">'+r.no+'</span>'+
+          '<span style="font-size:11px;font-weight:700;color:'+stColor+'">'+r.st+'</span>'+
+        '</div>'+
+        '<div style="display:flex;gap:5px">'+
+          '<button class="btn btn-sec btn-xs" onclick="showInvDetail(this.dataset.no)" data-no="'+invNo+'"><i class="fa fa-eye"></i>معاينة</button>'+
+          '<button class="btn btn-primary btn-xs" onclick="printInvoice(this.dataset.no)" data-no="'+invNo+'"><i class="fa fa-print"></i>طباعة</button>'+
+        '</div>'+
+      '</div>'+
+      '<div style="font-size:11.5px;color:var(--t2);margin-top:5px;display:flex;gap:12px;flex-wrap:wrap">'+
+        (r.wh?'<span><i class="fa fa-warehouse" style="color:var(--g1)"></i> '+r.wh+'</span>':'')+
+        (r.cont?'<span><i class="fa fa-hard-hat" style="color:var(--o1)"></i> '+r.cont+'</span>':'')+
+        (r.origInv?'<span class="mono" style="color:var(--a1)">'+r.origInv+'</span>':'')+
+        '<span style="color:var(--t3)">'+r.d+'</span>'+
+      '</div>'+
+      itemsHtml+
+      (r.reason?'<div style="font-size:11px;color:var(--t3);margin-top:4px">'+r.reason+'</div>':'')+
+    '</div>';
+  }).join('');
+}
 
-    // ── ختم الإلغاء ──
-    var cancelStamp='';
-    if(r.type==='الغاء'){
-      var stampColor=isPending?'rgba(245,158,11,.45)':'rgba(220,38,38,.45)';
-      var stampText=isPending?'طلب إلغاء':'مُلغى';
-      cancelStamp='<div style="display:inline-block;border:3px solid '+stampColor+';border-radius:6px;padding:2px 14px;transform:rotate(-5deg);font-size:13px;font-weight:900;color:'+stampColor+';letter-spacing:2px;margin-top:6px">'+stampText+'</div>';
-    }
 
-    // ── الأزرار حسب الدور والنوع والحالة ──
+function renderMyRequests(){
+  var el=document.getElementById('req-mylist');if(!el)return;
+  var pendCnt=DB.requests.filter(function(r){
+    return r.emp===currentUser.name&&r.st==='معلق'&&r.type===currentReqFormType;
+  }).length;
+  var badge=document.getElementById('my-req-pend-cnt');
+  if(badge){badge.textContent=pendCnt;badge.style.display=pendCnt?'inline-flex':'none';}
+
+  var mine=DB.requests.filter(function(r){
+    return r.emp===currentUser.name && r.st==='معلق' && r.type===currentReqFormType;
+  });
+
+  if(!mine.length){
+    el.innerHTML='<div class="empty-state" style="padding:20px"><i class="fa fa-inbox"></i><p>لا توجد طلبات '+currentReqFormType+' معلقة</p></div>';
+    return;
+  }
+
+  el.innerHTML=mine.map(function(r){
+    var invNo=r.origInv||r.no;
     var btns='';
-    // معاينة دائماً
-    btns+='<button class="btn btn-sec btn-xs" onclick="showInvDetail(\''+invNo+'\')">'+'<i class="fa fa-eye"></i>معاينة</button>';
-    // طباعة دائماً
-    btns+='<button class="btn btn-primary btn-xs" onclick="printInvoice(\''+invNo+'\')">'+'<i class="fa fa-print"></i>طباعة</button>';
+    btns+='<button class="btn btn-sec btn-xs" onclick="showInvDetail(this.dataset.no)" data-no="'+invNo+'"><i class="fa fa-eye"></i>معاينة</button>';
+    btns+='<button class="btn btn-primary btn-xs" onclick="printInvoice(this.dataset.no)" data-no="'+invNo+'"><i class="fa fa-print"></i>طباعة</button>';
+    if(r.type==='ارجاع'||r.type==='الغاء'){
+      btns+='<button class="btn btn-warn btn-xs" onclick="editMyPendingRequest('+r.id+')"><i class="fa fa-pen"></i>تعديل</button>';
+    }
+    btns+='<button class="btn btn-danger btn-xs" onclick="cancelMyRequest('+r.id+')"><i class="fa fa-xmark"></i>سحب</button>';
 
-    if(isPending){
-      if(r.type==='ارجاع'){
-        // موجه + مشرف: تعديل + سحب
-        btns+='<button class="btn btn-warn btn-xs" onclick="editMyPendingRequest('+r.id+')"><i class="fa fa-pen"></i>تعديل</button>';
-        btns+='<button class="btn btn-danger btn-xs" onclick="cancelMyRequest('+r.id+')"><i class="fa fa-xmark"></i>سحب</button>';
-      } else if(r.type==='نقل'){
-        // مشرف الوردية فقط: تعديل + سحب
-        if(isW){
-          btns+='<button class="btn btn-warn btn-xs" onclick="editMyPendingRequest('+r.id+')"><i class="fa fa-pen"></i>تعديل</button>';
-          btns+='<button class="btn btn-danger btn-xs" onclick="cancelMyRequest('+r.id+')"><i class="fa fa-xmark"></i>سحب</button>';
-        }
-      } else if(r.type==='الغاء'){
-        // الجميع: سحب فقط
-        btns+='<button class="btn btn-danger btn-xs" onclick="cancelMyRequest('+r.id+')"><i class="fa fa-xmark"></i>سحب</button>';
-      }
+    var itemsHtml='';
+    if((r.retItems||r.items||[]).length){
+      itemsHtml='<div style="margin-top:6px">'+
+        (r.retItems||r.items||[]).map(function(it){
+          return '<div style="display:flex;align-items:center;gap:8px;padding:4px 8px;background:var(--bg2);border-radius:6px;margin-bottom:3px;font-size:11px">'+
+            '<span class="mono" style="color:var(--a1)">'+it.code+'</span>'+
+            '<span style="flex:1">'+it.name+'</span>'+
+            '<span style="font-weight:700;color:var(--o1)">x '+it.qty+'</span>'+
+          '</div>';
+        }).join('')+'</div>';
     }
 
     return '<div class="req-card" style="margin-bottom:10px">'+
       '<div class="req-hd">'+
         '<div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">'+
           '<span class="req-no">'+r.no+'</span>'+
-          '<span style="font-size:10px;font-weight:700;background:rgba(255,255,255,.06);border:1px solid var(--b1);border-radius:6px;padding:2px 8px;color:var(--t2)"><i class="fa '+ico+'"></i> '+r.type+'</span>'+
-          tag(r.st)+
+          tag(r.type)+tag(r.st)+
+          '<span style="font-size:11px;color:var(--t3)">'+r.d+'</span>'+
         '</div>'+
         '<div style="display:flex;gap:5px;flex-wrap:wrap">'+btns+'</div>'+
       '</div>'+
-      '<div style="font-size:11.5px;color:var(--t2);margin-top:5px;display:flex;gap:12px;flex-wrap:wrap">'+
+      '<div style="font-size:11.5px;color:var(--t2);margin-top:5px;display:flex;gap:10px;flex-wrap:wrap">'+
         (r.wh?'<span><i class="fa fa-warehouse" style="color:var(--g1)"></i> '+r.wh+'</span>':'')+
         (r.cont?'<span><i class="fa fa-hard-hat" style="color:var(--o1)"></i> '+r.cont+'</span>':'')+
-        (r.origInv?'<span><i class="fa fa-file" style="color:var(--a1)"></i> <span class="mono">'+r.origInv+'</span></span>':'')+
-        '<span style="color:var(--t3)"><i class="fa fa-clock"></i> '+r.d+'</span>'+
+        (r.origInv?'<span class="mono" style="color:var(--a1)">'+r.origInv+'</span>':'')+
       '</div>'+
-      editSummary+itemsHtml+cancelStamp+
-      (r.reason?'<div style="font-size:11px;color:var(--t3);margin-top:4px"><i class="fa fa-comment"></i> '+r.reason+'</div>':'')+
+      itemsHtml+
+      (r.reason?'<div style="font-size:11px;color:var(--t3);margin-top:3px"><i class="fa fa-comment"></i> '+r.reason+'</div>':'')+
     '</div>';
   }).join('');
 }
+
 
 function renderAdminRequests(){
   var pendCount2=DB.requests.filter(function(r){return r.st==='معلق';}).length;
   var badge2=document.getElementById('req-pending-cnt');
   if(badge2){badge2.textContent=pendCount2;badge2.style.display=pendCount2?'inline-flex':'none';}
-  const all=DB.requests;
-  const pending=all.filter(r=>r.st==='معلق');
-  document.getElementById('req-sub').textContent=pending.length+' طلبات بانتظار المراجعة';
-  // الشرائح تعمل على المعلقة فقط
-  const chips=[
-    {v:'all',l:'الكل ('+pending.length+')'},
-    {v:'ارجاع',l:'ارجاع ('+pending.filter(r=>r.type==='ارجاع').length+')'},
-    {v:'الغاء',l:'الغاء ('+pending.filter(r=>r.type==='الغاء').length+')'},
-    {v:'نقل',l:'نقل ('+pending.filter(r=>r.type==='نقل').length+')'}
+  var pending=DB.requests.filter(function(r){return r.st==='معلق';});
+  var validTypes=['ارجاع','الغاء','نقل'];
+  var pendingValid=pending.filter(function(r){return validTypes.includes(r.type);});
+  var subEl=document.getElementById('req-sub');
+  if(subEl)subEl.textContent=pendingValid.length+' طلبات بانتظار المراجعة';
+  var chips=[
+    {v:'all',l:'الكل ('+pendingValid.length+')'},
+    {v:'ارجاع',l:'ارجاع ('+pendingValid.filter(function(r){return r.type==='ارجاع';}).length+')'},
+    {v:'الغاء',l:'الغاء ('+pendingValid.filter(function(r){return r.type==='الغاء';}).length+')'},
+    {v:'نقل',l:'نقل ('+pendingValid.filter(function(r){return r.type==='نقل';}).length+')'}
   ];
-  const chipsEl=document.getElementById('req-chips');
-  if(chipsEl)chipsEl.innerHTML=chips.map(cc=>`<button class="fchip ${cc.v===reqFilter?'on':''}" onclick="setReqFilter('${cc.v}',this)">${cc.l}</button>`).join('');
-  const items=pending.filter(r=>reqFilter==='all'||r.type===reqFilter);
-  const el=document.getElementById('req-list');if(!el)return;
-  if(!items.length){el.innerHTML='<div class="empty-state card"><i class="fa fa-check-double"></i><p>لا توجد طلبات</p></div>';return;}
-  el.innerHTML=items.map(r=>`
-    <div class="req-card">
-      <div class="req-hd">
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-          <span class="req-no">${r.no}</span>${tag(r.type)}${tag(r.st)}
-          <span style="font-size:11px;color:var(--t3)">من: ${r.emp}</span>
-          ${r.type==='نقل'?`<span style="font-size:11px;color:var(--a1)"><i class="fa fa-right-left"></i> ${r.from||''} → ${r.to||''}</span>`:''}
-        </div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
-          <button class="btn btn-sec btn-sm" onclick="showInvDetail('${r.origInv||r.no}')"><i class="fa fa-eye"></i>معاينة</button>
-          <button class="btn btn-primary btn-sm" onclick="var _n='${r.origInv||r.no}';var _i=DB.invoices.find(function(x){return x.no===_n;});if(_i)printInvoice(_n);else toast('warn','معلق','يمكن الطباعة بعد الاعتماد','fa-clock')"><i class="fa fa-print"></i></button>
-          ${r.st==='معلق'&&(currentUser?.role==='مدير النظام'||currentUser?.role==='أمين مستودع')?`
-            ${r.type!=='الغاء'?'<button class="btn btn-warn btn-sm" onclick="adminEditRequest('+r.id+')"><i class="fa fa-pen"></i>تعديل</button>':''}
-            <button class="btn btn-green btn-sm" onclick="reqApprove(${r.id})"><i class="fa fa-check"></i>اعتماد</button>
-            <button class="btn btn-danger btn-sm" onclick="reqReject(${r.id})"><i class="fa fa-times"></i>رفض</button>`
-          :r.st==='معتمد'?`<span style="color:var(--g1);font-size:12px;display:flex;align-items:center;gap:5px"><i class="fa fa-check-circle"></i>معتمد</span>`
-          :`<span style="color:var(--r1);font-size:12px;display:flex;align-items:center;gap:5px"><i class="fa fa-times-circle"></i>مرفوض</span>`}
-        </div>
-      </div>
-      <!-- تفاصيل الطلب -->
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:7px;margin:10px 0;background:var(--bg2);border-radius:8px;padding:10px">
-        <div style="font-size:11px"><span style="color:var(--t3)">المستودع المستلم:</span><br><strong>${r.wh}</strong></div>
-        <div style="font-size:11px"><span style="color:var(--t3)">المقاول المُسلِّم:</span><br><strong>${r.cont}</strong></div>
-        ${r.boq?`<div style="font-size:11px"><span style="color:var(--t3)">رقم BOQ:</span><br><strong class="mono">${r.boq}</strong></div>`:''}
-        ${r.reason?`<div style="font-size:11px"><span style="color:var(--t3)">السبب:</span><br><strong>${r.reason}</strong></div>`:''}
-        <div style="font-size:11px"><span style="color:var(--t3)">التاريخ:</span><br><strong class="mono">${r.d}</strong></div>
-      </div>
-      <!-- المواد -->
-      <div style="margin-top:4px">
-        ${(r.retItems||[]).map(it=>`<div style="display:flex;align-items:center;gap:8px;padding:5px 10px;background:var(--bg2);border-radius:6px;margin-bottom:3px;font-size:11.5px;border:1px solid var(--b1)">
-          <span class="mono" style="color:var(--a1)">${it.code}</span><span style="color:var(--t1)">${it.name}</span>
-          <span style="margin-right:auto;font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--o1)">x ${it.qty} وحدة</span>
-        </div>`).join('')}
-      </div>
-    </div>`).join('');
+  var chipsEl=document.getElementById('req-chips');
+  if(chipsEl)chipsEl.innerHTML=chips.map(function(cc){
+    return '<button class="fchip '+(cc.v===reqFilter?'on':'')+'" onclick="setReqFilter(\''+cc.v+'\',this)">'+cc.l+'</button>';
+  }).join('');
+  var items=pendingValid.filter(function(r){return reqFilter==='all'||r.type===reqFilter;});
+  var el=document.getElementById('req-list');if(!el)return;
+  if(!items.length){
+    el.innerHTML='<div class="empty-state card"><i class="fa fa-check-double"></i><p>لا توجد طلبات معلقة</p></div>';
+    return;
+  }
+  var isAdmin=currentUser?.role==='مدير النظام'||currentUser?.role==='أمين مستودع';
+  el.innerHTML=items.map(function(r){
+    // أزرار الإجراء
+    var actionBtns='';
+    actionBtns+='<button class="btn btn-sec btn-sm" onclick="showInvDetail(\''+(r.origInv||r.no)+'\')"><i class="fa fa-eye"></i>معاينة</button>';
+    actionBtns+='<button class="btn btn-primary btn-sm" onclick="printInvoice(\''+(r.origInv||r.no)+'\')"><i class="fa fa-print"></i>طباعة</button>';
+    if(isAdmin&&r.st==='معلق'){
+      if(r.type!=='الغاء') actionBtns+='<button class="btn btn-warn btn-sm" onclick="adminEditRequest('+r.id+')"><i class="fa fa-pen"></i>تعديل</button>';
+      actionBtns+='<button class="btn btn-green btn-sm" onclick="reqApprove('+r.id+')"><i class="fa fa-check"></i>اعتماد</button>';
+      actionBtns+='<button class="btn btn-danger btn-sm" onclick="reqReject('+r.id+')"><i class="fa fa-times"></i>رفض</button>';
+    }
+    // مواد الطلب
+    var retItemsHtml=(r.retItems||r.items||[]).map(function(it){
+      return '<div style="display:flex;align-items:center;gap:8px;padding:5px 10px;background:var(--bg2);border-radius:6px;margin-bottom:3px;font-size:11.5px;border:1px solid var(--b1)">'+
+        '<span class="mono" style="color:var(--a1)">'+it.code+'</span>'+
+        '<span style="color:var(--t1)">'+it.name+'</span>'+
+        '<span style="margin-right:auto;font-weight:700;color:var(--o1)">x '+it.qty+' وحدة</span>'+
+      '</div>';
+    }).join('');
+    return '<div class="req-card">'+
+      '<div class="req-hd">'+
+        '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'+
+          '<span class="req-no">'+r.no+'</span>'+tag(r.type)+tag(r.st)+
+          '<span style="font-size:11px;color:var(--t3)">من: '+r.emp+'</span>'+
+          (r.type==='نقل'?'<span style="font-size:11px;color:var(--a1)"><i class="fa fa-right-left"></i> '+(r.from||'')+' → '+(r.to||'')+'</span>':'')+
+        '</div>'+
+        '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">'+actionBtns+'</div>'+
+      '</div>'+
+      '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:7px;margin:10px 0;background:var(--bg2);border-radius:8px;padding:10px">'+
+        '<div style="font-size:11px"><span style="color:var(--t3)">المستودع المستلم:</span><br><strong>'+r.wh+'</strong></div>'+
+        '<div style="font-size:11px"><span style="color:var(--t3)">المقاول:</span><br><strong>'+r.cont+'</strong></div>'+
+        (r.boq?'<div style="font-size:11px"><span style="color:var(--t3)">BOQ:</span><br><strong class="mono">'+r.boq+'</strong></div>':'')+
+        (r.reason?'<div style="font-size:11px"><span style="color:var(--t3)">السبب:</span><br><strong>'+r.reason+'</strong></div>':'')+
+        '<div style="font-size:11px"><span style="color:var(--t3)">التاريخ:</span><br><strong class="mono">'+r.d+'</strong></div>'+
+      '</div>'+
+      '<div style="margin-top:4px">'+retItemsHtml+'</div>'+
+    '</div>';
+  }).join('');
 }
+
 
 function setReqFilter(f,btn){reqFilter=f;document.querySelectorAll('#req-chips .fchip').forEach(b=>b.classList.remove('on'));btn.classList.add('on');renderRequests();}
 
@@ -4415,16 +4987,42 @@ function fetchReturnInv(){
   const no=(document.getElementById('ret-inv-no')?.value||'').trim();
   const inv=DB.invoices.find(i=>i.no===no);
   const el=document.getElementById('ret-inv-info');
+  const previewBtn=document.getElementById('ret-preview-btn');
   if(!el)return;
-  if(!inv){el.style.display='none';return;}
+  if(!inv){
+    el.style.display='none';
+    if(previewBtn)previewBtn.style.display='none';
+    return;
+  }
+  // إظهار زر المعاينة
+  if(previewBtn)previewBtn.style.display='';
   el.style.display='block';
-  el.innerHTML=`<div style="display:flex;flex-wrap:wrap;gap:10px">
-    <span><i class="fa fa-warehouse" style="color:var(--g1)"></i> <strong>${inv.wh}</strong></span>
-    <span><i class="fa fa-hard-hat" style="color:var(--o1)"></i> <strong>${inv.cont}</strong></span>
-    <span>${tag(inv.type)} ${tag(inv.st)}</span>
-  </div>
-  <div style="margin-top:7px;font-size:11px;color:var(--t2)">${inv.items.map(it=>`<span style="margin-left:10px;font-family:monospace">${it.code} x${it.qty}</span>`).join('')}</div>`;
-  // تعبئة المقاول تلقائياً
+  var stColor=inv.st==='معتمد'?'var(--g1)':inv.st==='معلق'?'var(--y1)':'var(--r1)';
+  el.innerHTML=
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">'+
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">'+
+        '<span class="mono" style="font-weight:700;color:var(--a1)">'+inv.no+'</span>'+
+        tag(inv.type)+
+        '<span style="font-size:11px;font-weight:700;color:'+stColor+'">'+inv.st+'</span>'+
+      '</div>'+
+    '</div>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;font-size:12px">'+
+      '<div><span style="color:var(--t3)"><i class="fa fa-warehouse"></i> المستودع: </span><strong>'+inv.wh+'</strong></div>'+
+      '<div><span style="color:var(--t3)"><i class="fa fa-hard-hat"></i> المقاول: </span><strong>'+inv.cont+'</strong></div>'+
+      (inv.boq?'<div><span style="color:var(--t3)">BOQ: </span><strong class="mono">'+inv.boq+'</strong></div>':'')+
+      '<div><span style="color:var(--t3)"><i class="fa fa-calendar"></i> التاريخ: </span><strong>'+inv.d+'</strong></div>'+
+    '</div>'+
+    '<div style="font-size:11px;font-weight:600;color:var(--t3);margin-bottom:4px">المواد ('+inv.items.length+' صنف):</div>'+
+    '<div style="display:flex;flex-direction:column;gap:3px">'+
+      inv.items.map(function(it){
+        return '<div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:var(--bg1);border-radius:6px;border:1px solid var(--b1)">'+
+          '<span class="mono" style="font-size:10px;color:var(--a1)">'+it.code+'</span>'+
+          '<span style="flex:1;font-size:12px;color:var(--t1)">'+it.name+'</span>'+
+          '<span class="mono" style="font-weight:700;color:var(--o1)">×'+it.qty+'</span>'+
+        '</div>';
+      }).join('')+
+    '</div>';
+  // تعبئة الحقول تلقائياً
   const ce=document.getElementById('ret-cont');
   if(ce&&!ce.value)ce.value=inv.cont;
   const we=document.getElementById('ret-wh');
@@ -4488,27 +5086,74 @@ function submitReturnRequest(){
   const boq=(document.getElementById('ret-boq-f')?.value||'').trim();
   const reason=(document.getElementById('ret-reason-f')?.value||'').trim();
   if(!origNo){toast('err','حقل مطلوب','ادخل رقم الفاتورة الأصلية','fa-file-invoice');return;}
-  if(!DB.invoices.find(i=>i.no===origNo)){toast('err','فاتورة غير موجودة','لا توجد فاتورة بهذا الرقم','fa-ban');return;}
+  const inv=DB.invoices.find(i=>i.no===origNo);
+  if(!inv){toast('err','فاتورة غير موجودة','لا توجد فاتورة بهذا الرقم','fa-ban');return;}
   if(!wh){toast('err','حقل مطلوب','اختر المستودع المستلم','fa-warehouse');return;}
   if(!cont){toast('err','حقل مطلوب','ادخل اسم المقاول المُسلِّم','fa-hard-hat');return;}
   if(!boq){toast('err','حقل مطلوب','رقم BOQ إجباري','fa-clipboard-list');return;}
   if(!retItems.length){toast('err','لا توجد مواد','أضف مادة واحدة على الأقل للارجاع','fa-box');return;}
-  const no=origNo;  // رقم الطلب = رقم الفاتورة الأصلية
-  DB.requests.push({
-    id:Date.now(),no,type:'ارجاع',origInv:origNo,
-    emp:currentUser.name,wh,cont,boq,reason,
-    retItems:retItems.map(it=>({...it})),
-    items:retItems.map(it=>it.name+' x'+it.qty).join(' + '),
-    d:today(),time:nowTime(),st:'معلق'
+
+  // ── تحديث الفاتورة الأصلية: طرح كميات الارجاع من كميات الفاتورة ──
+  if(inv){
+    // احسب الكميات المتبقية
+    inv.items = inv.items.map(function(it){
+      var retIt = retItems.find(function(r){return r.code===it.code;});
+      if(retIt){
+        return Object.assign({},it,{qty:Math.max(0,it.qty-retIt.qty),origQty:it.qty,retQty:retIt.qty});
+      }
+      return Object.assign({},it);
+    }).filter(function(it){return it.qty>0;});
+    inv.retItems  = retItems.map(function(it){return Object.assign({},it);});
+    inv.retDate   = today();
+    inv.retBy     = currentUser.name;
+    inv.retWh     = wh;
+    inv.hasReturn = true;
+  }
+  var existing=DB.requests.find(function(r){
+    return r.origInv===origNo && r.type==='ارجاع' && r.st==='معلق';
   });
-  addNotif('warn','طلب ارجاع جديد',currentUser.name+' — فاتورة '+origNo+' — '+retItems.length+' أصناف','fa-rotate-left',currentUser.name);
-  addLog('ارجاع','تقديم طلب ارجاع '+no+' للفاتورة '+origNo,wh);
-  retItems=[];
-  ['ret-inv-no','ret-cont','ret-boq-f','ret-reason-f'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
-  const we=document.getElementById('ret-wh');if(we)we.value='';
-  const ri=document.getElementById('ret-inv-info');if(ri)ri.style.display='none';
-  updateBadges();renderRequests();
-  toast('ok','✓ تم تقديم طلب الارجاع','رقم الطلب: '+no+' — بانتظار اعتماد المدير','fa-rotate-left');
+
+  if(existing){
+    // تحديث الطلب الموجود
+    existing.wh=wh;
+    existing.cont=cont;
+    existing.boq=boq;
+    existing.reason=reason;
+    existing.retItems=retItems.map(function(it){return Object.assign({},it);});
+    existing.items=retItems.map(function(it){return it.name+' x'+it.qty;}).join(' + ');
+    existing.d=today();
+    existing.time=nowTime();
+    addLog('ارجاع','تحديث طلب ارجاع '+existing.no+' للفاتورة '+origNo,wh);
+    toast('ok','✓ تم تحديث طلب الارجاع','رقم الطلب: '+existing.no+' — تم التحديث','fa-rotate-left');
+  } else {
+    // إنشاء طلب جديد
+    var no=genInvNo('R');
+    DB.requests.unshift({
+      id:Date.now(),no:no,type:'ارجاع',origInv:origNo,
+      emp:currentUser.name,wh:wh,cont:cont,boq:boq,reason:reason,
+      retItems:retItems.map(function(it){return Object.assign({},it);}),
+      items:retItems.map(function(it){return it.name+' x'+it.qty;}).join(' + '),
+      d:today(),time:nowTime(),st:'معلق'
+    });
+    addNotif('warn','طلب ارجاع جديد',currentUser.name+' — '+origNo+' — '+retItems.length+' أصناف','fa-rotate-left',null);
+    addLog('ارجاع','تقديم طلب ارجاع '+no+' للفاتورة '+origNo,wh);
+    toast('ok','✓ تم تقديم طلب الارجاع','رقم الطلب: '+no+' — بانتظار اعتماد المدير','fa-rotate-left');
+  }
+
+  // تحديث كل النظام
+  syncInvoiceStatus(origNo, inv.st);
+  retItems=[];renderRetItems();
+  ['ret-inv-no','ret-cont','ret-boq-f','ret-reason-f'].forEach(function(id){
+    var e=document.getElementById(id);if(e)e.value='';
+  });
+  var we=document.getElementById('ret-wh');if(we)we.value='';
+  var ri=document.getElementById('ret-inv-info');if(ri)ri.style.display='none';
+  var pb=document.getElementById('ret-preview-btn');if(pb)pb.style.display='none';
+  updateBadges();
+  try{renderRequests();}catch(e){}
+  try{renderMyRequests();}catch(e){}
+  try{if(currentPage==='invoices')renderArc();}catch(e){}
+  try{if(currentPage==='myinv')renderMyInv();}catch(e){}
 }
 
 // ── تقديم طلب الالغاء ──
@@ -4540,7 +5185,14 @@ function submitCancelRequest(){
   ['can-inv-no','can-cont','can-boq-f','can-reason-f'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
   const we=document.getElementById('can-wh');if(we)we.value='';
   const ci=document.getElementById('can-inv-info');if(ci)ci.style.display='none';
-  updateBadges();renderRequests();
+  // تحديث كامل النظام
+  var invC=DB.invoices.find(function(i){return i.no===origNo;});
+  if(invC) syncInvoiceStatus(origNo, invC.st);
+  updateBadges();
+  try{renderRequests();}catch(e){}
+  try{renderMyRequests();}catch(e){}
+  try{if(currentPage==='invoices')renderArc();}catch(e){}
+  try{if(currentPage==='myinv')renderMyInv();}catch(e){}
   toast('ok','✓ تم تقديم طلب الالغاء','رقم الطلب: '+no+' — بانتظار اعتماد المدير','fa-ban');
 }
 
@@ -4678,7 +5330,11 @@ function editMyPendingRequest(id){
 
       addLog('تعديل','تعديل طلب '+r.type+' '+r.no+' — '+eprItems.length+' أصناف',wh,{no:r.no});
       closeModal('modal-form');
-      renderRequests();
+      try{renderRequests();}catch(e){}
+      try{renderMyRequests();}catch(e){}
+      try{renderMyInv();}catch(e){}
+      try{if(currentPage==='invoices')renderArc();}catch(e){}
+      updateBadges();
       toast('ok','✓ تم التعديل','طلب '+r.type+' '+r.no+' مُحدَّث في كامل النظام','fa-save');
     }}]
   );
@@ -4727,15 +5383,42 @@ function cancelMyRequest(id){
         }
 
         addLog('سحب','سحب طلب إلغاء الفاتورة '+invNo+' — حُذف الطلب كاملاً',r.wh||'—');
-        updateBadges();renderMyInv();renderRequests();
+        updateBadges();
+        mwRenderCurrent();
+        var c=document.getElementById('content');if(c)c.scrollTop=0;
         toast('ok','✓ سُحب طلب الإلغاء','طلب إلغاء الفاتورة '+invNo+' حُذف كاملاً من النظام','fa-trash');
 
       } else {
-        // ── طلبات أخرى: حذف عادي ──
-        DB.requests = DB.requests.filter(function(x){return x.id!==id;});
-        addLog('الغاء','تم سحب طلب '+r.type+' '+r.no+' قبل الاعتماد',r.wh||'—');
-        updateBadges();renderRequests();
-        toast('ok','✓ سُحب الطلب','تم سحب الطلب '+r.no+' — لن يظهر في القائمة','fa-xmark');
+        // ── سحب طلب تعديل: استعادة الفاتورة الأصلية ──
+        if(r.type==='تعديل'&&r.oldValues){
+          var invToRestore=DB.invoices.find(function(i){return i.no===(r.origInv||r.no);});
+          if(invToRestore&&r.oldValues){
+            // استعادة البيانات الأصلية
+            if(r.oldValues.items)invToRestore.items=JSON.parse(JSON.stringify(r.oldValues.items));
+            if(r.oldValues.cont)invToRestore.cont=r.oldValues.cont;
+            if(r.oldValues.boq)invToRestore.boq=r.oldValues.boq;
+            if(r.oldValues.wh)invToRestore.wh=r.oldValues.wh;
+            if(r.oldValues.notes!==undefined)invToRestore.notes=r.oldValues.notes;
+            // استعادة حالة الاعتماد
+            var apr=DB.approvals.find(function(a){return a.no===invToRestore.no;});
+            if(apr){
+              apr.items=JSON.parse(JSON.stringify(r.oldValues.items||invToRestore.items));
+              apr.cont=invToRestore.cont;apr.boq=invToRestore.boq;apr.wh=invToRestore.wh;
+            }
+            addLog('سحب','سُحب طلب التعديل — استُعيدت الفاتورة '+(r.origInv||r.no)+' لحالتها الأصلية',r.wh||'—');
+          }
+        } else {
+          addLog('الغاء','تم سحب طلب '+r.type+' '+r.no+' قبل الاعتماد',r.wh||'—');
+        }
+        DB.requests=DB.requests.filter(function(x){return x.id!==id;});
+        updateBadges();
+        try{renderApprovals();}catch(e){}
+        try{renderInventory();}catch(e){}
+        mwRenderCurrent();
+        var c=document.getElementById('content');if(c)c.scrollTop=0;
+        toast('ok','✓ سُحب الطلب',
+          r.type==='تعديل'?'تم سحب طلب التعديل وعادت الفاتورة لحالتها الأصلية':'تم سحب الطلب '+r.no,
+          'fa-xmark');
       }
     });
 }
@@ -4818,6 +5501,8 @@ function adminEditInvoice(no, fromPage){
   if(!inv){toast('err','غير موجودة','الفاتورة غير موجودة','fa-ban');return;}
   aeInvNo=no;
   aeItems=inv.items.map(function(it){return {code:it.code,name:it.name,qty:it.qty};});
+  var oldItems=inv.items.map(function(it){return {code:it.code,name:it.name,qty:it.qty};});
+  var oldWh=inv.wh;
 
   var isIssue=inv.type==='صرف';
   var isReturn=inv.type==='ارجاع';
@@ -4894,6 +5579,14 @@ function adminEditInvoice(no, fromPage){
       if(isTransfer&&whRecv) inv.whRecv=whRecv;
       inv.items =JSON.parse(JSON.stringify(aeItems));
 
+      // ── تعديل المخزون إذا كانت الفاتورة معتمدة (صرف) ──
+      if(inv.st==='معتمد'&&inv.type==='صرف'){
+        // أعد المخزون القديم
+        (oldItems||[]).forEach(function(it){setStock(it.code,oldWh,+it.qty);});
+        // اخصم المخزون الجديد
+        aeItems.forEach(function(it){setStock(it.code,wh,-it.qty);});
+      }
+
       // ── تحديث DB.approvals ──
       DB.approvals.forEach(function(a){
         if(a.no===no){
@@ -4920,7 +5613,9 @@ function adminEditInvoice(no, fromPage){
       closeModal('modal-form');
       if(fromPage==='approve') renderApprovals();
       else if(fromPage==='archive'){renderArc();}
-      else renderRequests();
+      else if(fromPage==='requests'){renderAdminRequests();renderMyRequests();}
+      // تحديث قائمة التعديل دائماً
+      if(typeof renderIerList==='function') renderIerList();
       toast('ok','✓ تم التعديل','الفاتورة '+no+' مُحدَّثة — بانتظار الاعتماد','fa-save');
     }}]
   );
@@ -4983,8 +5678,25 @@ function reqApprove(id){
     showConfirm('<i class="fa fa-pen" style="color:var(--y1)"></i> مراجعة تعديل '+r.origInv,
       '<p style="font-size:12px;margin-bottom:8px">طلب التعديل <strong style="color:var(--a1)">'+r.no+'</strong> من <strong>'+r.emp+'</strong></p>'+compareHtml,
       'اعتماد التعديل','btn-green',function(){
-        r.st='معتمد';
+        // ── فحص الرصيد المتاح قبل الاعتماد ──
+        var stockErrors=[];
+        (r.newItems||[]).forEach(function(it){
+          var oldIt=(inv?inv.items:[]).find(function(o){return o.code===it.code;});
+          var oldQty=oldIt?oldIt.qty:0;
+          var diff=it.qty-oldQty;
+          if(diff>0){
+            var avail=getAvailableStock(it.code,newWh);
+            if(avail<diff) stockErrors.push(it.name+': متاح '+avail+' زيادة مطلوبة '+diff);
+          }
+        });
+        if(stockErrors.length){
+          toast('err','رصيد غير كافٍ',stockErrors.join(' | '),'fa-triangle-exclamation');
+          return;
+        }
+                r.st='معتمد';
         if(inv){
+          // حفظ تاريخ الاعتماد السابق قبل الكتابة عليه
+          if(inv.approvedDate){ inv.previousApprovedDate=inv.approvedDate; inv.previousApprovedBy=inv.approvedBy; }
           var oldWh=inv.wh;
           (inv.items||[]).forEach(function(it){setStock(it.code,oldWh,+it.qty);});
           (r.newItems||[]).forEach(function(it){setStock(it.code,newWh,-it.qty);});
@@ -5001,7 +5713,18 @@ function reqApprove(id){
         }
         addLog('تعديل','اعتماد تعديل '+r.origInv+' ← '+r.no,newWh,{no:r.no,origInv:r.origInv,approvedBy:currentUser.name});
         addNotif('ok','✓ اعتمد تعديل فاتورة '+r.origInv,'تم تطبيق التعديل وتحديث الفاتورة والمخزون','fa-pen',r.emp);
-        updateBadges();renderRequests();renderMyRequests();
+        updateBadges();
+        // تحديث كل الأقسام المتأثرة
+        try{if(typeof renderRequests==='function')renderRequests();}catch(e){}
+        try{if(typeof renderMyRequests==='function')renderMyRequests();}catch(e){}
+        try{if(typeof renderIerList==='function')renderIerList();}catch(e){}
+  try{if(typeof renderIerMyPending==='function')renderIerMyPending();}catch(e){}
+  try{if(currentPage==='requests'&&typeof renderEditRequests==='function')renderEditRequests();}catch(e){}
+        try{if(typeof renderMyInv==='function')renderMyInv();}catch(e){}
+        try{if(typeof renderApprovals==='function')renderApprovals();}catch(e){}
+        try{if(typeof renderArc==='function')renderArc();}catch(e){}
+        try{if(typeof renderInventory==='function')renderInventory();}catch(e){}
+      try{if(currentPage==='zones')zonesRender();}catch(e){}
         toast('ok','✓ فاتورة '+r.origInv+' تم تحديثها','اعتماد التعديل ونقل المخزون','fa-circle-check');
       });
     return;
@@ -5063,32 +5786,97 @@ function reqApprove(id){
 
   // ══ اعتماد طلب ارجاع / الغاء ══
   const isCancel=r.type==='الغاء';
+  // ══ اعتماد طلب الارجاع أو الالغاء ══
+  var origInv=DB.invoices.find(function(i){return i.no===(r.origInv||r.no);});
+  var retItems=r.retItems||[];
+
+  // بناء مقارنة قبل/بعد للارجاع
+  function fmtRetItems(items,color){
+    if(!items||!items.length)return '<div style="color:var(--t3);font-size:11px;padding:4px">لا مواد</div>';
+    return items.map(function(it){
+      return '<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--b1);font-size:12px">'+
+        '<span style="color:var(--t1)">'+it.name+'</span>'+
+        '<span class="mono" style="color:'+color+';font-weight:700">×'+it.qty+'</span></div>';
+    }).join('');
+  }
+
+  var beforeHtml='<div style="background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);border-radius:10px;padding:12px;flex:1">'+
+    '<div style="font-size:11px;font-weight:700;color:var(--r1);margin-bottom:8px"><i class="fa fa-file-invoice"></i> الفاتورة الأصلية</div>'+
+    '<div style="font-size:11px;color:var(--t3);margin-bottom:6px">'+
+      (origInv?'المستودع: <strong>'+origInv.wh+'</strong><br>المقاول: <strong>'+origInv.cont+'</strong>':'—')+
+    '</div>'+
+    fmtRetItems(origInv?origInv.items:[],'var(--t1)')+
+  '</div>';
+
+  var afterHtml='<div style="background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.2);border-radius:10px;padding:12px;flex:1">'+
+    '<div style="font-size:11px;font-weight:700;color:var(--g1);margin-bottom:8px"><i class="fa fa-rotate-left"></i> '+(isCancel?'الغاء':'مواد الارجاع')+'</div>'+
+    '<div style="font-size:11px;color:var(--t3);margin-bottom:6px">'+
+      'المستودع المستلم: <strong>'+r.wh+'</strong><br>'+
+      (r.reason?'السبب: <strong>'+r.reason+'</strong>':'')+
+    '</div>'+
+    fmtRetItems(retItems,'var(--g1)')+
+  '</div>';
+
+  var compareHtml=
+    '<div style="margin-bottom:10px;padding:8px 12px;background:var(--bg2);border-radius:8px;font-size:12px">'+
+      '<i class="fa fa-user" style="color:var(--a1)"></i> من: <strong>'+r.emp+'</strong> &nbsp;·&nbsp; '+
+      '<i class="fa fa-calendar" style="color:var(--t3)"></i> '+r.d+
+    '</div>'+
+    '<div style="display:flex;gap:10px;flex-wrap:wrap">'+beforeHtml+afterHtml+'</div>'+
+    (isCancel?'':
+      '<div style="margin-top:10px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--g1)">'+
+        '<i class="fa fa-info-circle"></i> بعد الاعتماد: تُضاف المواد للمستودع <strong>'+r.wh+'</strong> وتُحدَّث الفاتورة الأصلية'+
+      '</div>');
+
   showConfirm(
-    '<i class="fa fa-check" style="color:var(--g1)"></i> اعتماد '+r.no,
-    'اعتماد طلب '+(isCancel?'الالغاء':'الارجاع')+' <strong>'+r.no+'</strong>؟<br><span style="color:var(--y1);font-size:12px">⚠ سيتم إعادة المواد للمستودع: '+r.wh+'</span>',
-    'اعتماد واعادة المواد','btn-green',function(){
+    '<i class="fa fa-left-right" style="color:var(--g1)"></i> مراجعة '+(isCancel?'الالغاء':'الارجاع')+' '+r.no,
+    compareHtml,
+    isCancel?'اعتماد الالغاء':'اعتماد الارجاع','btn-green',function(){
       r.st='معتمد';r.approvedDate=today();r.approvedBy=currentUser.name;
-      (r.retItems||[]).forEach(function(it){
-        if(DB.inventory.find(function(x){return x.code===it.code;}))setStock(it.code,r.wh,it.qty);
-      });
-      // وضع ختم الإلغاء على الفاتورة إذا كان طلب إلغاء
-      if(isCancel){
-        var invToCancel=DB.invoices.find(function(i){return i.no===(r.origInv||r.no);});
-        if(invToCancel){
-          invToCancel.cancelled   = true;
-          invToCancel.cancelledBy = currentUser.name;
-          invToCancel.cancelDate  = today();
-          invToCancel.cancelNote  = 'اعتماد طلب إلغاء '+r.no;
+
+      if(!isCancel){
+        // إضافة مواد الارجاع للمخزون
+        retItems.forEach(function(it){
+          if(DB.inventory.find(function(x){return x.code===it.code;})) setStock(it.code,r.wh,it.qty);
+        });
+        // تحديث الفاتورة الأصلية بمواد الارجاع
+        if(origInv){
+          origInv.retItems=JSON.parse(JSON.stringify(retItems));
+          origInv.retDate=today();
+          origInv.retBy=currentUser.name;
+          origInv.retWh=r.wh;
+          origInv.retNo=r.no;
+          origInv.hasReturn=true;
+        }
+        // إنشاء فاتورة ارجاع مرتبطة
+        var retInvNo=genInvNo('R');
+        DB.invoices.unshift({
+          no:retInvNo,type:'ارجاع',wh:r.wh,emp:r.emp,cont:origInv?origInv.cont:'—',
+          st:'معتمد',d:today(),items:JSON.parse(JSON.stringify(retItems)),
+          origInv:r.origInv||r.no,reason:r.reason||'',boq:r.boq||'',
+          approvedDate:today(),approvedBy:currentUser.name
+        });
+      } else {
+        // الغاء — ختم الفاتورة الأصلية
+        if(origInv){
+          origInv.cancelled=true;
+          origInv.cancelledBy=currentUser.name;
+          origInv.cancelDate=today();
+          origInv.cancelNote='اعتماد طلب إلغاء '+r.no;
         }
       }
-      // تحديث حالة الفاتورة: إذا كان الطلب يرتبط بفاتورة أصلية (origInv)، حدّثها
-      // وإذا كان رقم الطلب هو رقم الفاتورة نفسه، حدّثه أيضاً
-      if(r.origInv) syncInvoiceStatus(r.origInv, isCancel?'ملغي':'معتمد');
-      syncInvoiceStatus(r.no, isCancel?'ملغي':'معتمد');
-      addLog(isCancel?'الغاء':'ارجاع','اعتماد طلب '+r.no+' — اعيدت المواد لـ '+r.wh,r.wh);
-      addNotif('ok','✓ اعتماد '+r.no,'تم اعتماد الطلب وإعادة المواد للمستودع '+r.wh,'fa-check',r.emp);
-      updateBadges();renderRequests();renderMyRequests();
-      toast('ok','✓ اعتماد '+r.no,'تم اعتماد الطلب وإعادة المواد للمستودع','fa-check');
+
+      if(r.origInv) syncInvoiceStatus(r.origInv,isCancel?'ملغي':'معتمد');
+      syncInvoiceStatus(r.no,isCancel?'ملغي':'معتمد');
+      addLog(isCancel?'الغاء':'ارجاع','اعتماد طلب '+r.no+(isCancel?'':' — أُضيفت المواد لـ '+r.wh),r.wh,{no:r.no});
+      addNotif('ok','✓ اعتماد '+r.no,'تم اعتماد الطلب'+(isCancel?'':' وإضافة المواد للمستودع '+r.wh),'fa-check',r.emp);
+      updateBadges();
+      try{if(typeof renderRequests==='function')renderRequests();}catch(e){}
+      try{if(typeof renderMyRequests==='function')renderMyRequests();}catch(e){}
+      try{if(typeof renderMyInv==='function')renderMyInv();}catch(e){}
+      try{if(typeof renderArc==='function')renderArc();}catch(e){}
+      try{if(typeof renderInventory==='function')renderInventory();}catch(e){}
+      toast('ok','✓ اعتماد '+r.no,isCancel?'تم إلغاء الفاتورة':'تمت إعادة المواد للمستودع '+r.wh,'fa-check');
     });
 }
 function reqReject(id){
@@ -5113,48 +5901,398 @@ function reqReject(id){
 }
 
 // ══════════════════════ APPROVALS ══════════════════════
-function renderApprovals(){
-  var pendCount=DB.approvals.filter(function(a){return a.st==='معلق';}).length;
-  var badge=document.getElementById('appr-pending-badge');
-  if(badge){badge.textContent=pendCount;badge.style.display=pendCount?'inline-flex':'none';}
-  const filterWh=(document.getElementById('appr-filter-wh')?.value||'');
-  const filterDate=(document.getElementById('appr-filter-date')?.value||'');
-  const pending=DB.approvals.filter(a=>a.st==='معلق');
-  document.getElementById('appr-sub').textContent=pending.length+' فاتورة بانتظار الاعتماد';
-  const el=document.getElementById('appr-list');if(!el)return;
-  // فقط المعلقة في قسم المعلقة
-  let items=pending;
-  if(filterWh)items=items.filter(a=>a.wh===filterWh);
-  if(filterDate)items=items.filter(a=>a.d===filterDate);
-  if(!items.length){el.innerHTML=`<div class="empty-state card"><i class="fa fa-search"></i><p>لا توجد نتائج للفلاتر المحددة</p></div>`;return;}
-  el.innerHTML=items.map(a=>`
-    <div class="req-card">
-      <div class="req-hd">
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-          <span class="req-no">${a.no}</span>${tag('صرف')}${tag(a.st)}
-        </div>
-        <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">
-          <button class="btn btn-sec btn-sm" onclick="showInvDetail('${a.no}')"><i class="fa fa-eye"></i>معاينة</button>
-          <button class="btn btn-primary btn-sm" onclick="printInvoice('${a.no}')"><i class="fa fa-print"></i>طباعة</button>
-          ${a.st==='معلق'&&(currentUser?.role==='مدير النظام'||currentUser?.role==='أمين مستودع')?`<div class="req-actions">
-            <button class="btn btn-warn btn-sm" onclick="adminEditInvoice('${a.no}','approve')"><i class="fa fa-pen"></i>تعديل</button>
-            <button class="btn btn-green btn-sm" onclick="apprApprove(${a.id})"><i class="fa fa-signature"></i>اعتماد</button>
-            <button class="btn btn-danger btn-sm" onclick="apprReject(${a.id})"><i class="fa fa-times"></i>رفض</button>
-          </div>`:a.st==='معتمد'?`<span style="color:var(--g1);font-size:12px;display:flex;align-items:center;gap:5px"><i class="fa fa-check-circle"></i>معتمد</span>`:`<span style="color:var(--r1);font-size:12px;display:flex;align-items:center;gap:5px"><i class="fa fa-times-circle"></i>مرفوض</span>`}
-        </div>
-      </div>
-      <div class="req-meta" style="margin-bottom:8px">
-        <div class="req-mi"><i class="fa fa-user"></i>${a.emp}</div>
-        <div class="req-mi"><i class="fa fa-warehouse"></i>${a.wh}</div>
-        <div class="req-mi"><i class="fa fa-hard-hat"></i>${a.cont}</div>
-        <div class="req-mi"><i class="fa fa-clock"></i>${a.d}</div>
-        ${a.boq?`<div class="req-mi"><i class="fa fa-clipboard-list" style="color:var(--a3)"></i>${a.boq}</div>`:''}
-      </div>
-      <div style="background:var(--bg2);border-radius:8px;padding:8px 10px;font-size:11.5px;color:var(--t2);border:1px solid var(--b1)">
-        <i class="fa fa-boxes-stacked" style="color:var(--g1);margin-left:5px"></i><strong style="color:var(--t1)">${a.itemsStr||a.items}</strong>
-      </div>
-    </div>`).join('');
+// ══════════════════════════════════════════
+// نظام الاعتماد الموحد
+// ══════════════════════════════════════════
+var apprTab='pending', apprType='all';
+
+function apprSetTab(t){
+  apprTab=t;
+  ['pending','done'].forEach(function(x){
+    var b=document.getElementById('appr-tab-'+x);
+    var s=document.getElementById('appr-sec-'+x);
+    if(b)b.classList.toggle('active',x===t);
+    if(s)s.style.display=x===t?'block':'none';
+  });
+  if(t==='pending')renderApprovals();
+  else renderApprovalsDone();
 }
+
+function apprSetType(t){
+  apprType=t;
+  document.querySelectorAll('.appr-type-btn').forEach(function(b){
+    b.classList.remove('active');
+  });
+  var btn=document.getElementById('appr-type-'+t);
+  if(btn)btn.classList.add('active');
+  renderApprovals();
+}
+
+// دالة موحدة لجمع كل الطلبات المعلقة
+function getAllPendingRequests(){
+  var results=[];
+  // 1. فواتير صرف معلقة (DB.approvals)
+  DB.approvals.filter(function(a){return a.st==='معلق';}).forEach(function(a){
+    results.push({id:a.id,no:a.no,type:'صرف',emp:a.emp,wh:a.wh,cont:a.cont,boq:a.boq||'',
+      items:Array.isArray(a.items)?a.items:[],itemsStr:a.itemsStr||String(a.items||''),d:a.d,time:a.time||'',st:'معلق',src:'approvals'});
+  });
+  // 2. طلبات ارجاع + الغاء + تعديل معلقة (DB.requests)
+  DB.requests.filter(function(r){return r.st==='معلق'&&['ارجاع','الغاء','تعديل'].includes(r.type);}).forEach(function(r){
+    results.push({id:r.id,no:r.no,type:r.type,emp:r.emp,wh:r.wh||r.from||'',cont:r.cont||'',
+      boq:r.boq||'',origInv:r.origInv||'',reason:r.reason||'',
+      items:r.retItems||r.items||[],itemsStr:r.items||(Array.isArray(r.retItems)?r.retItems.map(function(x){return x.name+' x'+x.qty;}).join(' + '):''),
+      d:r.d,time:r.t||r.time||'',st:'معلق',src:'requests',
+      newItems:r.newItems,deletedItems:r.deletedItems,changes:r.changes,oldValues:r.oldValues});
+  });
+  results.sort(function(a,b){return (a.d+a.time)<(b.d+b.time)?1:-1;});
+  return results;
+}
+
+function renderApprovals(){
+  var all=getAllPendingRequests();
+  // تحديث العدادات
+  var counts={all:all.length,sarf:0,ret:0,can:0,edit:0};
+  all.forEach(function(r){
+    if(r.type==='صرف')counts.sarf++;
+    else if(r.type==='ارجاع')counts.ret++;
+    else if(r.type==='الغاء')counts.can++;
+    else if(r.type==='تعديل')counts.edit++;
+  });
+  function setBadge(id,n,show){
+    var e=document.getElementById(id);
+    if(e){e.textContent=n;e.style.display=(n&&show)?'inline-flex':'none';}
+  }
+  setBadge('badge-appr',all.length,true);
+  setBadge('badge-appr-all',all.length,true);
+  setBadge('appr-cnt-all',all.length,true);
+  setBadge('appr-cnt-sarf',counts.sarf,counts.sarf>0);
+  setBadge('appr-cnt-ret',counts.ret,counts.ret>0);
+  setBadge('appr-cnt-can',counts.can,counts.can>0);
+  setBadge('appr-cnt-edit',counts.edit,counts.edit>0);
+  var sub=document.getElementById('appr-sub');
+  if(sub)sub.textContent=all.length+' طلب بانتظار الاعتماد';
+  // تعبئة فلتر المستودعات
+  var whSel=document.getElementById('appr-filter-wh');
+  if(whSel&&whSel.options.length<=1){
+    DB.warehouses.filter(function(w){return w.active;}).forEach(function(w){
+      whSel.innerHTML+='<option>'+w.name+'</option>';
+    });
+  }
+  // فلترة
+  var q=(document.getElementById('appr-q')?.value||'').toLowerCase();
+  var fWh=document.getElementById('appr-filter-wh')?.value||'';
+  var fDate=document.getElementById('appr-filter-date')?.value||'';
+  var items=all;
+  var typeMap={sarf:'صرف',ret:'ارجاع',can:'الغاء',edit:'تعديل'};
+  if(apprType!=='all')items=items.filter(function(r){return r.type===typeMap[apprType];});
+  if(q)items=items.filter(function(r){return (r.no+r.emp+r.cont+r.wh+(r.origInv||'')).toLowerCase().includes(q);});
+  if(fWh)items=items.filter(function(r){return r.wh===fWh;});
+  if(fDate)items=items.filter(function(r){return r.d===fDate;});
+  var el=document.getElementById('appr-list');
+  var emptyEl=document.getElementById('appr-empty');
+  if(!el)return;
+  if(!items.length){
+    el.innerHTML='';
+    if(emptyEl)emptyEl.style.display='block';
+    return;
+  }
+  if(emptyEl)emptyEl.style.display='none';
+  var isAdmin=currentUser?.role==='مدير النظام'||currentUser?.role==='أمين مستودع';
+  var typeColors={صرف:'var(--g1)',ارجاع:'var(--o1)',الغاء:'var(--r1)',تعديل:'var(--y1)'};
+  var typeIcons={صرف:'fa-file-invoice',ارجاع:'fa-rotate-left',الغاء:'fa-ban',تعديل:'fa-pen'};
+  var typeBg={صرف:'rgba(16,185,129,.08)',ارجاع:'rgba(249,115,22,.08)',الغاء:'rgba(239,68,68,.08)',تعديل:'rgba(245,158,11,.08)'};
+  el.innerHTML=items.map(function(r){
+    var tc=typeColors[r.type]||'var(--t1)';
+    var ti=typeIcons[r.type]||'fa-file';
+    var tb=typeBg[r.type]||'var(--bg2)';
+    // للتعديل: عرض الكميات الجديدة، للارجاع: عرض retItems
+    var invItems=r.type==='تعديل'?(r.newItems||r.items||[]):
+                 r.type==='ارجاع'?(r.retItems||r.items||[]):
+                 Array.isArray(r.items)?r.items:[];
+    // fallback: استخدام itemsStr إذا كانت items فارغة
+    var itemsHtml='';
+    if(invItems.length){
+      itemsHtml=invItems.slice(0,5).map(function(it){
+        var nm=it.name||it.code||String(it);
+        var qty=it.qty||it.qty===0?it.qty:'';
+        return '<span style="background:var(--bg2);border:1px solid var(--b1);border-radius:6px;padding:2px 8px;font-size:11px;white-space:nowrap">'+nm+(qty!==''?' <strong style="color:'+tc+'" class="mono">×'+qty+'</strong>':'')+  '</span>';
+      }).join('')+(invItems.length>5?'<span style="font-size:11px;color:var(--t3)">+'+(invItems.length-5)+' أخرى</span>':'');
+    } else if(r.itemsStr){
+      itemsHtml='<span style="font-size:11.5px;color:var(--t2)">'+r.itemsStr+'</span>';
+    }
+    var adminBtns=isAdmin?
+      '<button class="btn btn-green btn-sm appr-do-btn" data-src="'+r.src+'" data-rid="'+r.id+'"><i class="fa fa-check"></i>اعتماد</button>'+
+      '<button class="btn btn-danger btn-sm appr-rej-btn" data-src="'+r.src+'" data-rid="'+r.id+'"><i class="fa fa-times"></i>رفض</button>':'<span style="font-size:11px;color:var(--t3)">بانتظار الاعتماد</span>';
+
+    return '<div class="req-card" style="margin-bottom:10px;border-right:3px solid '+tc+'">'+
+      '<div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:10px">'+
+        '<div style="display:flex;align-items:center;gap:10px;flex:1;min-width:200px">'+
+          '<div style="width:42px;height:42px;border-radius:11px;background:'+tb+';display:flex;align-items:center;justify-content:center;flex-shrink:0">'+
+            '<i class="fa '+ti+'" style="color:'+tc+';font-size:18px"></i>'+
+          '</div>'+
+          '<div>'+
+            '<div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:3px">'+
+              tag(r.type)+
+              '<span class="mono" style="font-weight:900;font-size:14px;color:var(--t1)">'+r.no+'</span>'+
+              (r.origInv&&r.origInv!==r.no?'<span style="font-size:11px;color:var(--t3)">← <span class="mono" style="color:var(--a1)">'+r.origInv+'</span></span>':'')+
+            '</div>'+
+            '<div style="display:flex;gap:10px;font-size:11.5px;color:var(--t2);flex-wrap:wrap">'+
+              '<span><i class="fa fa-user" style="color:var(--a1)"></i> '+r.emp+'</span>'+
+              '<span><i class="fa fa-warehouse" style="color:var(--g1)"></i> '+r.wh+'</span>'+
+              (r.cont?'<span><i class="fa fa-hard-hat" style="color:var(--o1)"></i> '+r.cont+'</span>':'')+
+              (r.boq?'<span class="mono" style="font-size:10px;color:var(--a3)">BOQ: '+r.boq+'</span>':'')+
+              '<span style="color:var(--t4);font-size:10px">'+r.d+'</span>'+
+            '</div>'+
+            (r.reason?'<div style="font-size:11px;color:var(--t3);margin-top:3px"><i class="fa fa-comment"></i> '+r.reason+'</div>':'')+
+          '</div>'+
+        '</div>'+
+        '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">'+
+          '<button class="btn btn-sec btn-sm appr-view-btn" data-no="'+(r.origInv||r.no)+'"><i class="fa fa-eye"></i>معاينة</button>'+
+          adminBtns+
+        '</div>'+
+      '</div>'+
+      (itemsHtml?'<div style="display:flex;flex-wrap:wrap;gap:5px;padding:8px 10px;background:var(--bg2);border-radius:8px">'+itemsHtml+'</div>':'')+
+      (r.type==='تعديل'&&(r.wasApproved||function(){var oi=DB.invoices.find(function(i){return i.no===(r.origInv||r.no);});return oi&&(oi.st==='معتمد'||oi.approvedDate);}())?
+        '<div style="margin-top:8px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:7px;padding:7px 12px;font-size:11.5px;color:var(--y1)">'+
+          '<i class="fa fa-triangle-exclamation"></i> <strong>تعديل على فاتورة معتمدة مسبقاً</strong>'+
+          (r.oldValues&&r.oldValues.items&&r.oldValues.items.length?
+            ' — الكميات الأصلية: '+r.oldValues.items.map(function(it){return it.name+' ×'+it.qty;}).join(' · ')
+          :'')+
+        '</div>':'')+
+    '</div>';
+  }).join('');
+  // ربط أحداث أزرار الاعتماد والرفض والمعاينة
+  var apprList=document.getElementById('appr-list');
+  if(apprList){
+    apprList.querySelectorAll('.appr-view-btn').forEach(function(btn){
+      btn.addEventListener('click',function(e){e.stopPropagation();showInvDetail(this.dataset.no);});
+    });
+    apprList.querySelectorAll('.appr-do-btn').forEach(function(btn){
+      btn.addEventListener('click',function(e){
+        e.stopPropagation();
+        unifiedApprove(this.dataset.src,parseInt(this.dataset.rid));
+      });
+    });
+    apprList.querySelectorAll('.appr-rej-btn').forEach(function(btn){
+      btn.addEventListener('click',function(e){
+        e.stopPropagation();
+        unifiedReject(this.dataset.src,parseInt(this.dataset.rid));
+      });
+    });
+  }
+}
+
+function renderApprovalsDone(){
+  var q=(document.getElementById('appr-done-q')?.value||'').toLowerCase();
+  var typeF=document.getElementById('appr-done-type')?.value||'';
+  var stF=document.getElementById('appr-done-st')?.value||'';
+  // جمع كل المنتهية
+  var done=[];
+  DB.approvals.filter(function(a){return a.st!=='معلق';}).forEach(function(a){
+    done.push({no:a.no,type:'صرف',emp:a.emp,wh:a.wh,cont:a.cont,d:a.d,st:a.st,by:a.approvedBy||a.rejectedBy||'—'});
+  });
+  DB.requests.filter(function(r){return r.st!=='معلق'&&['ارجاع','الغاء','تعديل'].includes(r.type);}).forEach(function(r){
+    done.push({no:r.no,type:r.type,emp:r.emp,wh:r.wh||'—',cont:r.cont||'—',d:r.d,st:r.st,by:r.approvedBy||r.rejectedBy||'—',origInv:r.origInv||''});
+  });
+  done.sort(function(a,b){return (a.d)<(b.d)?1:-1;});
+  if(typeF)done=done.filter(function(r){return r.type===typeF;});
+  if(stF)done=done.filter(function(r){return r.st===stF;});
+  if(q)done=done.filter(function(r){return (r.no+r.emp+r.wh+(r.origInv||'')).toLowerCase().includes(q);});
+  var tbody=document.getElementById('appr-done-tbody');if(!tbody)return;
+  if(!done.length){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--t3)">لا توجد سجلات</td></tr>';return;}
+  var stC={معتمد:'var(--g1)',مرفوض:'var(--r1)',ملغي:'var(--t3)'};
+  tbody.innerHTML=done.map(function(r){
+    return '<tr>'+
+      '<td class="mono" style="color:var(--a1);font-weight:700">'+r.no+'</td>'+
+      '<td>'+tag(r.type)+'</td>'+
+      '<td style="font-size:12px">'+r.wh+'</td>'+
+      '<td style="font-size:11px;color:var(--t2)">'+r.emp+'</td>'+
+      '<td style="font-size:12px">'+r.cont+'</td>'+
+      '<td style="font-family:monospace;font-size:11px;color:var(--t3)">'+r.d+'</td>'+
+      '<td><span style="color:'+(stC[r.st]||'var(--t1)')+';font-weight:700">'+r.st+'</span></td>'+
+      '<td style="font-size:11px;color:var(--t3)">'+r.by+'</td>'+
+    '</tr>';
+  }).join('');
+}
+
+// ══ الاعتماد الموحد ══
+function unifiedApprove(src,id){
+  if(src==='approvals') apprApprove(id);
+  else unifiedApproveRequest(id);
+}
+function unifiedReject(src,id){
+  if(src==='approvals') apprReject(id);
+  else unifiedRejectRequest(id);
+}
+
+function unifiedApproveRequest(id){
+  var r=DB.requests.find(function(x){return x.id===id;});if(!r)return;
+  if(r.type==='ارجاع') approveReturnRequest(r);
+  else if(r.type==='الغاء') approveCancelRequest(r);
+  else if(r.type==='تعديل') reqApprove(id);
+}
+function unifiedRejectRequest(id){
+  var r=DB.requests.find(function(x){return x.id===id;});if(!r)return;
+  var typeName={ارجاع:'الارجاع',الغاء:'الالغاء',تعديل:'التعديل'}[r.type]||r.type;
+  var origInv=r.origInv?DB.invoices.find(function(i){return i.no===r.origInv;}):null;
+  var extraMsg=r.type==='تعديل'?
+    '<div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:9px;margin-top:10px;font-size:11.5px;color:var(--y1)">'+
+      '<i class="fa fa-info-circle"></i> ستعود الفاتورة '+r.origInv+' لحالتها السابقة (معتمدة)'+
+    '</div>':'';
+  showConfirm('<i class="fa fa-times-circle" style="color:var(--r1)"></i> رفض '+typeName,
+    '<div style="font-size:12px;color:var(--t2)">طلب <strong class=\"mono\" style=\"color:var(--a1)\">'+r.no+'</strong> · '+r.emp+'</div>'+
+    (origInv?'<div style="font-size:11px;color:var(--t3);margin-top:4px">الفاتورة: <span class=\"mono\">'+r.origInv+'</span> · '+origInv.wh+'</div>':'')+
+    extraMsg,
+    'رفض الطلب','btn-danger',function(){
+      // ══ تحديث حالة الطلب ══
+      r.st='مرفوض';r.rejectedBy=currentUser.name;r.rejectedDate=today();
+      // ══ تحرير الحجوزات حسب النوع ══
+      if(r.type==='تعديل'&&origInv&&origInv.st==='معلق'){
+        // الفاتورة تعود معتمدة (كانت معلقة بسبب طلب التعديل)
+        syncInvoiceStatus(r.origInv,'معتمد');
+      }
+      // ارجاع/الغاء: الحجز يتحرر تلقائياً لأن getReservedStock تقرأ r.st
+      addNotif('err','رُفض طلب '+r.type+' '+r.no,r.emp+' — رفض المدير: '+currentUser.name,'fa-times-circle',r.emp);
+      addLog('رفض','رفض '+r.type+' '+r.no+' — الفاتورة: '+(r.origInv||''),r.wh||'',{no:r.no,origInv:r.origInv||''});
+      updateBadges();
+      renderApprovals();
+      try{renderInventory();}catch(e){}
+      try{if(currentPage==='zones')zonesRender();}catch(e){}
+      try{if(currentPage==='mywork'){mwRenderCurrent();}}catch(e){}
+      try{if(typeof renderInventory==='function')renderInventory();}catch(e){}
+      toast('ok','✓ تم رفض '+r.no,'أُشعر '+r.emp+' بالرفض','fa-times-circle');
+    });
+}
+
+// اعتماد طلب الارجاع — يُعيد المواد للمستودع بعد الاعتماد
+function approveReturnRequest(r){
+  var invItems=r.retItems||r.items||[];
+  if(!invItems.length){toast('err','خطأ','لا توجد مواد في الطلب','fa-ban');return;}
+  showConfirm('<i class="fa fa-rotate-left" style="color:var(--o1)"></i> اعتماد ارجاع '+r.no,
+    '<p style="font-size:12px;margin-bottom:8px">اعتماد ارجاع <strong style="color:var(--a1)">'+r.no+'</strong> من <strong>'+r.emp+'</strong></p>'+
+    '<div style="background:rgba(249,115,22,.08);border:1px solid rgba(249,115,22,.2);border-radius:8px;padding:10px;font-size:12px">'+
+    '<i class="fa fa-info-circle" style="color:var(--o1)"></i> سيُضاف للمستودع: <strong>'+r.wh+'</strong><br>'+
+    invItems.map(function(it){return it.name+' ×'+it.qty;}).join(' + ')+'</div>',
+    'اعتماد الارجاع','btn-warn',function(){
+      // إضافة المواد للمستودع
+      invItems.forEach(function(it){setStock(it.code,r.wh,+it.qty);});
+      r.st='معتمد';r.approvedBy=currentUser.name;r.approvedDate=today();
+      syncInvoiceStatus(r.origInv,'معتمد');
+      // إضافة فاتورة ارجاع معتمدة
+      var invNo=r.origInv||r.no;
+      DB.invoices.unshift({no:r.no,type:'ارجاع',wh:r.wh,emp:r.emp,cont:r.cont||'—',boq:r.boq||'',
+        st:'معتمد',d:today(),items:invItems.map(function(it){return Object.assign({},it);}),
+        approvedBy:currentUser.name,approvedDate:today(),origInv:invNo});
+      addNotif('ok','✓ اعتمد ارجاع '+r.no,currentUser.name+' — أُعيدت المواد للمستودع '+r.wh,'fa-rotate-left',r.emp);
+      addLog('ارجاع','اعتماد ارجاع '+r.no+' — أُعيدت المواد للمستودع '+r.wh,r.wh,{no:r.no});
+      updateBadges();renderApprovals();
+      try{renderInventory();}catch(e){}
+      try{if(currentPage==='zones')zonesRender();}catch(e){}
+      toast('ok','✓ اعتماد ارجاع '+r.no,'تمت إضافة المواد للمستودع '+r.wh,'fa-rotate-left');
+    });
+}
+
+// اعتماد طلب الالغاء — يلغي الفاتورة ويعيد المواد إن كانت معتمدة
+function approveCancelRequest(r){
+  var origInv=DB.invoices.find(function(i){return i.no===r.origInv;});
+  if(!origInv){toast('err','خطأ','الفاتورة الأصلية '+r.origInv+' غير موجودة','fa-ban');return;}
+  if(origInv.st==='ملغي'){toast('warn','ملغية مسبقاً','هذه الفاتورة ملغية بالفعل','fa-ban');return;}
+
+  var wasApproved=origInv.st==='معتمد';
+  var targetWh=r.wh||origInv.wh; // المستودع الذي ستُعاد إليه المواد
+  var origWh=r.origWh||origInv.wh; // المستودع الأصلي
+
+  // المواد: من طلب الإلغاء أو من الفاتورة الأصلية
+  var invItems=Array.isArray(r.retItems)&&r.retItems.length>0?r.retItems:
+               Array.isArray(r.items)&&r.items.length>0?r.items:
+               (origInv.items||[]);
+  // فلترة المواد الصالحة فقط
+  invItems=invItems.filter(function(it){return it&&it.code&&Number(it.qty)>0;});
+
+  if(!invItems.length){toast('err','لا مواد','لا توجد مواد في هذا الطلب','fa-ban');return;}
+
+  // بناء رسالة التأكيد
+  var stInfo=wasApproved?
+    '<div style="background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.25);border-radius:8px;padding:10px;font-size:11.5px;color:var(--g1);margin-bottom:8px">'+
+      '<i class="fa fa-circle-check"></i> <strong>فاتورة معتمدة</strong> — ستُعاد '+invItems.length+' صنف لـ <strong>'+targetWh+'</strong>'+
+      '<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px">'+
+      invItems.map(function(it){return '<span style="background:rgba(16,185,129,.15);border-radius:5px;padding:1px 7px;font-size:11px">'+it.name+' ×'+it.qty+'</span>';}).join('')+'</div>'+
+    '</div>':
+    '<div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:10px;font-size:11.5px;color:var(--y1)">'+
+      '<i class="fa fa-triangle-exclamation"></i> <strong>فاتورة معلقة</strong> — سيُحرر الحجز فقط (لا إعادة مواد فعلية)'+
+    '</div>';
+
+  var confirmMsg=
+    '<div style="font-size:12px;margin-bottom:10px">الفاتورة <strong style="color:var(--a1)">'+origInv.no+'</strong> · '+origInv.wh+'</div>'+
+    stInfo+
+    '<div style="background:var(--bg2);border-radius:8px;padding:8px;display:flex;justify-content:space-between;font-size:12px;margin-top:6px">'+
+      '<span style="color:var(--t3)">المستودع المستقبِل</span>'+
+      '<span style="font-weight:700;color:var(--g1)"><i class="fa fa-warehouse"></i> '+targetWh+'</span>'+
+    '</div>'+
+    (r.reason?'<div style="font-size:11px;color:var(--t3);margin-top:8px"><i class="fa fa-comment"></i> '+r.reason+'</div>':'');
+
+  showConfirm('<i class="fa fa-ban" style="color:var(--r1)"></i> اعتماد إلغاء '+origInv.no,confirmMsg,'اعتماد الإلغاء','btn-danger',function(){
+
+    // ══ 1. تحديث الطلب ══
+    r.st='معتمد';
+    r.approvedBy=currentUser.name;
+    r.approvedDate=today();
+
+    // ══ 2. معالجة المخزون ══
+    if(wasApproved){
+      // الفاتورة معتمدة: مواد مُسحوبة فعلاً → نُعيدها للمستودع المختار
+      invItems.forEach(function(it){
+        setStock(it.code, targetWh, +Number(it.qty));
+      });
+    }
+    // الفاتورة المعلقة: لا خصم فعلي حدث، الحجز يتحرر تلقائياً عند تغيير حالة الفاتورة
+
+    // ══ 3. تحديث الفاتورة الأصلية ══
+    origInv.st='ملغي';
+      syncInvoiceStatus(r.origInv,'ملغي');
+    origInv.cancelledBy=currentUser.name;
+    origInv.cancelDate=today();
+    origInv.cancelReason=r.reason||'طلب إلغاء';
+    if(wasApproved) origInv.cancelReturnWh=targetWh;
+
+    // ══ 4. تحديث DB.approvals المرتبطة ══
+    var appr=DB.approvals.find(function(a){return a.no===origInv.no;});
+    if(appr) appr.st='ملغي';
+
+    // ══ 5. تسجيل في الأرشيف ══
+    DB.invoices.unshift({
+      no:r.no, type:'إلغاء', wh:targetWh, origWh:origWh,
+      emp:r.emp, cont:r.cont||origInv.cont||'—', boq:r.boq||origInv.boq||'',
+      st:'معتمد', d:today(), items:JSON.parse(JSON.stringify(invItems)),
+      approvedBy:currentUser.name, approvedDate:today(),
+      origInv:r.origInv, reason:r.reason||''
+    });
+
+    // ══ 6. السجلات والإشعارات ══
+    var logMsg='اعتماد إلغاء الفاتورة '+r.origInv;
+    if(wasApproved) logMsg+=' — أُعيدت '+invItems.length+' صنف لـ '+targetWh;
+    else logMsg+=' — حُرر الحجز (فاتورة معلقة)';
+    addLog('إلغاء', logMsg, targetWh, {no:r.no, origInv:r.origInv, returnWh:targetWh, wasApproved:wasApproved});
+    addNotif('warn',
+      '✓ إلغاء فاتورة '+r.origInv,
+      r.emp+(wasApproved?' — أُعيدت '+invItems.length+' صنف لـ '+targetWh:' — حُرر الحجز'),
+      'fa-ban', r.emp);
+
+    // ══ 7. تحديث الواجهة ══
+    updateBadges();
+    renderApprovals();
+    try{renderInventory();}catch(e){}
+    try{if(currentPage==='zones')zonesRender();}catch(e){}
+    try{renderArc();}catch(e){}
+    try{if(currentPage==='mywork')mwRenderCurrent();}catch(e){}
+
+    var msg=wasApproved?'أُعيدت '+invItems.length+' صنف لمستودع '+targetWh:'حُرر الحجز — الفاتورة ملغية';
+    toast('ok','✓ اعتماد إلغاء '+r.origInv, msg,'fa-ban');
+  });
+}
+
+
+
 function apprApprove(id){
   if(currentUser?.role==='مشرف وردية'){toast('err','غير مصرح','ليس لديك صلاحية اعتماد فواتير الصرف','fa-lock');return;}
   const a=DB.approvals.find(x=>x.id===id);if(!a)return;
@@ -5203,34 +6341,50 @@ function apprApprove(id){
 function doApprApprove(a,inv){
   var wh = inv?inv.wh:a.wh;
   var itemsToDeduct = inv?inv.items:(Array.isArray(a.items)?a.items:[]);
-  // خصم المخزون
+  // ══ 1. خصم المخزون ══
   itemsToDeduct.forEach(function(it){
-    if(it.code&&it.qty) setStock(it.code,wh,-it.qty);
+    if(it.code&&Number(it.qty)>0) setStock(it.code,wh,-Number(it.qty));
   });
-  // تحديث الاعتماد
+  // ══ 2. تحديث الاعتماد ══
   a.st='معتمد';a.approvedDate=today();a.approvedBy=currentUser.name;
-  // تحديث الفاتورة إذا وُجدت
+  // ══ 3. تحديث الفاتورة ══
   if(inv){inv.st='معتمد';inv.approvedDate=today();inv.approvedBy=currentUser.name;}
   syncInvoiceStatus(a.no,'معتمد');
-  addLog('صرف','اعتماد فاتورة '+a.no,wh);
-  addNotif('ok','اعتماد '+a.no,'تم اعتماد فاتورة الصرف وخصم المواد','fa-signature',a.emp);
-  updateBadges();renderApprovals();renderMyRequests();
-  toast('ok','✓ اعتماد '+a.no,'تم الاعتماد وخصم المواد من '+wh,'fa-signature');
+  // ══ 4. سجل وإشعار ══
+  addLog('صرف','اعتماد فاتورة الصرف '+a.no+' — خُصمت '+itemsToDeduct.length+' أصناف',wh,{no:a.no});
+  addNotif('ok','✓ اعتماد '+a.no,a.emp+' — خُصمت المواد من '+wh,'fa-signature',a.emp);
+  // ══ 5. تحديث كل الواجهات المرتبطة ══
+  updateBadges();
+  try{renderApprovals();}catch(e){}
+  try{renderInventory();}catch(e){}
+  try{if(currentPage==='zones')zonesRender();}catch(e){}
+  try{renderArc();}catch(e){}
+  try{if(currentPage==='mywork')mwRenderCurrent();}catch(e){}
+  try{if(currentPage==='dashboard')renderDashboard();}catch(e){}
+  toast('ok','✓ اعتماد '+a.no,'تم خصم المواد من مستودع '+wh,'fa-signature');
 }
 function apprReject(id){
   const a=DB.approvals.find(x=>x.id===id);if(!a)return;
   const inv=DB.invoices.find(i=>i.no===a.no);
   const wasDeducted=inv?.st==='معتمد';
-  showConfirm('<i class="fa fa-times" style="color:var(--r1)"></i> رفض '+a.no,'رفض فاتورة <strong>'+a.no+'</strong>؟'+(wasDeducted?' سيتم اعادة المواد للمستودع.':' (الكمية المحجوزة ستُحرر)'),'رفض','btn-danger',function(){
-    if(inv){
-      if(inv.st==='معتمد') inv.items.forEach(function(it){setStock(it.code,inv.wh,+it.qty);});
+  showConfirm('<i class="fa fa-times" style="color:var(--r1)"></i> رفض '+a.no,
+    'رفض فاتورة <strong>'+a.no+'</strong>؟'+(wasDeducted?' سيتم اعادة المواد للمستودع.':' (الكمية المحجوزة ستُحرر تلقائياً)'),
+    'رفض','btn-danger',function(){
+    // إذا كانت معتمدة سابقاً: أعد المواد
+    if(inv&&inv.st==='معتمد'){
+      inv.items.forEach(function(it){setStock(it.code,inv.wh,+Number(it.qty));});
     }
-    a.st='مرفوض';a.approvedDate=today();a.approvedBy=currentUser.name;
+    a.st='مرفوض';a.rejectedDate=today();a.rejectedBy=currentUser.name;
+    if(inv){inv.st='مرفوض';inv.rejectedDate=today();inv.rejectedBy=currentUser.name;}
     syncInvoiceStatus(a.no,'مرفوض');
-    addLog('صرف','رفض فاتورة '+a.no,a.wh);
-    addNotif('err','رفض '+a.no,'تم رفض فاتورة الصرف','fa-times',a.emp);
+    addLog('صرف','رفض فاتورة الصرف '+a.no+(wasDeducted?' — أُعيدت المواد':''),a.wh,{no:a.no});
+    addNotif('err','رُفض '+a.no,a.emp+' — '+(wasDeducted?'أُعيدت المواد':'حُرر الحجز'),'fa-times',a.emp);
+    updateBadges();
     renderApprovals();
-    toast('err','رفض '+a.no,'تم الرفض — الكمية المحجوزة حُررت','fa-times');
+    try{renderInventory();}catch(e){}
+    try{if(currentPage==='zones')zonesRender();}catch(e){}
+    try{if(currentPage==='mywork')mwRenderCurrent();}catch(e){}
+    toast('err','رفض '+a.no,(wasDeducted?'أُعيدت المواد للمستودع':'الحجز حُرر'),'fa-times');
   });
 }
 
@@ -5327,22 +6481,49 @@ function myInvEditSave(no){
 function myInvWithdraw(no){
   var inv=DB.invoices.find(function(i){return i.no===no;});
   if(!inv){toast('err','غير موجودة','الفاتورة غير موجودة','fa-ban');return;}
-  // التحقق أن المستخدم هو صاحب الفاتورة فقط
+  // المدير وأمين المستودع لا يسحبون (يعتمدون أو يرفضون)
+  var role=currentUser?.role||'';
+  if(role==='مدير النظام'||role==='أمين مستودع'){
+    toast('warn','غير مناسب','استخدم زر الرفض في صفحة اعتماد الطلبات','fa-signature');return;
+  }
+  // صاحب الفاتورة فقط
   if(inv.emp!==currentUser.name){toast('err','غير مصرح','يمكنك سحب فواتيرك فقط','fa-lock');return;}
-  if(inv.st!=='معلق'){toast('warn','غير مسموح','يمكن السحب فقط قبل الاعتماد — اطلب إلغاءً من الأرشيف','fa-lock');return;}
-  showConfirm('<i class="fa fa-xmark" style="color:var(--r1)"></i> سحب '+inv.type+' '+no,
-    'سحب <strong>'+no+'</strong> ('+inv.type+') قبل الاعتماد؟<br>'+
-    '<div style="margin-top:6px;font-size:11px;color:var(--t3)">لن يتم أي تأثير على المخزون</div>',
-    'سحب','btn-danger',function(){
-      inv.st='ملغي';inv.cancelDate=today();inv.cancelBy=currentUser.name;
+  // السحب ممكن فقط إذا معلقة (قبل الاعتماد)
+  if(inv.st!=='معلق'){
+    toast('warn','غير مسموح','الفاتورة '+(inv.st==='معتمد'?'معتمدة — اطلب إلغاءً من طلب جديد':'لا يمكن سحبها بهذه الحالة'),'fa-lock');
+    return;
+  }
+  showConfirm(
+    '<i class="fa fa-xmark" style="color:var(--r1)"></i> سحب الفاتورة '+no,
+    'سحب <strong>'+no+'</strong> ('+inv.type+') بانتظار الاعتماد؟<br>'+
+    '<div style="margin-top:8px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:8px;font-size:11.5px;color:var(--y1)">'+
+      '<i class="fa fa-info-circle"></i> سيُحرر الحجز المؤقت — لا تأثير على المخزون الفعلي'+
+    '</div>',
+    'سحب الفاتورة','btn-danger',function(){
+      // تغيير حالة الفاتورة
+      inv.st='ملغي';inv.cancelDate=today();inv.cancelBy=currentUser.name;inv.cancelReason='سحب من قِبل الموجه قبل الاعتماد';
+      // تحديث DB.approvals
       var a=DB.approvals.find(function(x){return x.no===no;});
       if(a){a.st='ملغي';a.cancelDate=today();a.cancelBy=currentUser.name;}
-      var req=DB.requests.find(function(r){return r.no===no&&r.st==='معلق';});
-      if(req){req.st='ملغي';req.cancelDate=today();req.cancelBy=currentUser.name;}
-      addLog('إلغاء','سحب '+inv.type+' معلق '+no+' بواسطة '+currentUser.name,inv.wh,{no:no});
-      addNotif('warn','سُحب '+no,currentUser.name+' سحب '+inv.type+' قبل الاعتماد','fa-xmark',null);
-      updateBadges();syncInvoiceStatus(no,'ملغي');renderMyInv();
-      toast('ok','✓ تم السحب',no+' ('+inv.type+') سُحب وأُلغي','fa-xmark');
+      // تحديث أي طلبات مرتبطة
+      DB.requests.filter(function(r){return r.no===no&&r.st==='معلق';}).forEach(function(r){
+        r.st='ملغي';r.cancelDate=today();r.cancelBy=currentUser.name;
+      });
+      // سجل العمليات
+      addLog('سحب',
+        'سحب '+inv.type+' رقم '+no+' — الموجه: '+currentUser.name+' — المستودع: '+inv.wh+' — قبل الاعتماد',
+        inv.wh,{no:no,emp:currentUser.name,type:inv.type,reason:'سحب قبل الاعتماد'});
+      addNotif('warn','سُحبت فاتورة '+no,currentUser.name+' سحب '+inv.type+' قبل الاعتماد — الحجز حُرر','fa-xmark',null);
+      syncInvoiceStatus(no,'ملغي');
+      updateBadges();
+      // تحديث كل الواجهات المرتبطة بالمخزون (الحجز يتحرر تلقائياً)
+      try{renderApprovals();}catch(e){}
+      try{renderInventory();}catch(e){}
+      try{if(currentPage==='zones')zonesRender();}catch(e){}
+      try{if(currentPage==='dashboard')renderDashboard();}catch(e){}
+      if(currentPage==='mywork')mwRenderCurrent();
+      var c=document.getElementById('content');if(c)c.scrollTop=0;
+      toast('ok','✓ تم السحب',no+' سُحب — الحجز حُرر والفاتورة ملغاة','fa-xmark');
     });
 }
 
@@ -5356,7 +6537,7 @@ function renderMyInv(){
   var stats=[
     {l:'الإجمالي',v:mine.length,c:'var(--a1)'},
     {l:'معتمدة',v:mine.filter(function(i){return i.st==='معتمد';}).length,c:'var(--g1)'},
-    {l:'معلقة',v:mine.filter(function(i){return i.st==='معلق';}).length,c:'var(--y1)'},
+    {l:'قيد التنفيذ',v:mine.filter(function(i){return i.st==='معلق';}).length,c:'var(--y1)'},
     {l:'مرفوضة/ملغاة',v:mine.filter(function(i){return i.st==='مرفوض'||i.st==='ملغي';}).length,c:'var(--r1)'}
   ];
   document.getElementById('myinv-stats').innerHTML=stats.map(function(s){
@@ -5365,7 +6546,7 @@ function renderMyInv(){
   document.getElementById('myinv-sub').textContent=mine.length+' فاتورة';
 
   // ═══ القسم الأول: المنتهية (معتمدة + مرفوضة + ملغية) ═══
-  var done=mine.filter(function(i){return i.st!=='معلق';});
+  var done=mine.filter(function(i){return i.st==='معتمد'||i.st==='مرفوض'||i.st==='ملغي';});
   if(q) done=done.filter(function(i){return i.no.toLowerCase().includes(q)||(i.cont||'').toLowerCase().includes(q);});
   if(typeF) done=done.filter(function(i){return i.type===typeF;});
   var doneCount=document.getElementById('myinv-done-count');
@@ -5395,33 +6576,28 @@ function renderMyInv(){
     }
   }
 
-  // ═══ القسم الثاني: المعلقة ═══
+  // ═══ المعلقة (بانتظار الاعتماد) ═══
   var pend=mine.filter(function(i){return i.st==='معلق';});
-  var pendBadge=document.getElementById('myinv-pend-badge');
-  if(pendBadge){pendBadge.textContent=pend.length;pendBadge.style.display=pend.length?'inline-block':'none';}
+  if(q) pend=pend.filter(function(i){return i.no.toLowerCase().includes(q)||(i.cont||'').toLowerCase().includes(q);});
+  if(typeF) pend=pend.filter(function(i){return i.type===typeF;});
+  var pendSection=document.getElementById('myinv-pend-section');
   var pendTbody=document.getElementById('myinv-pend-tbody');
+  if(pendSection) pendSection.style.display=pend.length?'block':'none';
   if(pendTbody){
-    if(!pend.length){
-      pendTbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--t3)"><i class="fa fa-check-circle" style="font-size:24px;display:block;margin-bottom:8px;color:var(--g1)"></i>لا توجد فواتير معلقة</td></tr>';
-    } else {
-      pendTbody.innerHTML=pend.map(function(r){
-        var btns='<button class="btn btn-sec btn-xs" onclick="event.stopPropagation();showInvDetail(\''+r.no+'\')"><i class="fa fa-eye"></i>معاينة</button>';
-        btns+='<button class="btn btn-primary btn-xs" onclick="event.stopPropagation();printInvoice(\''+r.no+'\')"><i class="fa fa-print"></i>طباعة</button>';
-        // تعديل وسحب متاح لكل أنواع الفواتير المعلقة
-        btns+='<button class="btn btn-warn btn-xs" onclick="event.stopPropagation();myInvEdit(\''+r.no+'\')"><i class="fa fa-pen"></i>تعديل</button>';
-        btns+='<button class="btn btn-danger btn-xs" onclick="event.stopPropagation();myInvWithdraw(\''+r.no+'\')"><i class="fa fa-xmark"></i>سحب</button>';
-        return '<tr onclick="showInvDetail(\''+r.no+'\')">'+
-          '<td class="mono">'+r.no+'</td>'+
-          '<td>'+tag(r.type)+'</td>'+
-          '<td>'+r.wh+'</td>'+
-          '<td>'+r.cont+'</td>'+
-          '<td style="font-size:11px;color:var(--t3)">'+r.d+'</td>'+
-          '<td><div style="display:flex;gap:4px;flex-wrap:wrap">'+btns+'</div></td>'+
-        '</tr>';
-      }).join('');
-    }
+    pendTbody.innerHTML=pend.length?pend.map(function(r){
+      var btns='<button class="btn btn-sec btn-xs" onclick="event.stopPropagation();showInvDetail(\''+r.no+'\')"><i class="fa fa-eye"></i>معاينة</button>';
+      btns+='<button class="btn btn-primary btn-xs" onclick="event.stopPropagation();printInvoice(\''+r.no+'\')"><i class="fa fa-print"></i>طباعة</button>';
+      return '<tr onclick="showInvDetail(\''+r.no+'\')">'+
+        '<td class="mono">'+r.no+'</td><td>'+tag(r.type)+'</td><td>'+r.wh+'</td><td>'+r.cont+'</td>'+
+        '<td><span style="color:var(--y1);font-weight:700">معلق</span></td>'+
+        '<td style="font-size:11px;color:var(--t3)">'+r.d+'</td>'+
+        '<td><div style="display:flex;gap:4px;flex-wrap:wrap">'+btns+'</div></td></tr>';
+    }).join(''):'';
   }
+
+    // المعلقة تظهر في أقسامها الخاصة
 }
+
 
 
 // reqReturn replaced by submitReturnRequest
@@ -5617,8 +6793,6 @@ function renderContacts(){
       <div class="cc-role">${c.role}</div>
       <div class="cc-tel"><i class="fa fa-phone" style="color:var(--g1)"></i>${c.tel}</div>
       <div class="cc-actions">
-        <button class="btn btn-green btn-xs" onclick="callContact('${c.tel}','${c.name}')"><i class="fa fa-phone"></i>اتصال</button>
-        <button class="btn btn-sec btn-xs" onclick="whatsappContact('${c.tel}','${c.name}')"><i class="fa-brands fa-whatsapp"></i>واتساب</button>
         ${currentUser?.role==='مدير النظام'?`<button class="btn btn-warn btn-xs" onclick="contactEdit(${c.id})"><i class="fa fa-pen"></i></button>`:''}
       </div>
     </div>`).join('');
@@ -5833,6 +7007,7 @@ function userResetPass(id){
 // ══════════════════════ SETTINGS ══════════════════════
 function renderSettings(){
   const s=DB.settings;
+  setTimeout(renderBackups,100);
 
   document.getElementById('settings-content').innerHTML=`
     <div class="setting-sec">
@@ -5933,19 +7108,68 @@ function renderSearchResults(q){
 }
 
 // ══════════════════════ NOTIFICATIONS ══════════════════════
+// ── حالة الإشعارات (صامت / نشط) ──
+var notifsMuted=false;
+
+function toggleNotifMute(){
+  notifsMuted=!notifsMuted;
+  localStorage.setItem('notifsMuted',notifsMuted?'1':'0');
+  var ico=document.getElementById('notif-toggle-ico');
+  var btn=document.getElementById('notif-toggle-btn');
+  if(ico)ico.className='fa fa-bell'+(notifsMuted?'-slash':'');
+  if(btn){
+    btn.style.color=notifsMuted?'var(--r1)':'var(--a1)';
+    btn.style.opacity=notifsMuted?'0.5':'1';
+    btn.title=notifsMuted?'الإشعارات متوقفة — اضغط للتفعيل':'إيقاف الإشعارات';
+  }
+  toast(notifsMuted?'warn':'ok',
+    notifsMuted?'🔕 الإشعارات متوقفة':'🔔 الإشعارات نشطة',
+    notifsMuted?'لن تصلك إشعارات جديدة':'ستصلك الإشعارات المهمة','fa-bell');
+}
+
 function openNotifs(){
-  DB.notifications.forEach(n=>n.read=true);updateBadges();
-  document.getElementById('notifs-list').innerHTML=DB.notifications.slice(0,10).map(n=>{
-    const c=TC[n.type]||TC.info;
-    return `<div class="hist-item" style="margin-bottom:7px">
-      <div class="hist-ico" style="background:${c.bg};color:${c.c}"><i class="fa ${n.i}"></i></div>
-      <div class="hist-info"><div class="hist-name">${n.title}</div><div class="hist-meta">${n.msg}</div></div>
-      <div class="hist-meta" style="flex-shrink:0;text-align:left">${n.time}</div>
-    </div>`;
-  }).join('')||`<div style="color:var(--t3);text-align:center;padding:20px">لا توجد اشعارات</div>`;
+  var role=currentUser?.role||'';
+  var isAdmin=role==='مدير النظام'||role==='أمين مستودع';
+  // تصفية الإشعارات حسب الدور
+  var notifs=DB.notifications.filter(function(n){
+    if(isAdmin) return true; // المدير يرى الكل
+    // الموجه ومشرف الوردية: فقط إشعاراتهم الشخصية
+    return n.for===currentUser.name||n.for===null||n.for===undefined;
+  });
+  // تعيين كمقروءة
+  notifs.forEach(function(n){n.read=true;});
+  updateBadges();
+  var listEl=document.getElementById('notifs-list');
+  if(listEl){
+    listEl.innerHTML=notifs.slice(0,15).map(function(n){
+      var c=TC[n.type]||TC.info;
+      return '<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-bottom:1px solid var(--b1)">'+
+        '<div style="width:32px;height:32px;border-radius:9px;background:'+c.bg+';color:'+c.c+';display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px">'+
+          '<i class="fa '+n.i+'"></i>'+
+        '</div>'+
+        '<div style="flex:1;min-width:0">'+
+          '<div style="font-size:12px;font-weight:700;color:var(--t1)">'+n.title+'</div>'+
+          '<div style="font-size:11px;color:var(--t3);margin-top:2px">'+n.msg+'</div>'+
+          '<div style="font-size:10px;color:var(--t4);margin-top:2px">'+n.d+' '+n.time+'</div>'+
+        '</div>'+
+      '</div>';
+    }).join('')||'<div style="text-align:center;padding:24px;color:var(--t3)"><i class="fa fa-bell-slash" style="font-size:24px;display:block;margin-bottom:8px;opacity:.3"></i>لا توجد إشعارات</div>';
+  }
   openModal('modal-notifs');
 }
-function clearNotifs(){DB.notifications=[];updateBadges();openNotifs();toast('ok','مقروء','تم تعيين جميع الاشعارات كمقروءة','fa-check-double');}
+
+function clearNotifs(){
+  DB.notifications=[];
+  updateBadges();
+  openNotifs();
+  toast('ok','✓ مسح','تم مسح جميع الإشعارات','fa-trash');
+}
+
+// إضافة إشعار مع مراعاة الدور والصوت
+function addNotifSmart(type,title,msg,icon,forUser){
+  if(notifsMuted) return; // الإشعارات متوقفة
+  addNotif(type,title,msg,icon,forUser);
+}
 
 // ══════════════════════ USER PROFILE ══════════════════════
 function showUserProfile(){
@@ -6040,8 +7264,21 @@ function exportLogs(){
 }
 
 // ══════════════════════ CLOCK ══════════════════════
-function tick(){const n=new Date();const p=x=>String(x).padStart(2,'0');const el=document.getElementById('clock');if(el)el.textContent=p(n.getHours())+':'+p(n.getMinutes())+':'+p(n.getSeconds());}
-setInterval(tick,1000);tick();
+function tick(){
+  var el=document.getElementById('clock');
+  if(!el)return;
+  try{
+    el.textContent=new Date().toLocaleTimeString('en-GB',{
+      timeZone:'Asia/Riyadh',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false
+    });
+  }catch(e){
+    // fallback: UTC+3
+    var n=new Date(Date.now()+3*3600*1000);
+    var p=function(x){return String(x).padStart(2,'0');};
+    el.textContent=p(n.getUTCHours())+':'+p(n.getUTCMinutes())+':'+p(n.getUTCSeconds());
+  }
+}
+if(document.getElementById('clock'))tick();
 
 // ══════════════════════ KEYBOARD ══════════════════════
 document.addEventListener('keydown',e=>{
@@ -6050,31 +7287,130 @@ document.addEventListener('keydown',e=>{
 });
 
 // ══════════════════════ LIVE NOTIFICATIONS ══════════════════════
-const LIVE=[
-  ['warn','طلب ارجاع جديد','محمد صميلي — اسناد — 3 محولات 100KVA','fa-rotate-left'],
-  ['ok','اعتماد فاتورة','تم اعتماد فاتورة G47 بنجاح','fa-signature'],
-  ['err','تنبيه مخزون','محول 500KVA وصل للحد الادنى','fa-triangle-exclamation'],
-  ['info','مزامنة Supabase','تمت مزامنة 24 عملية جديدة','fa-database'],
-  ['ok','نسخة احتياطية','تم انشاء نسخة احتياطية تلقائية','fa-hard-drive'],
-];
+const LIVE=[];
 let _lni=0;
 function startLiveNotifs(){
+  // تحميل حالة الإشعارات المحفوظة
+  notifsMuted=localStorage.getItem('notifsMuted')==='1';
+  var ico=document.getElementById('notif-toggle-ico');
+  var btn=document.getElementById('notif-toggle-btn');
+  if(ico)ico.className='fa fa-bell'+(notifsMuted?'-slash':'');
+  if(btn){btn.style.color=notifsMuted?'var(--r1)':'var(--a1)';btn.style.opacity=notifsMuted?'0.5':'1';}
+
   runStartupChecks();
-  // لا interval - الاشعارات تُضاف فقط عند الأحداث الحقيقية
+
+  // فحص دوري كل 5 دقائق لنقص المواد
+  setInterval(function(){
+    if(notifsMuted) return;
+    var role=currentUser?.role||'';
+    if(role!=='مدير النظام'&&role!=='أمين مستودع') return;
+    checkLowStockNotifs();
+  }, 5*60*1000);
+}
+
+function checkLowStockNotifs(){
+  if(notifsMuted) return;
+  var whList=DB.warehouses.filter(function(w){return w.active;});
+  DB.inventory.forEach(function(item){
+    // حدود الفئة أولاً، ثم item.min كاحتياطي
+    var catObj=DB.categories.find(function(c){return c.name===item.cat;});
+    var critLimit=catObj&&catObj.criticalLimit>0?catObj.criticalLimit:0;
+    var warnLimit=catObj&&catObj.warningLimit>0?catObj.warningLimit:(item.min||0);
+
+    whList.forEach(function(w){
+      var qty=item[w.key]||0; // الرصيد الإجمالي في المستودع
+      var avail=getAvailableStock(item.code,w.name);
+
+      // إشعار حرج
+      if(critLimit>0&&qty<=critLimit){
+        var key='crit_'+item.code+'_'+w.key+'_'+today();
+        if(!sessionStorage.getItem(key)){
+          sessionStorage.setItem(key,'1');
+          addNotif('err',
+            '🚨 حرج: '+item.name,
+            w.name+' — الرصيد: '+qty+' (حد الخطر: '+critLimit+')',
+            'fa-triangle-exclamation', null);
+          updateBadges();
+        }
+      }
+      // إشعار تحذيري
+      else if(warnLimit>0&&qty<=warnLimit){
+        var key2='warn_'+item.code+'_'+w.key+'_'+today();
+        if(!sessionStorage.getItem(key2)){
+          sessionStorage.setItem(key2,'1');
+          addNotif('warn',
+            '⚠ تحذير: '+item.name,
+            w.name+' — الرصيد: '+qty+' (حد التحذير: '+warnLimit+')',
+            'fa-exclamation-circle', null);
+          updateBadges();
+        }
+      }
+    });
+  });
 }
 // ══════════════════════════════════════════════════════
 // INVOICE PRINT PREVIEW
 // ══════════════════════════════════════════════════════
 function printInvoice(no){
-  const inv=DB.invoices.find(i=>i.no===no);
-  // إذا لم توجد في الأرشيف جرب الاعتمادات
+  // ابحث في كل المصادر
+  var inv=DB.invoices.find(function(i){return i.no===no;});
+
   if(!inv){
-    printApprovalInvoice(no);
-    return;
+    var a=DB.approvals.find(function(x){return x.no===no;});
+    if(a){
+      var ai=Array.isArray(a.items)?a.items:typeof a.items==='string'?
+        a.items.split(' + ').map(function(s){var m=s.match(/(.+) x(\d+)/);return m?{code:'—',name:m[1],qty:parseInt(m[2])}:{code:'—',name:s,qty:0};}):[];
+      inv={no:a.no,type:'صرف',wh:a.wh,cont:a.cont,emp:a.emp,st:a.st,d:a.d,items:ai,boq:a.boq||'',notes:a.notes||''};
+    }
+  }
+
+  if(!inv){
+    var req=DB.requests.find(function(r){return (r.origInv===no||r.no===no);});
+    if(req){
+      var origD=DB.invoices.find(function(i){return i.no===(req.origInv||req.no);})||DB.approvals.find(function(a){return a.no===(req.origInv||req.no);});
+      var ri=Array.isArray(req.newItems)&&req.newItems.length?req.newItems:origD&&Array.isArray(origD.items)?origD.items:[];
+      inv={no:no,type:req.type==='ارجاع'?'ارجاع':'صرف',
+           wh:(req.changes&&req.changes.wh)||req.wh||'—',
+           cont:(req.changes&&req.changes.cont)||req.cont||'—',
+           boq:(req.changes&&req.changes.boq)||req.boq||'',
+           notes:(req.changes&&req.changes.notes)||req.reason||'',
+           emp:req.emp,st:req.st,d:req.d,items:ri,
+           approvedDate:origD&&origD.approvedDate,approvedBy:origD&&origD.approvedBy};
+    }
+  }
+
+  if(!inv){toast('err','غير موجودة','لا توجد فاتورة برقم '+no,'fa-ban');return;}
+
+  // طلب تعديل معلق — استخدم الكميات الجديدة
+  var editBanner='';
+  var pendingEditPrint=DB.requests.find(function(r){return r.origInv===no&&r.type==='تعديل'&&r.st==='معلق';});
+  if(pendingEditPrint&&pendingEditPrint.newItems&&pendingEditPrint.newItems.length){
+    inv=Object.assign({},inv,{
+      items:pendingEditPrint.newItems,
+      cont:(pendingEditPrint.changes&&pendingEditPrint.changes.cont)||inv.cont,
+      boq:(pendingEditPrint.changes&&pendingEditPrint.changes.boq)||inv.boq,
+      wh:(pendingEditPrint.changes&&pendingEditPrint.changes.wh)||inv.wh
+    });
+    editBanner='<div style="-webkit-print-color-adjust:exact;print-color-adjust:exact;background:#fffbeb;border:2px solid #f59e0b;border-radius:8px;padding:8px 16px;margin:8px 24px 0;font-family:Cairo,Tahoma,sans-serif;direction:rtl;font-size:12px;color:#92400e">'+
+      '⚠ <strong>طلب تعديل معلق</strong> — الكميات المعروضة هي الجديدة المطلوبة بانتظار موافقة المدير</div>';
+  }
+
+  // تنبيه الاعتماد السابق
+  var prevApprBanner='';
+  if(inv.approvedDate){
+    prevApprBanner='<div style="-webkit-print-color-adjust:exact;print-color-adjust:exact;background:#f0fdf4;border:2px solid #16a34a;border-radius:8px;padding:8px 16px;margin:8px 24px 0;font-family:Cairo,Tahoma,sans-serif;direction:rtl;font-size:12px;color:#15803d">'+
+      '✓ <strong>فاتورة معتمدة مسبقاً</strong> — تاريخ الاعتماد: <strong>'+inv.approvedDate+'</strong>'+
+      (inv.approvedBy?' — بواسطة: <strong>'+inv.approvedBy+'</strong>':'')+
+    '</div>';
   }
 
   // ختم الملغي للطباعة
-  const cancelledStamp=inv.st==='ملغي'?'<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);pointer-events:none;z-index:99;opacity:.15"><div style="border:12px solid #cc0000;border-radius:14px;padding:10px 30px"><div style="color:#cc0000;font-size:80px;font-weight:900;font-family:Cairo,sans-serif;letter-spacing:6px">ملغـي</div></div></div>':'';
+  const cancelledStamp=
+    inv.st==='ملغي'?
+      '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);pointer-events:none;z-index:99;opacity:.18"><div style="border:12px solid #cc0000;border-radius:14px;padding:10px 30px"><div style="color:#cc0000;font-size:80px;font-weight:900;font-family:Cairo,sans-serif;letter-spacing:6px">مـلـغـي</div></div></div>':
+    inv.st==='مرفوض'?
+      '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);pointer-events:none;z-index:99;opacity:.18"><div style="border:12px solid #b45309;border-radius:14px;padding:10px 30px"><div style="color:#b45309;font-size:80px;font-weight:900;font-family:Cairo,sans-serif;letter-spacing:6px">مرفوض</div></div></div>':
+    '';
   const typeLabel={صرف:'فاتورة صرف مواد طوارئ',ارجاع:'فاتورة إرجاع مواد طوارئ',نقل:'فاتورة نقل مواد طوارئ بين المستودعات',الغاء:'فاتورة إلغاء صرف مواد'}[inv.type]||'فاتورة '+inv.type;
   const C='#0055aa';
   const logoEl=document.querySelector('.logo-emblem img');
@@ -6094,84 +7430,83 @@ function printInvoice(no){
   if(inv.notes)metaRight.push(['وصف البلاغ',inv.notes]);
 
   const html=`
-<div style="font-family:'Cairo',Tahoma,Arial,sans-serif;direction:rtl;background:#fff;color:#1a1a2e;width:100%;box-sizing:border-box;position:relative">
+<div style="font-family:'Cairo',Tahoma,Arial,sans-serif;direction:rtl;background:#fff;color:#1a1a2e;width:794px;min-height:1123px;box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact;margin:0 auto;display:flex;flex-direction:column;page-break-after:avoid">
 ${cancelledStamp}
 
   <!-- ══ HEADER ══ -->
-  <div style="background:${C};padding:18px 28px 14px;display:flex;align-items:center;justify-content:space-between">
+  <div style="background:${C};padding:18px 28px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
     <div style="text-align:center">
-      ${logoSrc?`<img src="${logoSrc}" style="width:90px;height:90px;object-fit:contain;background:#fff;border-radius:10px;padding:6px">`:
-      `<div style="width:90px;height:90px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;font-weight:900">SE</div>`}
+      ${logoSrc?`<img src="${logoSrc}" style="width:80px;height:80px;object-fit:contain;background:#fff;border-radius:10px;padding:5px">`:`<div style="width:80px;height:80px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;color:#fff;font-weight:900">SE</div>`}
     </div>
     <div style="text-align:center;flex:1;padding:0 20px">
-      <div style="color:rgba(255,255,255,.7);font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:5px">السعودية للطاقة</div>
-      <div style="color:#fff;font-size:20px;font-weight:900;line-height:1.2">${typeLabel}</div>
-      <div style="color:rgba(255,255,255,.6);font-size:9px;margin-top:4px">دائرة شرق منطقة جازان — نظام إدارة مواد الطوارئ</div>
+      <div style="color:rgba(255,255,255,.7);font-size:11px;margin-bottom:4px">السعودية للطاقة</div>
+      <div style="color:#fff;font-size:22px;font-weight:900;line-height:1.2">${typeLabel}</div>
+      <div style="color:rgba(255,255,255,.6);font-size:10px;margin-top:4px">دائرة شرق منطقة جازان — نظام إدارة مواد الطوارئ</div>
     </div>
-    <div style="text-align:center;background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.3);border-radius:10px;padding:12px 20px;min-width:100px">
-      <div style="color:rgba(255,255,255,.6);font-size:9px;letter-spacing:1px;margin-bottom:4px">رقم الفاتورة</div>
-      <div style="color:#fff;font-size:22px;font-weight:900;font-family:monospace;letter-spacing:3px">${inv.no}</div>
-      <div style="color:rgba(255,255,255,.6);font-size:9px;margin-top:4px">${inv.d}</div>
+    <div style="text-align:center;background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.3);border-radius:10px;padding:12px 20px;min-width:110px">
+      <div style="color:rgba(255,255,255,.6);font-size:10px;letter-spacing:1px;margin-bottom:4px">رقم الفاتورة</div>
+      <div style="color:#fff;font-size:24px;font-weight:900;font-weight:900">${inv.no}</div>
+      <div style="color:rgba(255,255,255,.6);font-size:10px;margin-top:4px">${inv.d}</div>
     </div>
   </div>
 
-  <!-- ══ META STRIP ══ -->
-  <div style="background:#f0f6ff;border-bottom:2px solid ${C}20;padding:12px 28px;display:flex;gap:0">
+  <!-- ══ META ══ -->
+  <div style="background:#f0f6ff;border-bottom:2px solid ${C}20;padding:12px 28px;display:flex;flex-shrink:0">
     <div style="flex:1;padding-left:24px;border-left:1px solid ${C}20">
-      ${metaLeft.map(([l,v])=>`<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:5px"><span style="font-size:9px;font-weight:700;color:${C};min-width:90px;flex-shrink:0">${l}</span><span style="font-size:12px;color:#222;font-weight:600;border-bottom:1px dashed #cce;flex:1;padding-bottom:1px">${v}</span></div>`).join('')}
+      ${metaLeft.map(([l,v])=>`<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px"><span style="font-size:10px;font-weight:700;color:${C};min-width:90px;flex-shrink:0">${l}</span><span style="font-size:13px;color:#222;font-weight:600;border-bottom:1px dashed #cce;flex:1;padding-bottom:1px">${v}</span></div>`).join('')}
     </div>
     <div style="flex:1;padding-right:24px">
-      ${metaRight.map(([l,v])=>`<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:5px"><span style="font-size:9px;font-weight:700;color:${C};min-width:70px;flex-shrink:0">${l}</span><span style="font-size:12px;color:#222;font-weight:600;border-bottom:1px dashed #cce;flex:1;padding-bottom:1px">${v}</span></div>`).join('')}
+      ${metaRight.map(([l,v])=>`<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px"><span style="font-size:10px;font-weight:700;color:${C};min-width:70px;flex-shrink:0">${l}</span><span style="font-size:13px;color:#222;font-weight:600;border-bottom:1px dashed #cce;flex:1;padding-bottom:1px">${v}</span></div>`).join('')}
     </div>
   </div>
 
-  <!-- ══ ITEMS TABLE ══ -->
-  <div style="padding:16px 28px">
-    <div style="font-size:10px;font-weight:700;color:${C};letter-spacing:2px;margin-bottom:8px;text-transform:uppercase">المواد المشمولة في الفاتورة</div>
-    <table style="width:100%;border-collapse:collapse;border:1.5px solid ${C}30;border-radius:8px;overflow:hidden">
+  <!-- ══ ITEMS ══ -->
+  <div style="padding:16px 28px 20px">
+    <div style="font-size:11px;font-weight:700;color:${C};margin-bottom:10px">المواد المشمولة في الفاتورة</div>
+    <table style="width:100%;border-collapse:collapse;border:1.5px solid ${C}30;overflow:hidden;border-radius:8px">
       <thead>
         <tr style="background:${C}">
-          <th style="padding:9px 14px;color:#fff;font-size:10.5px;font-weight:700;text-align:center;width:36px">م</th>
-          <th style="padding:9px 14px;color:#fff;font-size:10.5px;font-weight:700;text-align:right">كود المادة</th>
-          <th style="padding:9px 14px;color:#fff;font-size:10.5px;font-weight:700;text-align:right">اسم المادة</th>
-          <th style="padding:9px 14px;color:#fff;font-size:10.5px;font-weight:700;text-align:center;width:80px">الكمية</th>
+          <th style="padding:10px 14px;color:#fff;font-size:11px;font-weight:700;text-align:center;width:40px">م</th>
+          <th style="padding:10px 14px;color:#fff;font-size:11px;font-weight:700;text-align:right">كود المادة</th>
+          <th style="padding:10px 14px;color:#fff;font-size:11px;font-weight:700;text-align:right">اسم المادة</th>
+          <th style="padding:10px 14px;color:#fff;font-size:11px;font-weight:700;text-align:center;width:80px">الكمية</th>
         </tr>
       </thead>
       <tbody>
         ${inv.items.map((it,i)=>`
         <tr style="background:${i%2===0?'#fff':'#f7faff'};border-bottom:1px solid ${C}12">
-          <td style="padding:9px 14px;text-align:center;font-size:11px;color:#888">${i+1}</td>
-          <td style="padding:9px 14px;font-family:monospace;font-size:11.5px;color:${C};font-weight:700">${it.code}</td>
-          <td style="padding:9px 14px;font-size:12.5px;color:#1a1a2e;font-weight:500">${it.name}</td>
-          <td style="padding:9px 14px;text-align:center;font-size:16px;font-weight:900;color:${C};font-family:monospace">${it.qty}</td>
+          <td style="padding:10px 14px;text-align:center;font-size:12px;color:#888">${i+1}</td>
+          <td style="padding:10px 14px;font-size:12px;color:${C};font-weight:700">${it.code}</td>
+          <td style="padding:10px 14px;font-size:13px;color:#1a1a2e;font-weight:500">${it.name}</td>
+          <td style="padding:10px 14px;text-align:center;font-size:18px;font-weight:900;color:${C};">${it.qty}</td>
         </tr>`).join('')}
       </tbody>
     </table>
   </div>
 
   <!-- ══ SIGNATURES ══ -->
-  <div style="padding:4px 28px 20px">
-    <div style="font-size:10px;font-weight:700;color:${C};letter-spacing:2px;margin-bottom:10px;text-transform:uppercase">خانات التوقيع</div>
-    <div style="display:grid;grid-template-columns:repeat(${sigs.length},1fr);gap:14px">
+  <div style="padding:16px 28px 20px;border-top:1px solid #e8f0ff;margin-top:auto">
+    <div style="font-size:11px;font-weight:700;color:${C};margin-bottom:14px">خانات التوقيع</div>
+    <div style="display:grid;grid-template-columns:repeat(${sigs.length},1fr);gap:16px">
       ${sigs.map(s=>`
       <div style="border:1.5px solid ${C}30;border-radius:10px;overflow:hidden;text-align:center">
-        <div style="background:${C}0d;padding:8px 14px;border-bottom:1px solid ${C}20;text-align:center">
-          <div style="font-size:9.5px;font-weight:700;color:${C};text-align:center">${s.lbl}</div>
-          <div style="font-size:11px;color:#333;margin-top:2px;font-weight:600;text-align:center">${s.name}</div>
+        <div style="background:${C}0d;padding:10px 14px;border-bottom:1px solid ${C}20">
+          <div style="font-size:10px;font-weight:700;color:${C}">${s.lbl}</div>
+          <div style="font-size:12px;color:#333;margin-top:2px;font-weight:600">${s.name}</div>
         </div>
-        <div style="padding:28px 14px 10px;text-align:center">
+        <div style="padding:32px 14px 12px">
           <div style="border-bottom:1.5px solid #222;margin:0 10px 6px"></div>
-          <div style="font-size:9px;color:#aaa;text-align:center">التوقيع</div>
+          <div style="font-size:10px;color:#aaa">التوقيع</div>
         </div>
       </div>`).join('')}
     </div>
   </div>
 
   <!-- ══ FOOTER ══ -->
-  <div style="background:#f0f6ff;border-top:2px solid ${C}20;padding:8px 28px;display:flex;justify-content:space-between;align-items:center">
-    <span style="font-size:9px;color:#888">طُبع بواسطة: <strong style="color:${C}">${inv.emp}</strong></span>
-    <span style="font-size:9px;color:#bbb">${new Date().toLocaleString('ar-SA')}</span>
-    <span style="font-size:9px;color:#888">نظام إدارة مواد الطوارئ — السعودية للطاقة</span>
+  <div style="background:#f0f6ff;border-top:2px solid ${C}20;padding:8px 28px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0">
+    <span style="font-size:10px;color:#888">طُبع بواسطة: <strong style="color:${C}">${inv.emp}</strong></span>
+    <span style="font-size:10px;color:#bbb">${new Date().toLocaleString('ar-SA')}</span>
+    <span style="font-size:10px;color:#888">نظام إدارة مواد الطوارئ — السعودية للطاقة</span>
   </div>
 
 </div>`;
@@ -6180,19 +7515,22 @@ ${cancelledStamp}
   if(ov)ov.remove();
   ov=document.createElement('div');
   ov.id='print-overlay';
-  ov.style.cssText='position:fixed;inset:0;background:rgba(0,5,20,.92);z-index:9000;display:flex;flex-direction:column;align-items:center;overflow-y:auto;padding:16px';
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,5,20,.92);z-index:9000;display:flex;flex-direction:column;align-items:center;overflow-y:auto;overflow-x:hidden;padding:20px 16px';ov.setAttribute('data-print-overlay','1');
   const bar=document.createElement('div');
   bar.style.cssText=`display:flex;gap:8px;margin-bottom:14px;position:sticky;top:0;z-index:1;background:rgba(0,5,20,.96);padding:10px 16px;border-radius:10px;border:1px solid ${C}50;width:720px;max-width:96vw;box-sizing:border-box;align-items:center`;
   bar.innerHTML=`
     <button onclick="window.print()" style="padding:9px 20px;background:${C};color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:'Cairo',sans-serif;font-size:13px;font-weight:700;display:flex;align-items:center;gap:7px;flex-shrink:0">
       <i class="fa fa-print"></i>طباعة / PDF
     </button>
+    <button onclick="saveInvoiceAsImage('${inv.no}')" style="padding:9px 16px;background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.4);color:#34d399;border-radius:8px;cursor:pointer;font-family:'Cairo',sans-serif;font-size:13px;flex-shrink:0;display:flex;align-items:center;gap:6px">
+      <i class="fa fa-download"></i>حفظ الفاتورة
+    </button>
     <button onclick="document.getElementById('print-overlay').remove()" style="padding:9px 16px;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:#f87171;border-radius:8px;cursor:pointer;font-family:'Cairo',sans-serif;font-size:13px;flex-shrink:0">
       <i class="fa fa-times"></i> اغلاق
     </button>
     <span style="color:rgba(255,255,255,.4);font-size:11px;margin-right:6px;flex:1;text-align:center">${typeLabel} — <span style="color:rgba(255,255,255,.7);font-family:monospace">${inv.no}</span></span>`;
   const wrap=document.createElement('div');
-  wrap.style.cssText='width:720px;max-width:96vw;box-shadow:0 20px 60px rgba(0,0,0,.7);border-radius:12px;overflow:hidden';
+  wrap.style.cssText='width:794px;box-shadow:0 20px 60px rgba(0,0,0,.7);border-radius:12px;overflow:hidden;-webkit-print-color-adjust:exact;print-color-adjust:exact;background:#fff;flex-shrink:0';
   wrap.innerHTML=html;
   ov.appendChild(bar);ov.appendChild(wrap);
   document.body.appendChild(ov);
@@ -6202,6 +7540,77 @@ ${cancelledStamp}
 // ══════════════════════════════════════════════════════
 // WAREHOUSES MANAGEMENT
 // ══════════════════════════════════════════════════════
+function saveInvoiceAsImage(no){
+  var ov=document.getElementById('print-overlay');
+  if(!ov)return;
+  var wrap=ov.querySelector('div:last-child');
+  if(!wrap){toast('err','خطأ','لا توجد فاتورة للحفظ','fa-ban');return;}
+
+  // نفتح نافذة جديدة بالفاتورة كاملة مع الخطوط والألوان
+  var invHtml=wrap.outerHTML;
+  var win=window.open('','_blank');
+  if(!win){toast('warn','محجوب','يرجى السماح بالنوافذ المنبثقة','fa-ban');return;}
+
+  var pageHtml='<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8">'+
+    '<title>فاتورة '+no+'</title>'+
+    '<link rel="preconnect" href="https://fonts.googleapis.com">'+
+    '<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">'+
+    '<style>'+
+      '*{margin:0;padding:0;box-sizing:border-box;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}'+
+      'html,body{background:#f0f2f5;font-family:"Cairo",Tahoma,Arial,sans-serif;direction:rtl}'+
+      '.toolbar{background:#1a1a2e;padding:12px 20px;display:flex;gap:10px;align-items:center;position:sticky;top:0;z-index:99;border-bottom:2px solid #0055aa}'+
+      '.btn-save{background:#0055aa;color:#fff;border:none;border-radius:8px;padding:9px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:"Cairo",sans-serif;display:flex;align-items:center;gap:6px}'+
+      '.btn-print{background:#1a6b3c;color:#fff;border:none;border-radius:8px;padding:9px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:"Cairo",sans-serif;display:flex;align-items:center;gap:6px}'+
+      '.btn-close{background:rgba(239,68,68,.15);color:#f87171;border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:9px 16px;font-size:13px;cursor:pointer;font-family:"Cairo",sans-serif}'+
+      '.hint{color:rgba(255,255,255,.4);font-size:11px;font-family:"Cairo",sans-serif;margin-right:auto}'+
+      '.page{display:flex;justify-content:center;padding:24px 0 40px}'+
+      '@media print{.toolbar{display:none!important}html,body{background:#fff}.page{padding:0}@page{margin:0;size:A4 portrait}}'+
+    '</style></head><body>'+
+    '<div class="toolbar">'+
+      '<button class="btn-print" onclick="window.print()">🖨 طباعة / PDF</button>'+
+      '<button class="btn-save" id="pngBtn" onclick="downloadPNG()">⬇ حفظ PNG</button>'+
+      '<button class="btn-close" onclick="window.close()">✕ إغلاق</button>'+
+      '<span class="hint">فاتورة '+no+' — لحفظ PDF اختر "حفظ كـ PDF" من قائمة الطابعة</span>'+
+    '</div>'+
+    '<div class="page" id="invPage">'+invHtml+'</div>'+
+    '<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"><\/script>'+
+    '<script>'+
+    'function downloadPNG(){'+
+      'var btn=document.getElementById("pngBtn");'+
+      'btn.textContent="⏳ جاري...";btn.disabled=true;'+
+      'var el=document.getElementById("invPage").firstElementChild;'+
+      'document.fonts.ready.then(function(){'+
+        'html2canvas(el,{scale:2,useCORS:true,allowTaint:true,backgroundColor:"#ffffff",logging:false,'+
+          'onclone:function(doc){'+
+            'doc.querySelectorAll("*").forEach(function(n){'+
+              'var s=n.style;'+
+              // إزالة letter-spacing التي تسبب التداخل
+              's.letterSpacing="0px";'+
+              // توحيد الخط العربي
+              's.fontFamily=\'"Cairo",Tahoma,Arial,sans-serif\';'+
+              // إزالة monospace
+              'if(window.getComputedStyle(n).fontFamily.includes("mono")){'+
+                's.fontFamily=\'"Cairo",Tahoma,Arial,sans-serif\';'+
+              '}'+
+            '});'+
+          '}'+
+        '}).then(function(c){'+
+          'var a=document.createElement("a");'+
+          'a.download="فاتورة_'+no+'.png";'+
+          'a.href=c.toDataURL("image/png",1.0);'+
+          'a.click();'+
+          'btn.textContent="⬇ حفظ PNG";btn.disabled=false;'+
+        '}).catch(function(e){alert("خطأ: "+e.message);btn.textContent="⬇ حفظ PNG";btn.disabled=false;});'+
+      '});'+
+    '}'+
+    '<\/script>'+
+    '</body></html>';
+
+  win.document.write(pageHtml);
+  win.document.close();
+  toast('ok','✓ فُتحت نافذة الفاتورة','اضغط "حفظ PNG" أو "طباعة / PDF"','fa-external-link');
+}
+
 function printApprovalInvoice(no){
   var a=DB.approvals.find(function(x){return x.no===no;});
   if(!a){toast('err','غير موجودة','لا توجد فاتورة بهذا الرقم','fa-ban');return;}
@@ -6252,18 +7661,41 @@ function renderZonesPage(){
 // ══ renderZonesManage — إدارة الزونات في الإعدادات ══
 function renderZonesManage(){
   var el=document.getElementById('zones-manage-list');if(!el)return;
+  if(!DB.zones.length){
+    el.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--t3)"><i class="fa fa-map" style="font-size:32px;display:block;margin-bottom:10px;opacity:.3"></i>لا توجد زونات</div>';
+    return;
+  }
   el.innerHTML=DB.zones.map(function(z){
-    var whCount=DB.warehouses.filter(function(w){return w.active&&w.zone===z.id;}).length;
-    return '<div style="display:flex;align-items:center;gap:10px;background:'+(z.bg||'var(--bg2)')+';border:1px solid '+(z.border||'var(--b1)')+';border-radius:10px;padding:8px 14px">'+
-      '<i class="fa '+(z.icon||'fa-map')+'" style="color:'+(z.color||'var(--a1)')+'"></i>'+
-      '<div><div style="font-size:12px;font-weight:700;color:var(--t1)">'+z.name+'</div>'+
-      '<div style="font-size:10.5px;color:var(--t3)">'+whCount+' مستودع</div></div>'+
-      '<button class="btn btn-warn btn-xs" onclick="editZone(\''+z.id+'\')" ><i class="fa fa-pen"></i>تعديل</button>'+
-      (whCount===0?'<button class="btn btn-danger btn-xs" onclick="deleteZone(\''+z.id+'\')" ><i class="fa fa-trash"></i>حذف</button>':'')+
-    '</div>';
-  }).join('')+(DB.zones.length===0?'<div style="color:var(--t3);font-size:12px;padding:8px">لا توجد زونات</div>':'');
+    var whs=DB.warehouses.filter(function(w){return w.active&&w.zone===z.id;});
+    var allItems=whs.reduce(function(s,w){return s+DB.inventory.reduce(function(ss,i){return ss+(i[w.key]||0);},0);},0);
+    var allRes=whs.reduce(function(s,w){return s+DB.inventory.reduce(function(ss,i){return ss+getReservedStock(i.code,w.name);},0);},0);
+    var allAv=Math.max(0,allItems-allRes);
+    var zc=z.color||'var(--a1)';
+    var pctAv=allItems>0?Math.round(allAv/allItems*100):0;
+    return '<div style="background:var(--card);border:1px solid var(--b1);border-radius:14px;overflow:hidden">'+
+      '<div style="height:4px;background:'+zc+'"></div>'+
+      '<div style="padding:14px">'+
+        '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">'+
+          '<div style="width:40px;height:40px;border-radius:10px;background:'+zc+'22;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+
+            '<i class="fa '+(z.icon||'fa-map')+'" style="color:'+zc+';font-size:18px"></i>'+
+          '</div>'+
+          '<div style="flex:1"><div style="font-weight:800;font-size:14px;color:var(--t1)">'+z.name+'</div>'+
+          '<div style="font-size:11px;color:var(--t3);margin-top:2px">'+whs.length+' مستودع نشط</div></div>'+
+        '</div>'+
+        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px">'+
+          '<div style="background:rgba(16,185,129,.08);border-radius:8px;padding:8px;text-align:center"><div class="mono" style="font-size:18px;font-weight:900;color:var(--g1)">'+allAv+'</div><div style="font-size:9px;color:var(--g1);margin-top:2px">✓ متاح</div></div>'+
+          '<div style="background:rgba(239,68,68,.08);border-radius:8px;padding:8px;text-align:center"><div class="mono" style="font-size:18px;font-weight:900;color:var(--r1)">'+allRes+'</div><div style="font-size:9px;color:var(--r1);margin-top:2px">🔒 محجوز</div></div>'+
+          '<div style="background:var(--bg2);border-radius:8px;padding:8px;text-align:center"><div class="mono" style="font-size:18px;font-weight:900;color:var(--t2)">'+allItems+'</div><div style="font-size:9px;color:var(--t3);margin-top:2px">الكلي</div></div>'+
+        '</div>'+
+        (allItems>0?'<div style="margin-bottom:10px"><div style="height:6px;background:var(--bg2);border-radius:4px;overflow:hidden;display:flex"><div style="width:'+pctAv+'%;background:var(--g1)"></div><div style="width:'+(100-pctAv)+'%;background:var(--r1)"></div></div><div style="display:flex;justify-content:space-between;font-size:9px;margin-top:3px"><span style="color:var(--g1)">متاح '+pctAv+'%</span><span style="color:var(--r1)">محجوز '+(100-pctAv)+'%</span></div></div>':'<div style="font-size:11px;color:var(--t3);text-align:center;margin-bottom:10px">لا يوجد مخزون</div>')+
+        (whs.length?'<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px">'+whs.map(function(w){return '<span style="background:var(--bg2);border:1px solid var(--b1);border-radius:6px;padding:2px 8px;font-size:10px;color:var(--t2)"><i class="fa fa-warehouse" style="font-size:9px"></i> '+w.name+'</span>';}).join('')+'</div>':'')+
+        '<div style="display:flex;gap:6px">'+
+          '<button class="btn btn-warn btn-sm" style="flex:1" data-zid="'+z.id+'" onclick="editZone(this.dataset.zid)"><i class="fa fa-pen"></i>تعديل</button>'+
+          (whs.length===0?'<button class="btn btn-danger btn-sm" data-zid="'+z.id+'" onclick="deleteZone(this.dataset.zid)"><i class="fa fa-trash"></i></button>':'<button class="btn btn-sec btn-sm" data-zid="'+z.id+'" onclick="selectZone(this.dataset.zid);goZones()"><i class="fa fa-eye"></i>عرض</button>')+
+        '</div>'+
+      '</div></div>';
+  }).join('');
 }
-
 function renderZones(){
   // بطاقات الزونات
   var cardsEl = document.getElementById('zones-cards');
@@ -6307,6 +7739,7 @@ function renderZones(){
   }).join('');
 }
 
+function goZones(){go("zones");}
 function selectZone(zid){
   currentZone = zid;
   document.getElementById('zones-content').style.display='block';
@@ -6377,6 +7810,45 @@ function zonesRender(){
   var whs=data.whs;
   var rows=data.rows;
 
+  // ═══ بطاقات المستودعات في هذا الزون ═══
+  var zSummary=document.getElementById('zones-wh-summary');
+  if(zSummary){
+    zSummary.innerHTML=whs.map(function(w){
+      var wDB=DB.warehouses.find(function(x){return x.name===w.name;});
+      var wc=(wDB&&wDB.color)||'#00d4ff';
+      var zItems=DB.inventory.filter(function(i){var k=getWhKey(w.name);return k&&(i[k]||0)>0;});
+      var wTot=zItems.reduce(function(s,i){var k=getWhKey(w.name);return s+(i[k]||0);},0);
+      var wRes=zItems.reduce(function(s,i){return s+getReservedStock(i.code,w.name);},0);
+      var wAv=Math.max(0,wTot-wRes);
+      var pctAv=wTot>0?Math.round(wAv/wTot*100):0;
+      var pctRes=100-pctAv;
+      return '<div style="background:var(--card);border:1px solid var(--b1);border-radius:14px;padding:14px;border-top:3px solid '+wc+'">'+
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">'+
+          '<i class="fa fa-warehouse" style="color:'+wc+'"></i>'+
+          '<span style="font-weight:800;font-size:13px;flex:1">'+w.name+'</span>'+
+        '</div>'+
+        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px">'+
+          '<div style="background:rgba(16,185,129,.08);border-radius:8px;padding:8px;text-align:center">'+
+            '<div class="mono" style="font-size:20px;font-weight:900;color:var(--g1)">'+wAv+'</div>'+
+            '<div style="font-size:9px;color:var(--g1);margin-top:2px;font-weight:600">✓ متاح</div></div>'+
+          '<div style="background:rgba(239,68,68,.08);border-radius:8px;padding:8px;text-align:center">'+
+            '<div class="mono" style="font-size:20px;font-weight:900;color:var(--r1)">'+wRes+'</div>'+
+            '<div style="font-size:9px;color:var(--r1);margin-top:2px;font-weight:600">🔒 محجوز</div></div>'+
+          '<div style="background:var(--bg2);border-radius:8px;padding:8px;text-align:center">'+
+            '<div class="mono" style="font-size:20px;font-weight:900;color:var(--t2)">'+wTot+'</div>'+
+            '<div style="font-size:9px;color:var(--t3);margin-top:2px">الكلي</div></div>'+
+        '</div>'+
+        '<div style="height:7px;background:var(--bg2);border-radius:5px;overflow:hidden;display:flex">'+
+          '<div style="width:'+pctAv+'%;background:var(--g1);transition:.4s"></div>'+
+          '<div style="width:'+pctRes+'%;background:var(--r1);transition:.4s"></div>'+
+        '</div>'+
+        '<div style="display:flex;justify-content:space-between;font-size:9px;margin-top:3px">'+
+          '<span style="color:var(--g1)">متاح '+pctAv+'%</span>'+
+          '<span style="color:var(--r1)">محجوز '+pctRes+'%</span>'+
+        '</div></div>';
+    }).join('');
+  }
+
   // عنوان الجدول
   var titleEl=document.getElementById('zones-table-title');
   if(titleEl) titleEl.innerHTML='<i class="fa fa-boxes-stacked" style="color:var(--g1)"></i>مواد '+zone.name;
@@ -6426,12 +7898,12 @@ function zonesRender(){
     alertsEl.innerHTML=alertsHtml;
   }
 
-  // رأس الجدول
+  // رأس الجدول — نفس تصميم رصيد المستودعات
   var thead=document.querySelector('#pg-zones thead tr');
   if(thead){
-    thead.innerHTML='<th>الكود</th><th>اسم المادة</th>'+
-      whs.map(function(w){return '<th style="color:'+w.color+';font-size:11px;text-align:center"><i class="fa fa-warehouse" style="margin-left:3px"></i>'+w.name+'<div style="font-size:9px;color:var(--t3);font-weight:400">كلي/🔒/✓</div></th>';}).join('')+
-      '<th style="text-align:center">الكلي</th><th style="text-align:center">🔒 محجوز</th><th style="text-align:center">✓ متاح</th><th>المستوى</th>';
+    thead.innerHTML='<th>الكود</th><th>اسم المادة</th><th>الفئة</th>'+
+      whs.map(function(w){return '<th style="text-align:center;min-width:110px"><div style="color:'+w.color+';font-weight:700">'+w.name+'</div><div style="font-size:9px;color:var(--t3);font-weight:400;margin-top:1px">متاح 🟢 / محجوز 🔴</div></th>';}).join('')+
+      '<th style="text-align:center">الحالة</th>';
   }
 
   // جسم الجدول
@@ -6442,42 +7914,32 @@ function zonesRender(){
     return;
   }
 
-  var levelColor={حرج:'var(--r1)',تحذير:'var(--y1)',آمن:'var(--g1)'};
-  var levelBg={حرج:'rgba(239,68,68,.1)',تحذير:'rgba(245,158,11,.1)',آمن:'rgba(16,185,129,.1)'};
-  var levelIcon={حرج:'fa-circle-exclamation',تحذير:'fa-triangle-exclamation',آمن:'fa-circle-check'};
-
   tbody.innerHTML=rows.map(function(r){
-    var levColor=levelColor[r.level]||'var(--t1)';
-    var availColor=r.totalAvail<=0?'var(--r1)':r.totalAvail<=3?'var(--y1)':'var(--g1)';
-    var pct=r.total>0?Math.round((r.totalReserved/r.total)*100):0;
-
-    // تفاصيل كل مستودع
+    // خلايا كل مستودع — نفس تصميم renderInventory
     var whCells=r.whQtys.map(function(x){
-      var qc=x.qty<=0?'var(--r1)':x.qty<=3?'var(--y1)':'var(--t1)';
-      var ac=x.avail<=0&&x.qty>0?'var(--r1)':x.avail<=2?'var(--y1)':'var(--g1)';
-      var cell='<td style="text-align:center;padding:6px 4px">';
-      cell+='<div class="mono" style="font-size:14px;font-weight:700;color:'+qc+'">'+x.qty+'</div>';
-      if(x.reserved>0){
-        cell+='<div style="font-size:9px;color:var(--r1)">🔒'+x.reserved+'</div>';
-        cell+='<div style="font-size:10px;font-weight:700;color:'+ac+'">✓'+x.avail+'</div>';
-      }
-      cell+='</td>';
-      return cell;
+      if(x.qty===0) return '<td style="text-align:center"><span style="color:var(--t4);font-size:11px">فارغ</span></td>';
+      var avC=x.avail===0?'var(--r1)':x.avail<(r.item.min||0)?'var(--y1)':'var(--g1)';
+      return '<td style="padding:5px 8px">'+
+        '<div style="display:flex;align-items:center;justify-content:center;gap:5px">'+
+          '<span style="background:rgba(16,185,129,.1);color:var(--g1);border-radius:6px;padding:2px 8px;font-weight:800;font-size:13px" class="mono">'+x.avail+'</span>'+
+          (x.reserved>0?'<span style="background:rgba(239,68,68,.1);color:var(--r1);border-radius:6px;padding:2px 7px;font-size:11px" class="mono">🔒'+x.reserved+'</span>':'')+
+        '</div>'+
+        '<div style="height:3px;background:var(--bg2);border-radius:2px;margin-top:4px;overflow:hidden">'+
+          '<div style="width:'+Math.round(x.avail/Math.max(x.qty,1)*100)+'%;height:100%;background:'+avC+'"></div>'+
+        '</div>'+
+      '</td>';
     }).join('');
+
+    // عمود الحالة
+    var stC=r.totalAvail===0&&r.total>0?'var(--r1)':r.total===0?'var(--t4)':r.totalAvail<(r.item.min||0)?'var(--y1)':'var(--g1)';
+    var stL=r.total===0?'نفذ':r.totalAvail===0?'محجوز':r.level==='حرج'?'حرج':r.level==='تحذير'?'منخفض':'متاح';
 
     return '<tr data-code="'+r.item.code+'" class="zones-item-row" style="cursor:pointer">'+
       '<td class="mono" style="color:var(--a1);font-weight:700;font-size:11px">'+r.item.code+'</td>'+
-      '<td style="min-width:120px">'+
-        '<div style="font-weight:600;color:var(--t1);font-size:12px">'+r.item.name+'</div>'+
-        '<span style="font-size:10px;background:rgba(255,255,255,.06);border-radius:4px;padding:1px 6px;color:var(--t3)">'+r.item.cat+'</span>'+
-      '</td>'+
+      '<td style="min-width:120px"><div style="font-weight:600;color:var(--t1);font-size:12px">'+r.item.name+'</div></td>'+
+      '<td>'+tag(r.item.cat)+'</td>'+
       whCells+
-      '<td style="text-align:center"><div class="mono" style="font-size:16px;font-weight:900;color:var(--a1)">'+r.total+'</div></td>'+
-      '<td style="text-align:center">'+(r.totalReserved>0?'<div class="mono" style="font-size:15px;font-weight:700;color:var(--r1)">🔒'+r.totalReserved+'</div>':'<div style="color:var(--t3);font-size:11px">—</div>')+'</td>'+
-      '<td style="text-align:center"><div class="mono" style="font-size:16px;font-weight:900;color:'+availColor+'">'+r.totalAvail+'</div></td>'+
-      '<td><span style="display:inline-flex;align-items:center;gap:4px;background:'+levelBg[r.level]+';border:1px solid '+levColor+'33;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;color:'+levColor+'">'+
-        '<i class="fa '+(levelIcon[r.level]||'fa-circle')+'"></i>'+r.level+
-      '</span></td>'+
+      '<td style="text-align:center"><span style="background:'+stC+'18;color:'+stC+';border-radius:7px;padding:3px 10px;font-size:11px;font-weight:800;white-space:nowrap">'+stL+'</span></td>'+
     '</tr>';
   }).join('');
   // Event delegation for row clicks
@@ -6488,34 +7950,59 @@ function zonesRender(){
 function renderWarehouses(){
   var q=(document.getElementById('whs-q')?.value||'').toLowerCase();
   var el=document.getElementById('whs-cards');if(!el)return;
-  var whs=DB.warehouses.filter(function(w){return !q||w.name.toLowerCase().includes(q)||w.location.toLowerCase().includes(q);});
+  var whs=DB.warehouses.filter(function(w){return !q||w.name.toLowerCase().includes(q)||(w.location||'').toLowerCase().includes(q);});
   el.innerHTML=whs.map(function(w){
-    return '<div class="wh-card" style="background:var(--bg2);border:1px solid var(--b1);border-radius:12px;padding:14px;margin-bottom:10px">'+
-      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">'+
-        '<div style="width:36px;height:36px;border-radius:8px;background:'+w.color+'22;display:flex;align-items:center;justify-content:center">'+
-          '<i class="fa fa-warehouse" style="color:'+w.color+'"></i>'+
+    var wc=w.color||'#10b981';
+    var zone=DB.zones.find(function(z){return z.id===w.zone;})||{name:'—'};
+    // إجمالي المخزون
+    var tot=DB.inventory.reduce(function(s,i){return s+(i[w.key]||0);},0);
+    var res=DB.inventory.reduce(function(s,i){return s+getReservedStock(i.code,w.name);},0);
+    var av=Math.max(0,tot-res);
+    return '<div style="background:var(--card);border:1px solid var(--b1);border-radius:14px;overflow:hidden;transition:.2s">'+
+      '<div style="height:4px;background:'+wc+'"></div>'+
+      '<div style="padding:14px">'+
+        '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">'+
+          '<div style="width:40px;height:40px;border-radius:10px;background:'+wc+'22;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+
+            '<i class="fa fa-warehouse" style="color:'+wc+';font-size:18px"></i>'+
+          '</div>'+
+          '<div style="flex:1">'+
+            '<div style="font-weight:800;font-size:14px;color:var(--t1)">'+w.name+'</div>'+
+            '<div style="font-size:11px;color:var(--t3);margin-top:2px">'+
+              (w.location?'<i class="fa fa-location-dot" style="color:var(--o1)"></i> '+w.location+' · ':'')+
+              '<i class="fa fa-map" style="color:var(--a1)"></i> '+zone.name+
+            '</div>'+
+          '</div>'+
+          '<span style="background:'+(w.active?'rgba(16,185,129,.1)':'rgba(239,68,68,.1)')+';color:'+(w.active?'var(--g1)':'var(--r1)')+';border-radius:8px;padding:3px 10px;font-size:11px;font-weight:700">'+(w.active?'نشط':'معطّل')+'</span>'+
         '</div>'+
-        '<div>'+
-          '<div style="font-weight:700;color:var(--t1)">'+w.name+'</div>'+
-          '<div style="font-size:11px;color:var(--t3)">'+w.location+'</div>'+
+        // أرقام المخزون
+        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:12px">'+
+          '<div style="background:rgba(16,185,129,.08);border-radius:8px;padding:8px;text-align:center">'+
+            '<div class="mono" style="font-size:18px;font-weight:900;color:var(--g1)">'+av+'</div>'+
+            '<div style="font-size:9px;color:var(--g1);margin-top:2px">✓ متاح</div>'+
+          '</div>'+
+          '<div style="background:rgba(239,68,68,.08);border-radius:8px;padding:8px;text-align:center">'+
+            '<div class="mono" style="font-size:18px;font-weight:900;color:var(--r1)">'+res+'</div>'+
+            '<div style="font-size:9px;color:var(--r1);margin-top:2px">🔒 محجوز</div>'+
+          '</div>'+
+          '<div style="background:var(--bg2);border-radius:8px;padding:8px;text-align:center">'+
+            '<div class="mono" style="font-size:18px;font-weight:900;color:var(--t2)">'+tot+'</div>'+
+            '<div style="font-size:9px;color:var(--t3);margin-top:2px">الكلي</div>'+
+          '</div>'+
         '</div>'+
-        '<div style="margin-right:auto;display:flex;gap:6px">'+
-          '<button class="btn btn-warn btn-xs" onclick="editWarehouse(this.dataset.id)" data-id="'+w.id+'"><i class="fa fa-pen"></i>تعديل</button>'+
-          '<button class="btn btn-'+(w.active?'danger':'green')+' btn-xs" onclick="toggleWarehouse(this.dataset.id)" data-id="'+w.id+'">'+
+        (w.manager?'<div style="font-size:11px;color:var(--t3);margin-bottom:10px"><i class="fa fa-user"></i> '+w.manager+(w.phone?' · <i class="fa fa-phone"></i> '+w.phone:'')+'</div>':'')+
+        // أزرار
+        '<div style="display:flex;gap:6px">'+
+          '<button class="btn btn-warn btn-sm" style="flex:1" onclick="editWarehouse(this.dataset.id)" data-id="'+w.id+'"><i class="fa fa-pen"></i>تعديل</button>'+
+          '<button class="btn btn-'+(w.active?'sec':'green')+' btn-sm" onclick="toggleWarehouse(this.dataset.id)" data-id="'+w.id+'">'+
             '<i class="fa fa-'+(w.active?'eye-slash':'eye')+'"></i>'+(w.active?'تعطيل':'تفعيل')+
           '</button>'+
+          '<button class="btn btn-danger btn-sm" onclick="deleteWarehouse(this.dataset.id)" data-id="'+w.id+'" title="حذف المستودع"><i class="fa fa-trash"></i></button>'+
         '</div>'+
       '</div>'+
-      '<div style="display:flex;gap:8px;font-size:11px;color:var(--t3)">'+
-        '<span><i class="fa fa-user"></i> '+w.manager+'</span>'+
-        '<span><i class="fa fa-phone"></i> '+w.phone+'</span>'+
-        '<span><i class="fa fa-map-marker-alt"></i> '+
-          (DB.zones.find(function(z){return z.id===w.zone;})||{name:'-'}).name+
-        '</span>'+
-      '</div>'+
     '</div>';
-  }).join('')+(whs.length===0?'<div style="text-align:center;padding:20px;color:var(--t3)">لا توجد نتائج</div>':'');
+  }).join('')+(whs.length===0?'<div style="text-align:center;padding:30px;color:var(--t3);grid-column:1/-1"><i class="fa fa-warehouse" style="font-size:32px;display:block;margin-bottom:10px;opacity:.3"></i>لا توجد نتائج</div>':'');
 }
+
 
 // ══ صفحة المقاولين ══
 function renderContractors(){
@@ -6536,75 +8023,199 @@ function renderContractors(){
 }
 
 // ══ صفحة الفئات والحدود ══
+var CAT_ICONS=['fa-bolt','fa-cable-car','fa-toggle-on','fa-gauge','fa-box','fa-lightbulb','fa-wrench','fa-gear','fa-plug','fa-shield','fa-fire','fa-droplet','fa-wind','fa-tag','fa-layer-group','fa-cube','fa-network-wired','fa-microchip'];
+var CAT_COLORS=['#f59e0b','#3b82f6','#8b5cf6','#10b981','#ec4899','#f97316','#00d4ff','#ef4444','#14b8a6','#84cc16','#6366f1','#06b6d4','#a855f7','#22c55e'];
+
 function renderCategories(){
-  var el=document.getElementById('cat-limits-list');if(!el)return;
-  el.innerHTML=DB.categories.map(function(cat){
-    var itemCount=DB.inventory.filter(function(i){return i.cat===cat.name;}).length;
-    return '<div style="background:var(--bg2);border:1px solid var(--b1);border-radius:10px;padding:12px;margin-bottom:10px">'+
-      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">'+
-        '<div style="width:32px;height:32px;border-radius:8px;background:rgba(0,212,255,.1);display:flex;align-items:center;justify-content:center">'+
-          '<i class="fa fa-tag" style="color:var(--a1)"></i>'+
-        '</div>'+
-        '<div style="flex:1">'+
-          '<div style="font-weight:700;color:var(--t1)">'+cat.name+'</div>'+
-          '<div style="font-size:11px;color:var(--t3)">'+itemCount+' مادة</div>'+
-        '</div>'+
-        '<button class="btn btn-danger btn-xs" onclick="deleteCategoryItem(this.dataset.n)" data-n="'+cat.name+'"><i class="fa fa-trash"></i></button>'+
-      '</div>'+
-      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+
-        '<div>'+
-          '<label style="font-size:10px;color:var(--t3)">🔴 الحد الحرج</label>'+
-          '<input type="number" min="0" id="cat-crit-'+cat.name.replace(/\s/g,'_')+'" value="'+cat.criticalLimit+'" style="width:100%;padding:6px;border:1px solid rgba(239,68,68,.3);border-radius:6px;background:var(--bg1);color:var(--r1);font-weight:700;text-align:center;margin-top:3px">'+
-        '</div>'+
-        '<div>'+
-          '<label style="font-size:10px;color:var(--t3)">🟡 حد التحذير</label>'+
-          '<input type="number" min="0" id="cat-warn-'+cat.name.replace(/\s/g,'_')+'" value="'+cat.warningLimit+'" style="width:100%;padding:6px;border:1px solid rgba(245,158,11,.3);border-radius:6px;background:var(--bg1);color:var(--y1);font-weight:700;text-align:center;margin-top:3px">'+
-        '</div>'+
-      '</div>'+
-    '</div>';
-  }).join('')+(DB.categories.length===0?
-    '<div style="text-align:center;padding:20px;color:var(--t3)"><i class="fa fa-inbox" style="font-size:24px;display:block;margin-bottom:8px"></i>لا توجد فئات</div>':'');
-  renderCatMeter();
-}
-
-function saveCategoryLimits(){
-  DB.categories.forEach(function(cat){
-    var key=cat.name.replace(/\s/g,'_');
-    var critEl=document.getElementById('cat-crit-'+key);
-    var warnEl=document.getElementById('cat-warn-'+key);
-    if(critEl) cat.criticalLimit=Math.max(0,parseInt(critEl.value)||0);
-    if(warnEl) cat.warningLimit=Math.max(0,parseInt(warnEl.value)||0);
-  });
-  renderCatMeter();
-  updateZonesBadge();
-  toast('ok','✓ تم الحفظ','تم تحديث حدود الإشعار لجميع الفئات','fa-save');
-}
-
-function renderCatMeter(){
-  var el=document.getElementById('cat-meter');if(!el)return;
+  var el=document.getElementById('cat-grid');if(!el)return;
+  var whs=DB.warehouses.filter(function(w){return w.active;});
+  var sub=document.getElementById('cat-sub');if(sub)sub.textContent=DB.categories.length+' فئة';
+  if(!DB.categories.length){
+    el.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:50px 20px;color:var(--t3)">'+
+      '<i class="fa fa-layer-group" style="font-size:48px;display:block;margin-bottom:16px;opacity:.2"></i>'+
+      '<div style="font-size:16px;font-weight:700">لا توجد فئات بعد</div>'+
+      '<div style="font-size:12px;margin-top:6px">اضغط "فئة جديدة" لإضافة أول فئة</div></div>';
+    return;
+  }
   el.innerHTML=DB.categories.map(function(cat){
     var items=DB.inventory.filter(function(i){return i.cat===cat.name;});
-    var totalQty=items.reduce(function(s,i){
-      return s+DB.warehouses.filter(function(w){return w.active;}).reduce(function(ws,w){return ws+(i[w.key]||0);},0);
-    },0);
-    var avgQty=items.length?Math.round(totalQty/items.length):0;
-    var level=avgQty<=cat.criticalLimit?'حرج':avgQty<=cat.warningLimit?'تحذير':'آمن';
-    var color=level==='حرج'?'var(--r1)':level==='تحذير'?'var(--y1)':'var(--g1)';
-    var pct=cat.warningLimit>0?Math.min(100,Math.round((avgQty/cat.warningLimit)*100)):0;
-    return '<div style="margin-bottom:14px">'+
-      '<div style="display:flex;justify-content:space-between;margin-bottom:4px">'+
-        '<span style="font-size:12px;font-weight:600;color:var(--t1)">'+cat.name+'</span>'+
-        '<span style="font-size:11px;color:'+color+';font-weight:700">'+level+'</span>'+
-      '</div>'+
-      '<div style="background:var(--bg2);border-radius:8px;height:10px;overflow:hidden">'+
-        '<div style="height:100%;width:'+pct+'%;background:'+color+';border-radius:8px;transition:.3s"></div>'+
-      '</div>'+
-      '<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--t3);margin-top:3px">'+
-        '<span>متوسط: '+avgQty+'</span>'+
-        '<span>'+items.length+' مادة</span>'+
+    var tot=items.reduce(function(s,i){return s+whs.reduce(function(ws,w){return ws+(i[w.key]||0);},0);},0);
+    var res=items.reduce(function(s,i){return s+whs.reduce(function(ws,w){return ws+getReservedStock(i.code,w.name);},0);},0);
+    var av=Math.max(0,tot-res);
+    var col=cat.color||'#00d4ff';
+    var ic=cat.icon||'fa-tag';
+    var key=cat.id;
+    var avg=items.length?Math.round(tot/items.length):0;
+    var lvl=avg<=(cat.criticalLimit||0)?'حرج':avg<=(cat.warningLimit||0)?'تحذير':'آمن';
+    var lvlC=lvl==='حرج'?'var(--r1)':lvl==='تحذير'?'var(--y1)':'var(--g1)';
+    var pct=cat.warningLimit>0?Math.min(100,Math.round(av/Math.max(tot,1)*100)):100;
+    return '<div style="background:var(--card);border:1px solid var(--b1);border-radius:16px;overflow:hidden;transition:.2s">'+
+      '<div style="height:4px;background:'+col+'"></div>'+
+      '<div style="padding:16px">'+
+        '<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">'+
+          '<div style="width:42px;height:42px;border-radius:12px;background:'+col+'20;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+
+            '<i class="fa '+ic+'" style="font-size:18px;color:'+col+'"></i>'+
+          '</div>'+
+          '<div style="flex:1">'+
+            '<div style="font-weight:800;font-size:14px;color:var(--t1)">'+cat.name+'</div>'+
+            '<div style="font-size:11px;color:var(--t3);margin-top:2px">'+items.length+' مادة</div>'+
+          '</div>'+
+          '<span style="background:'+lvlC+'18;color:'+lvlC+';border-radius:8px;padding:3px 10px;font-size:11px;font-weight:800">'+lvl+'</span>'+
+        '</div>'+
+        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px">'+
+          '<div style="background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:10px;padding:10px;text-align:center">'+
+            '<div class="mono" style="font-size:22px;font-weight:900;color:var(--g1);line-height:1">'+av+'</div>'+
+            '<div style="font-size:10px;color:var(--g1);margin-top:3px;font-weight:600">✓ متاح</div>'+
+          '</div>'+
+          '<div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:10px;padding:10px;text-align:center">'+
+            '<div class="mono" style="font-size:22px;font-weight:900;color:var(--r1);line-height:1">'+res+'</div>'+
+            '<div style="font-size:10px;color:var(--r1);margin-top:3px;font-weight:600">🔒 محجوز</div>'+
+          '</div>'+
+          '<div style="background:var(--bg2);border-radius:10px;padding:10px;text-align:center">'+
+            '<div class="mono" style="font-size:22px;font-weight:900;color:var(--t2);line-height:1">'+tot+'</div>'+
+            '<div style="font-size:10px;color:var(--t3);margin-top:3px">الكلي</div>'+
+          '</div>'+
+        '</div>'+
+        '<div style="margin-bottom:14px">'+
+          '<div style="height:8px;background:var(--bg2);border-radius:6px;overflow:hidden;display:flex">'+
+            '<div style="width:'+pct+'%;background:'+lvlC+';transition:.4s;border-radius:6px"></div>'+
+          '</div>'+
+          '<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--t3);margin-top:4px">'+
+            '<span>متاح '+pct+'%</span><span>متوسط: '+avg+'</span>'+
+          '</div>'+
+        '</div>'+
+        '<div style="background:var(--bg2);border-radius:10px;padding:10px;margin-bottom:12px">'+
+          '<div style="font-size:10px;color:var(--t3);font-weight:700;margin-bottom:8px;letter-spacing:.5px">حدود الإشعار</div>'+
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+
+            '<div>'+
+              '<label style="font-size:10px;color:var(--r1);font-weight:600">🔴 الحرج</label>'+
+              '<input type="number" min="0" id="cc-'+key+'" value="'+(cat.criticalLimit||0)+'" data-id="'+key+'" onchange="catSaveLimit(this.dataset.id,this.dataset.t,this.value)" data-t="crit" style="width:100%;margin-top:3px;padding:6px;border:1px solid rgba(239,68,68,.3);border-radius:7px;background:var(--bg1);color:var(--r1);font-weight:700;text-align:center;font-size:14px">'+
+            '</div>'+
+            '<div>'+
+              '<label style="font-size:10px;color:var(--y1);font-weight:600">🟡 التحذير</label>'+
+              '<input type="number" min="0" id="cw-'+key+'" value="'+(cat.warningLimit||0)+'" data-id="'+key+'" onchange="catSaveLimit(this.dataset.id,this.dataset.t,this.value)" data-t="warn" style="width:100%;margin-top:3px;padding:6px;border:1px solid rgba(245,158,11,.3);border-radius:7px;background:var(--bg1);color:var(--y1);font-weight:700;text-align:center;font-size:14px">'+
+            '</div>'+
+          '</div>'+
+        '</div>'+
+        '<div style="display:flex;gap:8px">'+
+          '<button class="btn btn-sec" style="flex:1;font-size:12px" data-cid="'+cat.id+'" onclick="catEditModal(this.dataset.cid)"><i class="fa fa-pen"></i>تعديل الفئة</button>'+
+          '<button class="btn btn-danger btn-sm" data-cn="'+cat.name+'" onclick="deleteCategoryItem(this.dataset.cn)"><i class="fa fa-trash"></i></button>'+
+        '</div>'+
       '</div>'+
     '</div>';
-  }).join('')+(DB.categories.length===0?'<div style="color:var(--t3);text-align:center;padding:20px">لا توجد فئات</div>':'');
+  }).join('');
+}
+
+function catSaveLimit(id,type,val){
+  var cat=DB.categories.find(function(c){return c.id==id;});
+  if(!cat)return;
+  var v=Math.max(0,parseInt(val)||0);
+  if(type==='crit') cat.criticalLimit=v;
+  else cat.warningLimit=Math.max(v,cat.criticalLimit||0);
+  updateZonesBadge();
+  renderCategories();
+}
+
+function saveCategoryLimits(){renderCategories();}
+function renderCatMeter(){renderCategories();}
+
+// ═══ Modal فئة جديدة ═══
+function catNewModal(){catShowModal(null);}
+function catEditModal(id){
+  var cat=DB.categories.find(function(c){return c.id==id;});
+  if(cat)catShowModal(cat);
+}
+
+function catShowModal(cat){
+  var isEdit=!!cat;
+  window._catModalId=cat?cat.id:null;
+  var selIcon=cat?cat.icon:'fa-tag';
+  var selColor=cat?cat.color:(CAT_COLORS&&CAT_COLORS[0]||'#0ea5e9');
+
+  // عنوان النافذة
+  document.getElementById('cat-modal-title').innerHTML=isEdit?
+    '<i class="fa fa-pen" style="color:var(--y1)"></i> تعديل فئة':
+    '<i class="fa fa-plus" style="color:var(--g1)"></i> فئة جديدة';
+
+  // اسم الفئة
+  var nm=document.getElementById('cm-name');
+  if(nm)nm.value=cat?cat.name:'';
+
+  // الحدود
+  var crit=document.getElementById('cm-crit');
+  var warn=document.getElementById('cm-warn');
+  if(crit)crit.value=cat?cat.criticalLimit||0:0;
+  if(warn)warn.value=cat?cat.warningLimit||0:0;
+
+  // زر الحفظ
+  var saveBtn=document.getElementById('cat-save-btn');
+  if(saveBtn)saveBtn.innerHTML=isEdit?'<i class="fa fa-save"></i> حفظ التعديل':'<i class="fa fa-plus"></i> إضافة الفئة';
+
+  // فتح النافذة أولاً
+  openModal('modal-cat');
+
+  // ثم ملء الأيقونات والألوان بعد الظهور
+  setTimeout(function(){
+    var icWrap=document.getElementById('cm-icons-wrap');
+    if(icWrap&&CAT_ICONS&&CAT_ICONS.length){
+      icWrap.innerHTML=CAT_ICONS.map(function(ic){
+        var sel=ic===selIcon;
+        return '<div class="cat-ico-opt" data-ic="'+ic+'" onclick="catSelIcon(this)" style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid '+(sel?'var(--a1)':'transparent')+';background:'+(sel?'rgba(0,212,255,.15)':'transparent')+';transition:.15s"><i class="fa '+ic+'" style="color:'+(sel?'var(--a1)':'var(--t2)')+'"></i></div>';
+      }).join('');
+    }
+    var icInput=document.getElementById('cm-icon');
+    if(icInput)icInput.value=selIcon;
+
+    var colWrap=document.getElementById('cm-colors-wrap');
+    if(colWrap&&CAT_COLORS&&CAT_COLORS.length){
+      colWrap.innerHTML=CAT_COLORS.map(function(col){
+        var sel=col===selColor;
+        return '<div class="cat-col-opt" data-col="'+col+'" onclick="catSelColor(this)" style="width:28px;height:28px;border-radius:50%;background:'+col+';cursor:pointer;border:3px solid '+(sel?'var(--t1)':'transparent')+';transform:'+(sel?'scale(1.2)':'scale(1)')+';transition:.15s"></div>';
+      }).join('');
+    }
+    var colInput=document.getElementById('cm-color');
+    if(colInput)colInput.value=selColor;
+
+    var n=document.getElementById('cm-name');if(n)n.focus();
+  },80);
+}
+function catSelIcon(el){
+  document.querySelectorAll('.cat-ico-opt').forEach(function(x){x.style.borderColor='transparent';x.style.background='transparent';x.querySelector('i').style.color='var(--t2)';});
+  el.style.borderColor='var(--a1)';el.style.background='rgba(0,212,255,.15)';el.querySelector('i').style.color='var(--a1)';
+  var inp=document.getElementById('cm-icon');if(inp)inp.value=el.dataset.ic;
+}
+function catSelColor(el){
+  document.querySelectorAll('.cat-col-opt').forEach(function(x){x.style.borderColor='transparent';x.style.transform='scale(1)';});
+  el.style.borderColor='var(--t1)';el.style.transform='scale(1.2)';
+  var inp=document.getElementById('cm-color');if(inp)inp.value=el.dataset.col;
+}
+function catSaveModal(){
+  var name=(document.getElementById('cm-name')?.value||'').trim();
+  var icon=document.getElementById('cm-icon')?.value||'fa-tag';
+  var color=document.getElementById('cm-color')?.value||CAT_COLORS[0];
+  var crit=Math.max(0,parseInt(document.getElementById('cm-crit')?.value)||0);
+  var warn=Math.max(crit,parseInt(document.getElementById('cm-warn')?.value)||0);
+  if(!name){toast('err','مطلوب','ادخل اسم الفئة','fa-ban');return;}
+  var isEdit=!!window._catModalId;
+  if(isEdit){
+    var cat=DB.categories.find(function(c){return c.id==window._catModalId;});
+    if(!cat)return;
+    if(name!==cat.name&&DB.categories.some(function(c){return c.name===name;})){toast('warn','مكرر','الاسم موجود','fa-ban');return;}
+    var oldName=cat.name;
+    cat.name=name;cat.icon=icon;cat.color=color;cat.criticalLimit=crit;cat.warningLimit=warn;
+    if(name!==oldName)DB.inventory.forEach(function(i){if(i.cat===oldName)i.cat=name;});
+    toast('ok','تم التعديل','تم تحديث فئة "'+name+'"','fa-pen');
+  } else {
+    if(DB.categories.some(function(c){return c.name===name;})){toast('warn','مكرر','هذه الفئة موجودة','fa-ban');return;}
+    DB.categories.push({id:Date.now(),name:name,icon:icon,color:color,criticalLimit:crit,warningLimit:warn,safeLimit:warn*2});
+    toast('ok','تمت الإضافة','تمت إضافة فئة "'+name+'"','fa-layer-group');
+  }
+  closeModal('modal-cat');fillDL();renderCategories();
+  // تحديث رصيد المستودعات والزونات فوراً بعد تغيير الفئة
+  try{renderInventory();}catch(e){}
+  try{if(currentPage==='zones')zonesRender();}catch(e){}
+  // فحص حدود الإشعار الجديدة
+  try{checkLowStockNotifs();}catch(e){}
 }
 
 function deleteCategoryItem(name){
@@ -6642,6 +8253,2216 @@ function renderDrHist(){
   }).join('')+(returns.length===0?'<div style="text-align:center;padding:20px;color:var(--t3)"><i class="fa fa-inbox" style="font-size:24px;display:block;margin-bottom:8px"></i>لا توجد فواتير ارجاع</div>':'');
 }
 
+
+// ══════════════════════════════════════════════
+// دوال مفقودة — تم استرجاعها
+// ══════════════════════════════════════════════
+
+// ── التنقل ──
+function goBack(){
+  var isMW=currentUser?.role==='موجه بلاغات'||currentUser?.role==='مشرف وردية';
+  if(isMW){
+    var mwPages=['mywork','inventory','zones','cart','logs','contact','invoices'];
+    var mwIdx=mwPages.indexOf(currentPage);
+    go(mwIdx>0?mwPages[mwIdx-1]:'mywork');
+  } else {
+    var pages=['dashboard','inventory','zones','cart','feed','transfer','myinv',
+      'invoices','requests','approve','logs','contact','users','settings',
+      'warehouses-pg','contractors-pg','categories-pg','boq','direct-return','inv-edit-req'];
+    var pgIdx=pages.indexOf(currentPage);
+    go(pgIdx>0?pages[pgIdx-1]:'dashboard');
+  }
+}
+
+// ── الإشعارات ──
+function toggleNotifications(){
+  var el=document.getElementById('notif-panel');
+  if(!el)return;
+  var isOpen=el.style.display==='block';
+  el.style.display=isOpen?'none':'block';
+  if(!isOpen){
+    // تعيين كمقروءة
+    DB.notifications.forEach(function(n){n.read=true;});
+    var badge=document.getElementById('notif-badge');
+    if(badge)badge.style.display='none';
+    renderNotifPanel();
+  }
+}
+
+function renderNotifPanel(){
+  var el=document.getElementById('notif-list');if(!el)return;
+  var notifs=DB.notifications.slice(0,20);
+  el.innerHTML=notifs.map(function(n){
+    return '<div style="padding:10px 12px;border-bottom:1px solid var(--b1);'+(n.read?'':'background:rgba(0,212,255,.04)')+'">' +
+      '<div style="display:flex;align-items:flex-start;gap:8px">' +
+        '<i class="fa '+n.i+'" style="color:'+(n.type==='ok'?'var(--g1)':n.type==='warn'?'var(--y1)':'var(--a1)')+';margin-top:2px;font-size:12px"></i>' +
+        '<div><div style="font-size:12px;font-weight:600;color:var(--t1)">'+n.title+'</div>' +
+        '<div style="font-size:11px;color:var(--t3)">'+n.msg+'</div>' +
+        '<div style="font-size:10px;color:var(--t3);margin-top:2px">'+n.d+' '+n.time+'</div></div>' +
+      '</div></div>';
+  }).join('')+(notifs.length===0?'<div style="text-align:center;padding:20px;color:var(--t3)">لا توجد إشعارات</div>':'');
+}
+
+// ── السطوع ──
+function changeBrightness(delta){
+  var sl=document.getElementById('brightness-slider');
+  var cur=parseInt(sl?.value||100);
+  var nv=Math.min(140,Math.max(60,cur+delta));
+  if(sl)sl.value=nv;
+  applyBrightness(nv);
+}
+function applyBrightness(val){
+  val=val||document.getElementById('brightness-slider')?.value||100;
+  document.documentElement.style.filter='brightness('+val+'%)';
+  localStorage.setItem('brightness',val);
+}
+
+// ── وضع العرض ──
+function toggleViewMode(){
+  var tbody=document.getElementById('inv-full-tbody');
+  if(!tbody)return;
+  tbody.classList.toggle('compact-view');
+}
+
+// ── لوحة التحكم ──
+function showTopItemsAll(){
+  go('inventory');
+  setTimeout(function(){
+    var q=document.getElementById('inv-search');
+    if(q){q.value='';renderInventory();}
+  },100);
+}
+
+// ── تصدير الزونات ──
+function zonesExport(){
+  if(typeof XLSX==='undefined'){toast('warn','غير متاح','مكتبة Excel غير محملة','fa-ban');return;}
+  var data=zonesGetData();
+  if(!data||!data.rows||!data.rows.length){toast('warn','لا توجد بيانات','اختر زوناً أولاً','fa-ban');return;}
+  var wb=XLSX.utils.book_new();
+  var ws_data=[['الكود','المادة','الفئة']
+    .concat(data.whs.map(function(w){return w.name;}))
+    .concat(['الإجمالي','محجوز','متاح','المستوى'])];
+  data.rows.forEach(function(r){
+    var row=[r.item.code,r.item.name,r.item.cat]
+      .concat(r.whQtys.map(function(x){return x.qty;}))
+      .concat([r.total,r.totalReserved||0,r.totalAvail||r.total,r.level]);
+    ws_data.push(row);
+  });
+  var ws=XLSX.utils.aoa_to_sheet(ws_data);
+  XLSX.utils.book_append_sheet(wb,ws,'رصيد الزونات');
+  XLSX.writeFile(wb,'zones_report_'+today()+'.xlsx');
+  toast('ok','✓ تم التصدير','تم تصدير رصيد الزونات إلى Excel','fa-file-excel');
+}
+
+// ── الارجاع المباشر ──
+window.drItems = window.drItems || [];
+
+function drAutoFill(){
+  var q=(document.getElementById('dr-item-q')?.value||'').trim();
+  if(!q)return;
+  var found=validateItemExists(q);
+  if(found){
+    document.getElementById('dr-item-name').textContent=found.name;
+    document.getElementById('dr-item-code').value=found.code;
+  }
+}
+
+function drFetchInv(){
+  var no=(document.getElementById('dr-inv-no')?.value||'').trim();
+  if(!no)return;
+  var inv=DB.invoices.find(function(i){return i.no===no&&i.type==='صرف'&&i.st==='معتمد';});
+  if(!inv){toast('warn','غير موجودة','لم يتم إيجاد فاتورة صرف معتمدة بهذا الرقم','fa-ban');return;}
+  window.drItems=inv.items.map(function(it){return Object.assign({},it);});
+  var wh=document.getElementById('dr-wh');if(wh)wh.value=inv.wh;
+  var cont=document.getElementById('dr-cont');if(cont)cont.value=inv.cont;
+  renderDrItems();
+  toast('ok','✓ تم الجلب','تم جلب مواد الفاتورة '+no,'fa-rotate-left');
+}
+
+function drAddItem(){
+  var code=(document.getElementById('dr-item-code')?.value||'').trim();
+  var qty=parseInt(document.getElementById('dr-item-qty')?.value)||0;
+  if(!code||qty<=0){toast('err','بيانات ناقصة','أدخل الكود والكمية','fa-ban');return;}
+  var inv=DB.inventory.find(function(i){return i.code===code;});
+  if(!inv){toast('err','غير موجودة','الكود غير موجود في المخزون','fa-ban');return;}
+  window.drItems=window.drItems||[];
+  var ex=window.drItems.find(function(it){return it.code===code;});
+  if(ex){ex.qty+=qty;}else{window.drItems.push({code:code,name:inv.name,qty:qty});}
+  renderDrItems();
+  document.getElementById('dr-item-q').value='';
+  document.getElementById('dr-item-code').value='';
+  document.getElementById('dr-item-qty').value='1';
+  if(document.getElementById('dr-item-name'))document.getElementById('dr-item-name').textContent='';
+}
+
+function renderDrItems(){
+  var el=document.getElementById('dr-items-list');if(!el)return;
+  window.drItems=window.drItems||[];
+  el.innerHTML=(window.drItems.length===0?
+    '<div style="text-align:center;padding:14px;color:var(--t3)">لم تُضف مواد بعد</div>':
+    window.drItems.map(function(it,idx){
+      return '<div style="display:flex;align-items:center;gap:8px;padding:6px;background:var(--bg2);border-radius:6px;margin-bottom:4px">'+
+        '<span class="mono" style="color:var(--a1);font-size:11px">'+it.code+'</span>'+
+        '<span style="flex:1;font-size:12px">'+it.name+'</span>'+
+        '<input type="number" min="1" value="'+it.qty+'" style="width:60px;padding:4px;border:1px solid var(--b1);border-radius:5px;background:var(--bg1);color:var(--t1);text-align:center" onchange="drQty('+idx+',this.value)">'+
+        '<button class="btn btn-danger btn-xs" onclick="drRemoveItem('+idx+')"><i class="fa fa-trash"></i></button>'+
+      '</div>';
+    }).join(''));
+}
+
+function drQty(idx,val){
+  window.drItems=window.drItems||[];
+  if(window.drItems[idx])window.drItems[idx].qty=Math.max(1,parseInt(val)||1);
+}
+
+function drRemoveItem(idx){
+  window.drItems=window.drItems||[];
+  window.drItems.splice(idx,1);
+  renderDrItems();
+}
+
+// ── التغذية ──
+function feedAutoFillName(){
+  // يقرأ من feed-code (حقل الكود في صفحة التغذية)
+  var code=(document.getElementById('feed-code')?.value||'').trim();
+  var nameEl=document.getElementById('feed-name');
+  if(!code){if(nameEl)nameEl.value='';return;}
+  // بحث في المخزون
+  var found=DB.inventory.find(function(i){return i.code===code;});
+  if(found){
+    if(nameEl)nameEl.value=found.name;
+  } else {
+    // الكود غير موجود في المخزون — حقل الاسم يبقى فارغاً للمستخدم يكتبه يدوياً
+    if(nameEl)nameEl.value='';
+    if(nameEl)nameEl.removeAttribute('readonly');
+    if(nameEl)nameEl.placeholder='كود جديد — ادخل الاسم...';
+  }
+}
+
+function feedAddItem(){
+  var code=(document.getElementById('feed-code')?.value||'').trim();
+  var name=(document.getElementById('feed-name')?.value||'').trim();
+  var qty=parseInt(toEnDigits(document.getElementById('feed-qty')?.value||'0'))||0;
+
+  if(!code){toast('err','مطلوب','ادخل كود المادة','fa-ban');return;}
+  if(qty<=0){toast('err','كمية غير صحيحة','ادخل كمية أكبر من صفر','fa-ban');return;}
+
+  var inv=DB.inventory.find(function(i){return i.code===code;});
+  // إذا الكود غير موجود نطلب الاسم ثم ننشئه
+  if(!inv){
+    if(!name){
+      toast('err','مادة جديدة','هذا الكود غير موجود — ادخل اسم المادة أولاً','fa-ban');
+      var nameEl=document.getElementById('feed-name');
+      if(nameEl){nameEl.removeAttribute('readonly');nameEl.focus();}
+      return;
+    }
+    // إنشاء المادة في المخزون
+    var newItem={code:code,name:name,cat:'عام',min:0};
+    DB.warehouses.filter(function(w){return w.active;}).forEach(function(w){newItem[w.key]=0;});
+    DB.inventory.push(newItem);
+    fillDL(); // تحديث datalist
+    inv=newItem;
+    toast('ok','✓ مادة جديدة','تم إضافة "'+name+'" للمخزون','fa-cubes');
+  }
+
+  window.feedItems=window.feedItems||[];
+  var ex=window.feedItems.find(function(it){return it.code===code;});
+  if(ex){
+    ex.qty+=qty;
+    toast('ok','تم التحديث',inv.name+' — الكمية الإجمالية: '+ex.qty,'fa-plus');
+  } else {
+    window.feedItems.push({code:code,name:inv.name||name,qty:qty});
+  }
+  renderFeedItems();
+
+  // إعادة تهيئة حقول الإضافة
+  var codeEl=document.getElementById('feed-code');
+  var nameEl2=document.getElementById('feed-name');
+  var qtyEl=document.getElementById('feed-qty');
+  if(codeEl)codeEl.value='';
+  if(nameEl2){nameEl2.value='';nameEl2.setAttribute('readonly','true');nameEl2.placeholder='يُعبأ تلقائياً...';}
+  if(qtyEl)qtyEl.value='1';
+  if(codeEl)codeEl.focus();
+}
+
+function renderFeedItems(){
+  var el=document.getElementById('feed-items-list');if(!el)return;
+  window.feedItems=window.feedItems||[];
+  el.innerHTML=(window.feedItems.length===0?
+    '<div style="text-align:center;padding:14px;color:var(--t3)">لم تُضف مواد بعد</div>':
+    window.feedItems.map(function(it,idx){
+      return '<div style="display:flex;align-items:center;gap:8px;padding:6px;background:var(--bg2);border-radius:6px;margin-bottom:4px">'+
+        '<span class="mono" style="color:var(--a1);font-size:11px">'+it.code+'</span>'+
+        '<span style="flex:1;font-size:12px">'+it.name+'</span>'+
+        '<input type="number" min="1" value="'+it.qty+'" style="width:60px;padding:4px;border:1px solid var(--b1);border-radius:5px;background:var(--bg1);color:var(--t1);text-align:center" onchange="feedItemQty('+idx+',this.value)">'+
+        '<button class="btn btn-danger btn-xs" onclick="feedRemoveItem('+idx+')"><i class="fa fa-trash"></i></button>'+
+      '</div>';
+    }).join(''));
+}
+
+function feedItemQty(idx,val){
+  window.feedItems=window.feedItems||[];
+  if(window.feedItems[idx])window.feedItems[idx].qty=Math.max(1,parseInt(val)||1);
+}
+
+function feedRemoveItem(idx){
+  window.feedItems=window.feedItems||[];
+  window.feedItems.splice(idx,1);
+  renderFeedItems();
+}
+
+// ── إضافة مستودع/زون/مقاول ──
+function addWarehouse(){
+  var WHCOLORS=['#10b981','#3b82f6','#f59e0b','#8b5cf6','#ec4899','#f97316','#00d4ff','#ef4444','#14b8a6','#84cc16'];
+  var zoneOpts='<option value="">-- بدون زون --</option>'+DB.zones.map(function(z){return '<option value="'+z.id+'">'+z.name+'</option>';}).join('');
+  var colHtml=WHCOLORS.map(function(c){return '<div class="wh-col-opt" data-col="'+c+'" onclick="whSelColor(this)" style="width:28px;height:28px;border-radius:50%;background:'+c+';cursor:pointer;border:3px solid transparent;transition:.15s;display:inline-block;margin:3px"></div>';}).join('');
+  var html=
+    '<div class="form-group" style="margin-bottom:12px"><label class="form-label"><i class="fa fa-warehouse" style="color:var(--a1)"></i> اسم المستودع <span style="color:var(--r1)">*</span></label>'+
+    '<input class="form-input" id="nwh-name" placeholder="مثال: مستودع الجنوب..."></div>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">'+
+    '<div class="form-group"><label class="form-label"><i class="fa fa-location-dot" style="color:var(--o1)"></i> الموقع</label><input class="form-input" id="nwh-loc" placeholder="المدينة / المنطقة..."></div>'+
+    '<div class="form-group"><label class="form-label"><i class="fa fa-user" style="color:var(--g1)"></i> المدير</label><input class="form-input" id="nwh-mgr" placeholder="اسم المدير..."></div>'+
+    '<div class="form-group"><label class="form-label"><i class="fa fa-phone" style="color:var(--a3)"></i> الجوال</label><input class="form-input" id="nwh-phone" placeholder="05xxxxxxxx"></div>'+
+    '<div class="form-group"><label class="form-label"><i class="fa fa-map" style="color:var(--a1)"></i> الزون</label><select class="form-select" id="nwh-zone">'+zoneOpts+'</select></div>'+
+    '</div>'+
+    '<div><label class="form-label" style="margin-bottom:8px;display:block">لون المستودع</label>'+
+    '<div style="background:var(--bg2);padding:8px;border-radius:10px">'+colHtml+'</div>'+
+    '<input type="hidden" id="nwh-color" value="'+WHCOLORS[0]+'"></div>';
+  // تحديد اللون الأول
+  setTimeout(function(){var first=document.querySelector('.wh-col-opt');if(first)whSelColor(first);},50);
+  showFormModal('<i class="fa fa-plus" style="color:var(--g1)"></i> مستودع جديد',html,[
+    {lbl:'<i class="fa fa-save"></i> إضافة',cls:'btn-green',fn:function(){
+      var name=(document.getElementById('nwh-name')?.value||'').trim();
+      if(!name){toast('err','مطلوب','ادخل اسم المستودع','fa-ban');return;}
+      if(DB.warehouses.some(function(w){return w.name===name;})){toast('warn','مكرر','هذا المستودع موجود','fa-ban');return;}
+      var id=DB.warehouses.length?Math.max.apply(null,DB.warehouses.map(function(w){return w.id;}))+1:1;
+      var color=document.getElementById('nwh-color')?.value||WHCOLORS[0];
+      DB.warehouses.push({id:id,name:name,key:'wh'+id,location:document.getElementById('nwh-loc')?.value||'',manager:document.getElementById('nwh-mgr')?.value||'',phone:document.getElementById('nwh-phone')?.value||'',zone:document.getElementById('nwh-zone')?.value||'',active:true,color:color});
+      // إضافة المفتاح للمخزون
+      DB.inventory.forEach(function(i){i['wh'+id]=0;});
+      closeModal('modal-form');renderWarehouses();fillWhSelects();
+      toast('ok','✓ تم','تم إضافة المستودع '+name,'fa-warehouse');
+    }},
+    {lbl:'إلغاء',cls:'btn-sec',fn:function(){closeModal('modal-form');}}
+  ]);
+}
+
+function whSelColor(el){
+  document.querySelectorAll('.wh-col-opt').forEach(function(x){x.style.borderColor='transparent';x.style.transform='scale(1)';});
+  el.style.borderColor='var(--t1)';el.style.transform='scale(1.25)';
+  var inp=document.getElementById('nwh-color');if(inp)inp.value=el.dataset.col;
+  // update editWh color too
+  var inp2=document.getElementById('ewh-color');if(inp2)inp2.value=el.dataset.col;
+}
+
+function deleteWarehouse(id){
+  var wh=DB.warehouses.find(function(w){return String(w.id)===String(id);});
+  if(!wh)return;
+  // تحقق من وجود مواد
+  var hasItems=DB.inventory.some(function(i){return (i[wh.key]||0)>0;});
+  if(hasItems){
+    var itemCount=DB.inventory.filter(function(i){return (i[wh.key]||0)>0;}).length;
+    showFormModal('<i class="fa fa-ban" style="color:var(--r1)"></i> لا يمكن حذف '+wh.name,
+      '<div style="text-align:center;padding:16px">'+
+        '<i class="fa fa-boxes-stacked" style="font-size:40px;color:var(--r1);display:block;margin-bottom:12px"></i>'+
+        '<div style="font-size:15px;font-weight:700;color:var(--t1);margin-bottom:8px">يحتوي على '+itemCount+' صنف من المواد</div>'+
+        '<div style="font-size:12px;color:var(--t3)">لا يمكن حذف مستودع يحتوي على مواد.<br>يرجى نقل المواد أو صرفها بالكامل أولاً.</div>'+
+      '</div>',
+      [{lbl:'فهمت',cls:'btn-primary',fn:function(){closeModal('modal-form');}}]);
+    return;
+  }
+  showConfirm('<i class="fa fa-trash" style="color:var(--r1)"></i> حذف مستودع',
+    'حذف مستودع <strong>'+wh.name+'</strong>؟ لا يمكن التراجع.',
+    'حذف','btn-danger',function(){
+      DB.warehouses=DB.warehouses.filter(function(w){return String(w.id)!==String(id);});
+      // إزالة المفتاح من المخزون
+      DB.inventory.forEach(function(i){delete i[wh.key];});
+      renderWarehouses();fillWhSelects();
+      toast('ok','✓ تم الحذف','تم حذف المستودع '+wh.name,'fa-trash');
+    });
+}
+
+function addZone(){
+  var ZCOLORS=['#10b981','#3b82f6','#f59e0b','#8b5cf6','#ec4899','#f97316','#00d4ff','#ef4444'];
+  var ZICONS=['fa-map','fa-location-dot','fa-compass','fa-map-pin','fa-flag','fa-building','fa-city','fa-mountain'];
+  var colHtml=ZCOLORS.map(function(c){return '<div class="wh-col-opt" data-col="'+c+'" onclick="whSelColor(this)" style="width:28px;height:28px;border-radius:50%;background:'+c+';cursor:pointer;border:3px solid transparent;transition:.15s;display:inline-block;margin:3px"></div>';}).join('');
+  var icHtml=ZICONS.map(function(ic){return '<div class="cat-ico-opt" data-ic="'+ic+'" onclick="zSelIcon(this)" style="width:36px;height:36px;border-radius:8px;background:var(--bg2);border:2px solid transparent;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;margin:3px;transition:.15s"><i class="fa '+ic+'" style="color:var(--t2)"></i></div>';}).join('');
+  var html=
+    '<div class="form-group" style="margin-bottom:12px"><label class="form-label"><i class="fa fa-map" style="color:var(--a1)"></i> اسم الزون <span style="color:var(--r1)">*</span></label>'+
+    '<input class="form-input" id="nz-name" placeholder="مثال: الزون الشمالي..."></div>'+
+    '<div style="margin-bottom:12px"><label class="form-label" style="margin-bottom:8px;display:block">الأيقونة</label>'+
+    '<div style="background:var(--bg2);padding:8px;border-radius:10px">'+icHtml+'</div>'+
+    '<input type="hidden" id="nz-icon" value="fa-map"></div>'+
+    '<div><label class="form-label" style="margin-bottom:8px;display:block">اللون</label>'+
+    '<div style="background:var(--bg2);padding:8px;border-radius:10px">'+colHtml+'</div>'+
+    '<input type="hidden" id="nwh-color" value="'+ZCOLORS[0]+'"></div>';
+  setTimeout(function(){var first=document.querySelector('.wh-col-opt');if(first)whSelColor(first);var fi=document.querySelector('.cat-ico-opt');if(fi){fi.style.borderColor='var(--a1)';fi.style.background='rgba(0,212,255,.1)';fi.querySelector('i').style.color='var(--a1)';}},50);
+  showFormModal('<i class="fa fa-plus" style="color:var(--g1)"></i> زون جديد',html,[
+    {lbl:'<i class="fa fa-save"></i> إضافة',cls:'btn-green',fn:function(){
+      var name=(document.getElementById('nz-name')?.value||'').trim();
+      if(!name){toast('err','مطلوب','ادخل اسم الزون','fa-ban');return;}
+      var color=document.getElementById('nwh-color')?.value||ZCOLORS[0];
+      var icon=document.getElementById('nz-icon')?.value||'fa-map';
+      var id='zone_'+Date.now();
+      DB.zones.push({id:id,name:name,color:color,icon:icon,bg:'rgba(0,212,255,.1)',border:'rgba(0,212,255,.3)'});
+      closeModal('modal-form');renderZonesManage();fillWhSelects();
+      toast('ok','✓ تم','تم إضافة الزون '+name,'fa-map');
+    }},
+    {lbl:'إلغاء',cls:'btn-sec',fn:function(){closeModal('modal-form');}}
+  ]);
+}
+
+function zSelIcon(el){
+  document.querySelectorAll('.cat-ico-opt').forEach(function(x){x.style.borderColor='transparent';x.style.background='transparent';if(x.querySelector('i'))x.querySelector('i').style.color='var(--t2)';});
+  el.style.borderColor='var(--a1)';el.style.background='rgba(0,212,255,.1)';
+  if(el.querySelector('i'))el.querySelector('i').style.color='var(--a1)';
+  var inp=document.getElementById('nz-icon');if(inp)inp.value=el.dataset.ic;
+}
+
+function addContractor(){
+  var name=(document.getElementById('new-contr-name')?.value||'').trim();
+  var phone=(document.getElementById('new-contr-phone')?.value||'').trim();
+  if(!name){toast('err','مطلوب','أدخل اسم المقاول','fa-ban');return;}
+  var id=DB.contractors.length?Math.max.apply(null,DB.contractors.map(function(c){return c.id||0;}))+1:1;
+  DB.contractors.push({id:id,name:name,phone:phone});
+  fillWhSelects();
+  renderContractors();
+  var el=document.getElementById('new-contr-name');if(el)el.value='';
+  var el2=document.getElementById('new-contr-phone');if(el2)el2.value='';
+  toast('ok','✓ تم','تم إضافة المقاول '+name,'fa-hard-hat');
+}
+
+// ── تغذية متعددة ══
+function doFeedMulti(){
+  var wh=document.getElementById('feed-wh')?.value||'';
+  var src=getFeedSrc()||'مستودع السعودية للطاقة';
+  var po=(document.getElementById('feed-po')?.value||'').trim();
+  var notes=(document.getElementById('feed-notes')?.value||'').trim();
+
+  if(!wh){toast('err','حقل مطلوب','اختر المستودع','fa-warehouse');return;}
+  window.feedItems=window.feedItems||[];
+  if(!window.feedItems.length){toast('err','لا توجد مواد','أضف مادة واحدة على الأقل','fa-ban');return;}
+
+  var no=genInvNo('F');
+
+  // ═══ 1. تحديث الرصيد الفعلي لكل مادة ═══
+  window.feedItems.forEach(function(it){
+    // إذا المادة غير موجودة أضفها (حالة الكود الجديد)
+    var inv=DB.inventory.find(function(i){return i.code===it.code;});
+    if(!inv){
+      var newItem={code:it.code,name:it.name,cat:'عام',min:0};
+      DB.warehouses.filter(function(w){return w.active;}).forEach(function(w){newItem[w.key]=0;});
+      DB.inventory.push(newItem);
+    }
+    setStock(it.code, wh, +it.qty);
+  });
+
+  // ═══ 2. إضافة سجل التغذية في الأرشيف ═══
+  var invRecord={
+    no:no, type:'تغذية', wh:wh, emp:currentUser.name,
+    cont:src, boq:po, notes:notes,
+    st:'معتمد', d:today(), time:nowTime(),
+    items:window.feedItems.map(function(it){return Object.assign({},it);}),
+    approvedBy:currentUser.name, approvedDate:today()
+  };
+  DB.invoices.unshift(invRecord);
+
+  // ═══ 3. تحديث سجل التغذية القديم ═══
+  var summary=window.feedItems.map(function(it){return it.name+' ×'+it.qty;}).join(' + ');
+  window.feedItems.forEach(function(it){
+    feedHistory.unshift({code:it.code,name:it.name,wh:wh,qty:it.qty,src:src,po:po,d:today(),t:nowTime()});
+  });
+
+  // ═══ 4. السجل والإشعار ═══
+  addLog('تغذية','تغذية '+no+' — '+wh+' — '+window.feedItems.length+' صنف'+(po?' — PO:'+po:''),wh,{no:no,items:summary});
+  addNotif('ok','✓ تغذية '+no,window.feedItems.length+' صنف أُضيفت لـ '+wh,'fa-cubes',null);
+
+  // ═══ 5. إعادة تهيئة النموذج ═══
+  window.feedItems=[];
+  renderFeedItems();
+  renderFeedHist();
+  ['feed-po','feed-notes'].forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});
+  fillDL(); // تحديث datalist
+
+  // ═══ 6. تحديث كل الواجهات المرتبطة ═══
+  updateBadges();
+  try{renderInventory();}catch(e){}
+  try{if(currentPage==='zones')zonesRender();}catch(e){}
+  try{renderArc();}catch(e){}
+
+  toast('ok','✓ تمت التغذية '+no,window.feedItems.length||invRecord.items.length+' صنف أُضيفت لمستودع '+wh,'fa-cubes');
+}
+
+
+// ══════════════════════════════════════════════
+// دوال لوحة التحكم المفقودة
+// ══════════════════════════════════════════════
+
+function updateZonesBadge(){
+  var total=0;
+  DB.inventory.forEach(function(item){
+    DB.warehouses.filter(function(w){return w.active;}).forEach(function(w){
+      var qty=item[w.key]||0;
+      var cat=DB.categories.find(function(cc){return cc.name===item.cat;});
+      var crit=cat?cat.criticalLimit:(item.min||0);
+      if(qty<=crit&&qty>=0) total++;
+    });
+  });
+  var badge=document.getElementById('zones-badge');
+  if(badge){badge.textContent=total;badge.style.display=total?'inline-flex':'none';}
+  var zonesBadge=document.getElementById('zones-alert-count');
+  if(zonesBadge){zonesBadge.textContent=total;zonesBadge.style.display=total?'':'none';}
+}
+
+function dashTopItems(){
+  var tm=today().slice(0,7);
+  var counts={};
+  DB.invoices.filter(function(i){return i.type==='صرف'&&i.st==='معتمد'&&(i.d||'').startsWith(tm);}).forEach(function(inv){
+    (inv.items||[]).forEach(function(it){counts[it.code]=(counts[it.code]||0)+it.qty;});
+  });
+  var sorted=Object.keys(counts).map(function(code){
+    var item=DB.inventory.find(function(i){return i.code===code;});
+    return {code:code,name:item?item.name:code,qty:counts[code]};
+  }).sort(function(a,b){return b.qty-a.qty;}).slice(0,5);
+  var el=document.getElementById('dash-top-items');if(!el)return;
+  el.innerHTML=sorted.length?sorted.map(function(it,i){
+    return '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--b1)">'+
+      '<span style="background:var(--a1);color:#000;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700">'+(i+1)+'</span>'+
+      '<span style="flex:1;font-size:12px;color:var(--t1)">'+it.name+'</span>'+
+      '<span class="mono" style="color:var(--a1);font-weight:700">×'+it.qty+'</span>'+
+    '</div>';
+  }).join(''):'<div style="text-align:center;padding:14px;color:var(--t3);font-size:12px">لا توجد بيانات هذا الشهر</div>';
+}
+
+function dashRunningOut(){
+  var alerts=[];
+  DB.inventory.forEach(function(item){
+    DB.warehouses.filter(function(w){return w.active;}).forEach(function(w){
+      var qty=item[w.key]||0;
+      var cat=DB.categories.find(function(cc){return cc.name===item.cat;});
+      var crit=cat?cat.criticalLimit:(item.min||0);
+      var warn=cat?cat.warningLimit:crit*2;
+      if(qty<=crit) alerts.push({item:item,wh:w,qty:qty,level:'حرج',color:'var(--r1)'});
+      else if(qty<=warn) alerts.push({item:item,wh:w,qty:qty,level:'تحذير',color:'var(--y1)'});
+    });
+  });
+  alerts.sort(function(a,b){return a.qty-b.qty;});
+  var el=document.getElementById('dash-running-out');if(!el)return;
+  el.innerHTML=alerts.length?alerts.slice(0,6).map(function(a){
+    return '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--b1)">'+
+      '<i class="fa fa-'+(a.level==='حرج'?'circle-exclamation':'triangle-exclamation')+'" style="color:'+a.color+';font-size:11px"></i>'+
+      '<div style="flex:1"><div style="font-size:11px;font-weight:600;color:var(--t1)">'+a.item.name+'</div>'+
+      '<div style="font-size:10px;color:var(--t3)">'+a.wh.name+'</div></div>'+
+      '<span class="mono" style="font-size:13px;font-weight:700;color:'+a.color+'">'+a.qty+'</span>'+
+    '</div>';
+  }).join(''):'<div style="text-align:center;padding:14px;color:var(--g1);font-size:12px"><i class="fa fa-check-circle"></i> المخزون بمستويات جيدة</div>';
+}
+
+function showAllAlerts(){
+  go('zones');
+}
+
+function dashOverdue(){
+  var now=new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Riyadh'}));
+  var pa=DB.approvals.filter(function(a){return a.st==='معلق';});
+  var oc=document.getElementById('dash-overdue-card');
+  if(oc)oc.style.display=pa.length?'block':'none';
+  var oe=document.getElementById('dash-overdue');if(!oe)return;
+  if(!pa.length){
+    oe.innerHTML='<div style="text-align:center;padding:14px;color:var(--g1);font-size:12px"><i class="fa fa-circle-check"></i> لا توجد فواتير متأخرة</div>';
+    return;
+  }
+  var o48=pa.map(function(a){
+    var hrs=Math.max(0,Math.round((now-new Date(a.d+'T00:00:00'))/3600000));
+    return Object.assign({},a,{dh:hrs});
+  }).filter(function(a){return a.dh>=48;}).sort(function(a,b){return b.dh-a.dh;});
+  var sl=o48.length?o48:pa.map(function(a){return Object.assign({},a,{dh:0});});
+  var levelColor={};
+  oe.innerHTML=sl.map(function(a){
+    var days=Math.floor(a.dh/24);
+    var hrs=a.dh%24;
+    var lbl=days>0?days+' يوم':hrs>0?hrs+' ساعة':'اليوم';
+    var urg=a.dh>96?'var(--r1)':a.dh>48?'var(--o1)':a.dh>0?'var(--y1)':'var(--a1)';
+    var ano=a.no; var aid=Number(a.id);
+    return '<div style="display:flex;align-items:center;gap:8px;padding:8px;background:var(--bg2);border-radius:8px;margin-bottom:6px;border:1px solid var(--b1)">'+
+      '<div style="flex:1">'+
+        '<div style="font-size:12px;font-weight:700;color:var(--t1)">'+a.no+'</div>'+
+        '<div style="font-size:11px;color:var(--t3)">'+a.emp+' — '+a.wh+'</div>'+
+        '<div style="font-size:11px;color:var(--t3)">'+a.cont+'</div>'+
+      '</div>'+
+      (a.dh>=48?'<span style="font-size:10px;color:'+urg+';background:'+urg+'22;border-radius:6px;padding:2px 8px">'+lbl+'</span>':'')+
+      '<button class="btn btn-green btn-xs" onclick="dashApprove(this.dataset.no,+this.dataset.id)" data-no="'+ano+'" data-id="'+aid+'"><i class="fa fa-signature"></i>اعتماد</button>'+
+      '<button class="btn btn-danger btn-xs" onclick="dashReject(this.dataset.no,+this.dataset.id)" data-no="'+ano+'" data-id="'+aid+'"><i class="fa fa-times"></i>رفض</button>'+
+    '</div>';
+  }).join('');
+}
+
+function cleanOldInvoices(){
+  // تشغيل نظام التنظيف التلقائي
+  if(typeof runAutoCleanupOnLogin==='function') runAutoCleanupOnLogin();
+}
+
+// ══════════════════════════════════════════════
+// نظام النسخ الاحتياطية — localStorage
+// ══════════════════════════════════════════════
+var BACKUP_KEY='awaji_backups';
+var BACKUP_MAX_AGE=30; // يوم
+
+function getBackups(){
+  try{return JSON.parse(localStorage.getItem(BACKUP_KEY)||'[]');}
+  catch(e){return [];}
+}
+function saveBackupsList(list){
+  try{localStorage.setItem(BACKUP_KEY,JSON.stringify(list));}catch(e){
+    toast('warn','تحذير','مساحة التخزين ممتلئة — احذف نسخاً قديمة','fa-triangle-exclamation');
+  }
+}
+
+function createBackup(label){
+  // حذف النسخ التي مضى عليها أكثر من 30 يوم
+  var list=getBackups();
+  var cutoff=Date.now()-(BACKUP_MAX_AGE*24*60*60*1000);
+  list=list.filter(function(b){return b.ts>cutoff;});
+
+  // إنشاء النسخة الجديدة
+  var now=new Date();
+  var saudiTime=now.toLocaleString('en-GB',{timeZone:'Asia/Riyadh',
+    day:'2-digit',month:'2-digit',year:'numeric',
+    hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+  var backup={
+    ts:Date.now(),
+    time:saudiTime,
+    label:label||'يدوي',
+    data:JSON.stringify({
+      inventory:DB.inventory,
+      invoices:DB.invoices,
+      requests:DB.requests,
+      approvals:DB.approvals,
+      warehouses:DB.warehouses,
+      zones:DB.zones,
+      categories:DB.categories,
+      logs:DB.logs.slice(0,200),
+      contractors:DB.contractors,
+      notifications:[]
+    })
+  };
+  list.unshift(backup);
+  // الاحتفاظ بأحدث 60 نسخة فقط
+  if(list.length>60)list=list.slice(0,60);
+  saveBackupsList(list);
+  return backup;
+}
+
+function autoBackup(){
+  if(typeof runAutoCleanupOnLogin==='function') runAutoCleanupOnLogin();
+  // تحقق من وقت آخر نسخة تلقائية
+  var list=getBackups();
+  var lastAuto=list.find(function(b){return b.label==='تلقائي-صباح'||b.label==='تلقائي-مساء';});
+  var nowSaudi=new Date().toLocaleString('en-US',{timeZone:'Asia/Riyadh'});
+  var nowDate=new Date(nowSaudi);
+  var h=nowDate.getHours();
+  var todayStr=nowDate.toLocaleDateString('en-GB');
+  if(lastAuto){
+    var lastDate=new Date(lastAuto.ts).toLocaleDateString('en-GB',{timeZone:'Asia/Riyadh'});
+    if(lastDate===todayStr&&((h<20&&lastAuto.label==='تلقائي-صباح')||(h>=20&&lastAuto.label==='تلقائي-مساء'))){
+      return; // تم بالفعل اليوم
+    }
+  }
+  scheduleAutoBackups();
+}
+
+function scheduleAutoBackups(){
+  // جدولة النسخ عند الساعة 8 ص و 8 م بتوقيت السعودية
+  function checkSchedule(){
+    var nowSaudi=new Date().toLocaleString('en-US',{timeZone:'Asia/Riyadh'});
+    var d=new Date(nowSaudi);
+    var h=d.getHours(),m=d.getMinutes(),s=d.getSeconds();
+    var todayStr=d.toLocaleDateString('en-GB');
+    var list=getBackups();
+
+    // 08:00:00 → نسخة صباحية
+    if(h===8&&m===0&&s<5){
+      var already=list.find(function(b){
+        return b.label==='تلقائي-صباح'&&
+          new Date(b.ts).toLocaleDateString('en-GB',{timeZone:'Asia/Riyadh'})===todayStr;
+      });
+      if(!already){
+        createBackup('تلقائي-صباح');
+        addNotif('ok','💾 نسخة احتياطية','تم حفظ نسخة صباحية تلقائية','fa-floppy-disk',null);
+        updateBadges();
+        renderBackups();
+      }
+    }
+    // 20:00:00 → نسخة مسائية
+    if(h===20&&m===0&&s<5){
+      var already2=list.find(function(b){
+        return b.label==='تلقائي-مساء'&&
+          new Date(b.ts).toLocaleDateString('en-GB',{timeZone:'Asia/Riyadh'})===todayStr;
+      });
+      if(!already2){
+        createBackup('تلقائي-مساء');
+        addNotif('ok','💾 نسخة احتياطية','تم حفظ نسخة مسائية تلقائية','fa-floppy-disk',null);
+        updateBadges();
+        renderBackups();
+      }
+    }
+  }
+  setInterval(checkSchedule,5000); // فحص كل 5 ثوان
+}
+
+function importBackup(input){
+  if(currentUser?.role!=='مدير النظام'){toast('err','غير مصرح','فقط مدير النظام','fa-lock');input.value='';return;}
+  var file=input.files[0];
+  if(!file){return;}
+  if(!file.name.endsWith('.json')){toast('err','صيغة خاطئة','الملف يجب أن يكون بصيغة .json','fa-ban');input.value='';return;}
+
+  // طلب كلمة السر قبل الرفع
+  showFormModal(
+    '<i class="fa fa-shield-halved" style="color:var(--a1)"></i> تأكيد رفع النسخة',
+    '<div style="margin-bottom:12px;font-size:12px;color:var(--t2)">الملف: <strong style="color:var(--a1)">'+file.name+'</strong></div>'+
+    '<div class="form-group">'+
+      '<label class="form-label"><i class="fa fa-lock" style="color:var(--y1)"></i> كلمة سر الاستعادة <span style="color:var(--r1)">*</span></label>'+
+      '<input class="form-input" id="import-pass" type="password" placeholder="ادخل كلمة السر..." style="font-family:monospace;letter-spacing:2px" onkeydown="if(event.key===\'Enter\')document.getElementById(\'import-confirm-btn\').click()">'+
+      '<div id="import-err" style="display:none;color:var(--r1);font-size:11px;margin-top:4px"><i class="fa fa-circle-exclamation"></i> كلمة السر غير صحيحة</div>'+
+    '</div>',
+    [{lbl:'<i class="fa fa-upload"></i> تأكيد الرفع',cls:'btn-primary',id:'import-confirm-btn',fn:function(){
+      var pass=document.getElementById('import-pass')?.value||'';
+      if(pass!=='Saeed1102193511'){
+        var errEl=document.getElementById('import-err');
+        if(errEl)errEl.style.display='block';
+        return; // لا تغلق الـ modal
+      }
+      closeModal('modal-form');
+      // قراءة الملف
+      var reader=new FileReader();
+      reader.onload=function(e){
+        var raw=e.target.result;
+        var data;
+        try{data=JSON.parse(raw);}
+        catch(err){toast('err','ملف تالف','الملف غير صالح أو تالف','fa-ban');input.value='';return;}
+        if(!data.inventory&&!data.invoices){
+          toast('err','ملف غير معروف','هذا الملف لا يبدو نسخة احتياطية من النظام','fa-ban');
+          input.value='';return;
+        }
+        var backup={
+          ts:Date.now(),
+          time:new Date().toLocaleString('en-GB',{timeZone:'Asia/Riyadh',
+            day:'2-digit',month:'2-digit',year:'numeric',
+            hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}),
+          label:'مرفوع: '+file.name.replace('.json',''),
+          data:raw
+        };
+        var list=getBackups();
+        list.unshift(backup);
+        saveBackupsList(list);
+        renderBackups();
+        input.value='';
+        addLog('نظام','رفع نسخة احتياطية: '+file.name,'',{});
+        toast('ok','✓ تم رفع النسخة','ظهرت في القائمة — يمكنك استعادتها الآن','fa-upload');
+      };
+      reader.readAsText(file);
+    }}]
+  );
+  input.value='';
+  setTimeout(function(){document.getElementById('import-pass')?.focus();},300);
+}
+
+function backupNow(){
+  if(currentUser?.role!=='مدير النظام'){toast('err','غير مصرح','فقط مدير النظام','fa-lock');return;}
+  var b=createBackup('يدوي');
+  renderBackups();
+  // تحميل الملف فوراً
+  downloadBackup(b.ts);
+  toast('ok','✓ نسخة فورية','تم الحفظ والتحميل — '+b.time,'fa-floppy-disk');
+}
+
+function downloadBackup(ts){
+  var list=getBackups();
+  var b=list.find(function(x){return x.ts===ts;});
+  if(!b){toast('err','غير موجودة','النسخة غير موجودة','fa-ban');return;}
+  var blob=new Blob([b.data],{type:'application/json'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;
+  a.download='backup_'+b.time.replace(/[/:, ]/g,'_')+'.json';
+  document.body.appendChild(a);a.click();
+  document.body.removeChild(a);URL.revokeObjectURL(url);
+  toast('ok','✓ تحميل','تم تحميل النسخة '+b.time,'fa-download');
+}
+
+function restoreBackup(ts){
+  if(currentUser?.role!=='مدير النظام'){toast('err','غير مصرح','فقط مدير النظام','fa-lock');return;}
+  var list=getBackups();
+  var b=list.find(function(x){return x.ts===ts;});
+  if(!b){toast('err','غير موجودة','النسخة غير موجودة','fa-ban');return;}
+  showConfirm('<i class="fa fa-rotate-right" style="color:var(--y1)"></i> استعادة نسخة',
+    '<div style="font-size:13px;margin-bottom:8px">استعادة نسخة: <strong style="color:var(--a1)">'+b.time+'</strong></div>'+
+    '<div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:9px;font-size:12px;color:var(--y1)">'+
+      '<i class="fa fa-triangle-exclamation"></i> سيُستبدل المخزون الحالي بالكامل — هذا الإجراء لا يمكن التراجع عنه</div>',
+    'استعادة','btn-warn',function(){
+      var _doRestore=function(){
+        // حفظ نسخة من الحالة الحالية قبل الاستعادة
+        createBackup('قبل-الاستعادة');
+        var data=JSON.parse(b.data);
+        if(data.inventory)DB.inventory=data.inventory;
+        if(data.invoices)DB.invoices=data.invoices;
+        if(data.requests)DB.requests=data.requests;
+        if(data.approvals)DB.approvals=data.approvals;
+        if(data.warehouses)DB.warehouses=data.warehouses;
+        if(data.zones)DB.zones=data.zones;
+        if(data.categories)DB.categories=data.categories;
+        if(data.logs)DB.logs=data.logs;
+        if(data.contractors)DB.contractors=data.contractors;
+        updateBadges();
+        try{renderInventory();}catch(e){}
+        try{if(currentPage==='dashboard')renderDashboard();}catch(e){}
+        renderBackups();
+        addLog('نظام','استعادة نسخة احتياطية: '+b.time,'',{});
+        toast('ok','✓ تمت الاستعادة','تم استعادة النسخة بنجاح — '+b.time,'fa-rotate-right');
+      };
+      try{_doRestore();}catch(e){toast('err','خطأ','فشل في استعادة النسخة: '+e.message,'fa-ban');}
+    });
+}
+
+function deleteBackup(ts){
+  if(currentUser?.role!=='مدير النظام'){toast('err','غير مصرح','فقط مدير النظام','fa-lock');return;}
+  showConfirm('<i class="fa fa-trash" style="color:var(--r1)"></i> حذف نسخة',
+    'حذف هذه النسخة الاحتياطية نهائياً؟','حذف','btn-danger',function(){
+      var list=getBackups().filter(function(b){return b.ts!==ts;});
+      saveBackupsList(list);
+      renderBackups();
+      toast('ok','✓ حُذفت','تم حذف النسخة','fa-trash');
+    });
+}
+
+function renderBackups(){
+  var el=document.getElementById('backups-list');if(!el)return;
+  var list=getBackups();
+  var q=(document.getElementById('backup-search')?.value||'').toLowerCase().trim();
+  if(q) list=list.filter(function(b){
+    return b.time.toLowerCase().includes(q)||b.label.toLowerCase().includes(q);
+  });
+
+  // رأس: إجمالي + بحث
+  var header='<div style="display:flex;gap:8px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--b1)">'+
+    '<div class="search-wrap" style="flex:1">'+
+      '<input class="form-input" id="backup-search" placeholder="🔍 بحث بالتاريخ أو الوقت أو النوع..." '+
+        'oninput="renderBackups()" style="font-size:12px" value="'+q+'">'+
+      '<button class="search-clear" onclick="document.getElementById(\'backup-search\').value=\'\';renderBackups()">'+
+        '<i class="fa fa-times-circle"></i></button>'+
+    '</div>'+
+    '<span style="font-size:11px;color:var(--t3);white-space:nowrap">'+getBackups().length+' نسخة</span>'+
+  '</div>';
+
+  if(!list.length){
+    el.innerHTML=header+'<div style="text-align:center;padding:20px;color:var(--t3);font-size:12px">'+
+      '<i class="fa fa-'+(q?'search':'box-archive')+'" style="font-size:22px;display:block;margin-bottom:8px;opacity:.4"></i>'+
+      (q?'لا توجد نتائج للبحث':'لا توجد نسخ احتياطية بعد')+'</div>';
+    return;
+  }
+
+  var labelColors={'تلقائي-صباح':'var(--g1)','تلقائي-مساء':'var(--a1)','يدوي':'var(--y1)','قبل-الاستعادة':'var(--o1)'};
+  var labelIcons={'تلقائي-صباح':'fa-sun','تلقائي-مساء':'fa-moon','يدوي':'fa-hand-pointer','قبل-الاستعادة':'fa-history'};
+  var rows=list.map(function(b){
+    var age=Math.floor((Date.now()-b.ts)/(1000*60*60*24));
+    var ageStr=age===0?'اليوم':age===1?'أمس':age+' يوم';
+    var col=labelColors[b.label]||'var(--a1)';
+    var ic=labelIcons[b.label]||'fa-floppy-disk';
+    var size=Math.round(b.data.length/1024);
+    return '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--b1)">'+
+      '<div style="width:34px;height:34px;border-radius:9px;background:'+col+'15;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+
+        '<i class="fa '+ic+'" style="color:'+col+';font-size:14px"></i>'+
+      '</div>'+
+      '<div style="flex:1;min-width:0">'+
+        '<div style="font-size:12px;font-weight:700;color:var(--t1)">'+b.time+'</div>'+
+        '<div style="display:flex;gap:8px;font-size:10px;color:var(--t3);margin-top:2px;flex-wrap:wrap">'+
+          '<span style="color:'+col+'">'+b.label+'</span>'+
+          '<span>'+ageStr+'</span>'+
+          '<span>'+size+' KB</span>'+
+        '</div>'+
+      '</div>'+
+      '<div style="display:flex;gap:4px;flex-shrink:0">'+
+        '<button class="btn btn-sec btn-xs" onclick="restoreBackup('+b.ts+')" title="استعادة"><i class="fa fa-rotate-right"></i></button>'+
+        '<button class="btn btn-sec btn-xs" onclick="downloadBackup('+b.ts+')" title="تحميل"><i class="fa fa-download"></i></button>'+
+        '<button class="btn btn-danger btn-xs" onclick="deleteBackup('+b.ts+')" title="حذف"><i class="fa fa-trash"></i></button>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+
+  el.innerHTML=header+rows;
+}
+
+function renderEmpMini(top,mn){
+  var el=document.getElementById('emp-mini-wrap');if(!el)return;
+  if(!top){el.style.display='none';return;}
+  el.style.display='';
+  el.innerHTML='<div style="display:flex;align-items:center;gap:8px;padding:6px 10px">'+
+    '<div style="font-size:14px">👑</div>'+
+    '<div><div style="font-size:11px;color:rgba(255,200,0,.8);font-weight:700">موظف '+mn+'</div>'+
+    '<div style="font-size:12px;font-weight:700;color:var(--t1)">'+top.u.name+'</div></div>'+
+    '<div style="margin-right:auto;font-size:14px;font-weight:900;color:#f9c72c">'+top.approved+'✓</div>'+
+  '</div>';
+}
+
+
+// ══ دوال بدء تشغيل النظام ══
+function autoBackup(){
+  // النسخ الاحتياطي السحابي مؤجل لـ Supabase
+  // حالياً: نظيف البيانات القديمة فقط
+  if(typeof runAutoCleanupOnLogin==='function') runAutoCleanupOnLogin();
+}
+
+function initNotifToggle(){
+  // إغلاق لوحة الإشعارات عند الضغط خارجها
+  document.addEventListener('click',function(e){
+    var panel=document.getElementById('notif-panel');
+    var btn=document.getElementById('notif-btn');
+    if(panel&&panel.style.display==='block'){
+      if(!panel.contains(e.target)&&(!btn||!btn.contains(e.target))){
+        panel.style.display='none';
+      }
+    }
+  });
+  updateNotifBadge();
+}
+
+function updateNotifBadge(){
+  var role=currentUser?.role||'';
+  var isAdmin=role==='مدير النظام'||role==='أمين مستودع';
+  var unread=(DB.notifications||[]).filter(function(n){
+    if(!n.read){
+      if(isAdmin) return true;
+      return n.for===currentUser?.name||n.for===null||n.for===undefined;
+    }
+    return false;
+  }).length;
+  var dot=document.getElementById('notif-dot');
+  if(dot){dot.style.display=unread?'block':'none';}
+  var badge=document.getElementById('notif-badge');
+  if(badge){badge.textContent=unread>9?'9+':unread;badge.style.display=unread?'inline-flex':'none';}
+}
+
+function initBrightness(){
+  var sl=document.getElementById('brightness-slider');
+  var saved=localStorage.getItem('brightness')||'100';
+  if(sl)sl.value=saved;
+  applyBrightness(saved);
+}
+
+
+// ══ دوال النظام المفقودة ══
+
+function runStartupChecks(){
+  // فحوصات بدء التشغيل — تحقق من سلامة البيانات
+  try{
+    if(typeof updateZonesBadge==='function') updateZonesBadge();
+    if(typeof updateNotifBadge==='function') updateNotifBadge();
+    if(typeof updateReservedBadge==='function') updateReservedBadge();
+  }catch(e){}
+}
+
+function toggleWarehouse(id){
+  var wh=DB.warehouses.find(function(w){return String(w.id)===String(id);});
+  if(!wh)return;
+  wh.active=!wh.active;
+  renderWarehouses();
+  fillWhSelects();
+  toast('ok',wh.active?'✓ تم التفعيل':'✓ تم التعطيل',
+    wh.name+(wh.active?' نشط الآن':' غير نشط'),'fa-warehouse');
+}
+
+function editWarehouse(id){
+  var wh=DB.warehouses.find(function(w){return String(w.id)===String(id);});
+  if(!wh)return;
+  var WHCOLORS=['#10b981','#3b82f6','#f59e0b','#8b5cf6','#ec4899','#f97316','#00d4ff','#ef4444','#14b8a6','#84cc16'];
+  var zoneOpts='<option value="">-- بدون زون --</option>'+DB.zones.map(function(z){return '<option value="'+z.id+'"'+(z.id===wh.zone?' selected':'')+'>'+z.name+'</option>';}).join('');
+  var colHtml=WHCOLORS.map(function(c){var sel=c===(wh.color||'#10b981');return '<div class="wh-col-opt" data-col="'+c+'" onclick="whSelColor(this)" style="width:28px;height:28px;border-radius:50%;background:'+c+';cursor:pointer;border:3px solid '+(sel?'var(--t1)':'transparent')+';transform:'+(sel?'scale(1.25)':'scale(1)')+';transition:.15s;display:inline-block;margin:3px"></div>';}).join('');
+  var html=
+    '<div class="form-group" style="margin-bottom:12px"><label class="form-label"><i class="fa fa-warehouse" style="color:var(--a1)"></i> اسم المستودع</label>'+
+    '<input class="form-input" id="ewh-name" value="'+wh.name+'"></div>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">'+
+    '<div class="form-group"><label class="form-label">الموقع</label><input class="form-input" id="ewh-loc" value="'+(wh.location||'')+'"></div>'+
+    '<div class="form-group"><label class="form-label">المدير</label><input class="form-input" id="ewh-mgr" value="'+(wh.manager||'')+'"></div>'+
+    '<div class="form-group"><label class="form-label">الجوال</label><input class="form-input" id="ewh-phone" value="'+(wh.phone||'')+'"></div>'+
+    '<div class="form-group"><label class="form-label">الزون</label><select class="form-select" id="ewh-zone">'+zoneOpts+'</select></div>'+
+    '</div>'+
+    '<div><label class="form-label" style="margin-bottom:8px;display:block">اللون</label>'+
+    '<div style="background:var(--bg2);padding:8px;border-radius:10px">'+colHtml+'</div>'+
+    '<input type="hidden" id="ewh-color" value="'+(wh.color||'#10b981')+'"></div>';
+  showFormModal('<i class="fa fa-pen" style="color:var(--y1)"></i> تعديل '+wh.name,html,[
+    {lbl:'<i class="fa fa-save"></i> حفظ',cls:'btn-primary',fn:function(){
+      wh.name=document.getElementById('ewh-name')?.value||wh.name;
+      wh.location=document.getElementById('ewh-loc')?.value||'';
+      wh.manager=document.getElementById('ewh-mgr')?.value||'';
+      wh.phone=document.getElementById('ewh-phone')?.value||'';
+      wh.zone=document.getElementById('ewh-zone')?.value||wh.zone;
+      wh.color=document.getElementById('ewh-color')?.value||wh.color;
+      closeModal('modal-form');renderWarehouses();fillWhSelects();
+      toast('ok','✓ تم التعديل','تم تحديث بيانات '+wh.name,'fa-warehouse');
+    }},{lbl:'إلغاء',cls:'btn-sec',fn:function(){closeModal('modal-form');}}]);
+}
+
+function doTransferRequest(){
+  // إرسال طلب نقل — من صفحة النقل
+  if(typeof submitWardiaTransfer==='function') submitWardiaTransfer();
+}
+
+
+function editContractor(id){
+  var ct=DB.contractors.find(function(c){return String(c.id)===String(id);});
+  if(!ct)return;
+  var html='<div class="form-row c2">'+
+    '<div class="form-group"><label class="form-label">الاسم</label>'+
+      '<input class="form-input" id="ect-name" value="'+ct.name+'"></div>'+
+    '<div class="form-group"><label class="form-label">الجوال</label>'+
+      '<input class="form-input" id="ect-phone" value="'+(ct.phone||'')+'"></div>'+
+  '</div>';
+  showFormModal('<i class="fa fa-pen" style="color:var(--y1)"></i> تعديل '+ct.name,
+    html,[{lbl:'<i class="fa fa-save"></i> حفظ',cls:'btn-primary',fn:function(){
+      ct.name=document.getElementById('ect-name')?.value||ct.name;
+      ct.phone=document.getElementById('ect-phone')?.value||'';
+      closeModal('modal-form');renderContractors();fillWhSelects();
+      toast('ok','✓ تم التعديل','تم تحديث بيانات المقاول','fa-hard-hat');
+    }},{lbl:'إلغاء',cls:'btn-sec',fn:function(){closeModal('modal-form');}}]);
+}
+
+function deleteContractor(id){
+  var ct=DB.contractors.find(function(c){return String(c.id)===String(id);});
+  if(!ct)return;
+  showConfirm('<i class="fa fa-trash" style="color:var(--r1)"></i> حذف مقاول',
+    'حذف <strong>'+ct.name+'</strong>؟',
+    'حذف','btn-danger',function(){
+      DB.contractors=DB.contractors.filter(function(c){return String(c.id)!==String(id);});
+      renderContractors();fillWhSelects();
+      toast('ok','✓ تم الحذف','تم حذف المقاول '+ct.name,'fa-trash');
+    });
+}
+
+
+function editZone(zid){
+  var z=DB.zones.find(function(x){return x.id===zid;});if(!z)return;
+  var colors=['#10b981','#3b82f6','#f59e0b','#8b5cf6','#ec4899','#f97316','#0066ff','#ef4444'];
+  var icons=['fa-arrow-down','fa-arrow-up','fa-map','fa-location-dot','fa-star','fa-circle','fa-warehouse','fa-globe'];
+  var colorDivs=colors.map(function(col){
+    var active=col===z.color?'outline:2px solid var(--t1);':'';
+    return '<div data-color="'+col+'" class="zc-swatch" style="width:26px;height:26px;border-radius:6px;background:'+col+';cursor:pointer;'+active+'"></div>';
+  }).join('');
+  var iconOpts=icons.map(function(ic){return '<option value="'+ic+'"'+(ic===z.icon?' selected':'')+'>'+ic.replace('fa-','')+'</option>';}).join('');
+  var html='<div class="form-row c2">'+
+    '<div class="form-group" style="grid-column:span 2"><label class="form-label">اسم الزون</label>'+
+      '<input class="form-input" id="ze-name" value="'+z.name+'"></div>'+
+    '<div class="form-group"><label class="form-label">اللون</label>'+
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px" id="ze-colors">'+colorDivs+
+      '<input type="hidden" id="ze-color-val" value="'+z.color+'"></div></div>'+
+    '<div class="form-group"><label class="form-label">الأيقونة</label>'+
+      '<select class="form-select" id="ze-icon">'+iconOpts+'</select></div>'+
+  '</div>';
+  showFormModal('<i class="fa fa-pen" style="color:var(--y1)"></i> تعديل '+z.name,
+    html,[{lbl:'<i class="fa fa-save"></i> حفظ',cls:'btn-primary',fn:function(){
+      var name=(document.getElementById('ze-name')?.value||'').trim();
+      if(!name){toast('err','مطلوب','ادخل اسم الزون','fa-triangle-exclamation');return;}
+      var color=document.getElementById('ze-color-val')?.value||z.color;
+      var icon=document.getElementById('ze-icon')?.value||z.icon;
+      z.name=name;z.color=color;z.icon=icon;
+      z.bg='rgba('+hexToRgb(color)+', .1)';
+      z.border='rgba('+hexToRgb(color)+', .3)';
+      closeModal('modal-form');renderZonesManage();renderZones();
+      toast('ok','✓ تم التعديل','تم تحديث زون '+name,'fa-map');
+    }},{lbl:'إلغاء',cls:'btn-sec',fn:function(){closeModal('modal-form');}}]);
+  // Event delegation for color swatches
+  setTimeout(function(){
+    document.querySelectorAll('.zc-swatch').forEach(function(el){
+      el.addEventListener('click',function(){
+        document.querySelectorAll('.zc-swatch').forEach(function(d){d.style.outline='';});
+        this.style.outline='2px solid var(--t1)';
+        var cv=document.getElementById('ze-color-val');if(cv)cv.value=this.dataset.color;
+      });
+    });
+  },100);
+}
+
+function deleteZone(zid){
+  var z=DB.zones.find(function(x){return x.id===zid;});if(!z)return;
+  var inUse=DB.warehouses.some(function(w){return w.zone===zid;});
+  if(inUse){toast('warn','لا يمكن الحذف','يوجد مستودعات مرتبطة بهذا الزون','fa-ban');return;}
+  showConfirm('<i class="fa fa-trash" style="color:var(--r1)"></i> حذف زون',
+    'حذف زون <strong>'+z.name+'</strong>؟',
+    'حذف','btn-danger',function(){
+      DB.zones=DB.zones.filter(function(x){return x.id!==zid;});
+      renderZonesManage();renderZones();
+      toast('ok','✓ تم الحذف','تم حذف الزون '+z.name,'fa-trash');
+    });
+}
+
+
+
+
+// ══ عرض مقارنة قبل/بعد لطلب التعديل ══
+function showEditComparison(id){
+  var r=DB.requests.find(function(x){return x.id===id;});
+  if(!r||r.type!=='تعديل'){toast('warn','غير موجود','طلب التعديل غير موجود','fa-ban');return;}
+  var inv=DB.invoices.find(function(i){return i.no===r.origInv;});
+
+  function fmtItems(items){
+    if(!items||!items.length)return '<div style="color:var(--t3);font-size:11px;padding:6px">لا مواد</div>';
+    return items.map(function(it){
+      return '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--b1);font-size:12px">'+
+        '<span style="color:var(--t1)">'+it.name+'</span>'+
+        '<span class="mono" style="color:var(--a1);font-weight:700">×'+it.qty+'</span>'+
+      '</div>';
+    }).join('');
+  }
+
+  var old=r.oldValues||{};
+  var changes=r.changes||{};
+
+  var html=
+    (r.wasApproved?
+      '<div style="background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.3);border-radius:8px;padding:8px 14px;margin-bottom:10px;font-size:11.5px;color:var(--y1);display:flex;align-items:center;gap:8px">'+
+        '<i class="fa fa-triangle-exclamation"></i>'+
+        '<span>هذه الفاتورة كانت <strong>معتمدة سابقاً</strong>'+
+        (inv&&(inv.previousApprovedDate||inv.approvedDate)?
+          ' — تاريخ الاعتماد السابق: <span class="mono">'+(inv.previousApprovedDate||inv.approvedDate)+'</span>'+
+          ((inv.previousApprovedBy||inv.approvedBy)?' بواسطة <strong>'+(inv.previousApprovedBy||inv.approvedBy)+'</strong>':'')
+        :'')+
+        '</span>'+
+      '</div>':'')+
+    '<div style="font-size:12px;margin-bottom:12px;padding:8px 12px;background:var(--bg2);border-radius:8px">'+
+      '<i class="fa fa-user" style="color:var(--a1)"></i> طلب من: <strong>'+r.emp+'</strong> &nbsp;·&nbsp; '+
+      '<i class="fa fa-calendar" style="color:var(--t3)"></i> '+r.d+
+    '</div>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'+
+      '<div style="background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);border-radius:10px;padding:12px">'+
+        '<div style="font-size:11px;font-weight:700;color:var(--r1);margin-bottom:8px"><i class="fa fa-clock-rotate-left"></i> قبل التعديل</div>'+
+        '<div style="font-size:11px;color:var(--t3);margin-bottom:8px">'+
+          '<div>المستودع: <strong style="color:var(--t1)">'+( old.wh||inv?.wh||'—')+'</strong></div>'+
+          '<div>المقاول: <strong style="color:var(--t1)">'+(old.cont||inv?.cont||'—')+'</strong></div>'+
+          (old.boq?'<div>BOQ: <strong style="color:var(--t1)">'+old.boq+'</strong></div>':'')+
+        '</div>'+
+        fmtItems(old.items||inv?.items)+
+      '</div>'+
+      '<div style="background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.2);border-radius:10px;padding:12px">'+
+        '<div style="font-size:11px;font-weight:700;color:var(--g1);margin-bottom:8px"><i class="fa fa-circle-check"></i> بعد التعديل</div>'+
+        '<div style="font-size:11px;color:var(--t3);margin-bottom:8px">'+
+          '<div>المستودع: <strong style="color:var(--t1)">'+(changes.wh||inv?.wh||'—')+'</strong></div>'+
+          '<div>المقاول: <strong style="color:var(--t1)">'+(changes.cont||inv?.cont||'—')+'</strong></div>'+
+          (changes.boq?'<div>BOQ: <strong style="color:var(--t1)">'+changes.boq+'</strong></div>':'')+
+        '</div>'+
+        fmtItems(r.newItems)+
+        (r.deletedItems&&r.deletedItems.length?
+          '<div style="margin-top:8px;font-size:10.5px;color:var(--r1);background:rgba(239,68,68,.07);padding:6px;border-radius:6px">'+
+            '<i class="fa fa-trash"></i> محذوفة: '+r.deletedItems.map(function(d){return d.name+' ×'+d.origQty;}).join('، ')+
+          '</div>':'')
+      +'</div>'+
+    '</div>';
+
+  showFormModal('<i class="fa fa-left-right" style="color:var(--y1)"></i> مقارنة التعديل — '+r.origInv,
+    html,[
+      {lbl:'<i class="fa fa-check"></i> اعتماد التعديل',cls:'btn-green',fn:function(){closeModal('modal-form');reqApprove(id);}},
+      {lbl:'<i class="fa fa-print"></i> طباعة الجديدة',cls:'btn-primary',fn:function(){printInvoice(r.origInv);}},
+      {lbl:'إغلاق',cls:'btn-sec',fn:function(){closeModal('modal-form');}}
+    ]);
+}
+
+
+// ══ تحويل حالة الفاتورة: معتمد ↔ مرفوض ══
+function arcToggleStatus(no,newSt){
+  var inv=DB.invoices.find(function(i){return i.no===no;});
+  if(!inv){toast('err','غير موجودة','الفاتورة غير موجودة','fa-ban');return;}
+  if(inv.type!=='صرف'){toast('warn','غير مدعوم','هذه العملية للفواتير الصرف فقط','fa-ban');return;}
+  var oldSt=inv.st;
+  var toApprove=newSt==='معتمد';
+  var stockMsg=toApprove?
+    '<br><span style="color:var(--g1);font-size:12px">سيُخصم المخزون من مستودع '+inv.wh+'</span>':
+    '<br><span style="color:var(--y1);font-size:12px">ستُعاد المواد إلى مستودع '+inv.wh+'</span>';
+  showConfirm(
+    (toApprove?'<i class="fa fa-check" style="color:var(--g1)"></i>':'<i class="fa fa-times" style="color:var(--r1)"></i>')+' تحويل '+no+' إلى '+newSt,
+    'تحويل <strong>'+no+'</strong> من <strong>'+oldSt+'</strong> إلى <strong>'+newSt+'</strong>؟'+stockMsg,
+    'تأكيد',toApprove?'btn-green':'btn-danger',
+    function(){
+      if(toApprove){
+        (inv.items||[]).forEach(function(it){setStock(it.code,inv.wh,-it.qty);});
+        inv.st='معتمد';inv.approvedDate=today();inv.approvedBy=currentUser.name;
+      } else {
+        (inv.items||[]).forEach(function(it){setStock(it.code,inv.wh,+it.qty);});
+        inv.st='مرفوض';inv.rejectedDate=today();inv.rejectedBy=currentUser.name;
+      }
+      DB.approvals.forEach(function(a){
+        if(a.no===no){a.st=newSt;a.approvedDate=today();a.approvedBy=currentUser.name;}
+      });
+      addLog(toApprove?'اعتماد':'رفض','تحويل '+no+' من '+oldSt+' إلى '+newSt,inv.wh,{no:no});
+      addNotif(toApprove?'ok':'warn','تحويل '+no,
+        'من '+oldSt+' إلى '+newSt+(toApprove?' — خُصمت المواد':' — أُعيدت المواد'),
+        toApprove?'fa-check':'fa-times',inv.emp);
+      syncInvoiceStatus(no,newSt);
+      updateBadges();renderArc();closeModal('modal-inv');
+      toast('ok','✓ '+no+' → '+newSt,toApprove?'خُصم المخزون':'أُعيد المخزون','fa-arrow-right-arrow-left');
+    });
+}
+
+// ══ عرض طلبات التعديل للمدير ══
+function renderEditRequests(){
+  var el=document.getElementById('req-edit-list');if(!el)return;
+  var isAdmin=currentUser?.role==='مدير النظام'||currentUser?.role==='أمين مستودع';
+  var items=DB.requests.filter(function(r){return r.type==='تعديل'&&r.st==='معلق';});
+  if(!items.length){
+    el.innerHTML='<div class="empty-state card"><i class="fa fa-pen-to-square"></i><p>لا توجد طلبات تعديل معلقة</p></div>';
+    return;
+  }
+  el.innerHTML=items.map(function(r){
+    var inv=DB.invoices.find(function(i){return i.no===r.origInv;});
+    var old=r.oldValues||{};
+    var changes=r.changes||{};
+    // مقارنة المواد
+    var oldItems=old.items||[];
+    var newItems=r.newItems||[];
+    // تغييرات الحقول
+    var fieldChanges='';
+    if(changes.cont&&changes.cont!==old.cont) fieldChanges+='<div style="font-size:11px;margin-bottom:3px"><span style="color:var(--t3)">المقاول: </span><span style="color:var(--r1);text-decoration:line-through">'+old.cont+'</span> → <span style="color:var(--g1);font-weight:700">'+changes.cont+'</span></div>';
+    if(changes.wh&&changes.wh!==old.wh) fieldChanges+='<div style="font-size:11px;margin-bottom:3px"><span style="color:var(--t3)">المستودع: </span><span style="color:var(--r1);text-decoration:line-through">'+old.wh+'</span> → <span style="color:var(--g1);font-weight:700">'+changes.wh+'</span></div>';
+    if(changes.boq&&changes.boq!==old.boq) fieldChanges+='<div style="font-size:11px;margin-bottom:3px"><span style="color:var(--t3)">BOQ: </span><span style="color:var(--r1);text-decoration:line-through">'+(old.boq||'—')+'</span> → <span style="color:var(--g1);font-weight:700">'+changes.boq+'</span></div>';
+    if(changes.notes&&changes.notes!==old.notes) fieldChanges+='<div style="font-size:11px;margin-bottom:3px"><span style="color:var(--t3)">الملاحظات: </span><span style="color:var(--g1)">'+changes.notes+'</span></div>';
+    // مقارنة المواد
+    var itemsHtml='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">';
+    itemsHtml+='<div style="background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:10px">';
+    itemsHtml+='<div style="font-size:10px;font-weight:700;color:var(--r1);margin-bottom:6px">قبل التعديل</div>';
+    itemsHtml+=oldItems.map(function(it){
+      var isDeleted=!(r.newItems||[]).find(function(n){return n.code===it.code;});
+      return '<div style="font-size:11px;padding:3px 0;border-bottom:1px solid var(--b1);'+(isDeleted?'text-decoration:line-through;color:var(--r1)':'color:var(--t1)')+'">'+it.name+' <span style="font-weight:700">×'+it.qty+'</span></div>';
+    }).join('');
+    itemsHtml+='</div>';
+    itemsHtml+='<div style="background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.2);border-radius:8px;padding:10px">';
+    itemsHtml+='<div style="font-size:10px;font-weight:700;color:var(--g1);margin-bottom:6px">بعد التعديل</div>';
+    itemsHtml+=newItems.map(function(it){
+      var oldIt=oldItems.find(function(o){return o.code===it.code;});
+      var isNew=!oldIt;
+      var changed=oldIt&&oldIt.qty!==it.qty;
+      var style=isNew?'color:var(--g1);font-weight:700':changed?'color:var(--y1)':'color:var(--t1)';
+      return '<div style="font-size:11px;padding:3px 0;border-bottom:1px solid var(--b1);'+style+'">'+it.name+' <span style="font-weight:700">×'+it.qty+'</span>'+(isNew?' ✦':'')+(changed?' (كان '+oldIt.qty+')':'')+'</div>';
+    }).join('');
+    itemsHtml+='</div></div>';
+    var btns='';
+    if(isAdmin){
+      btns+='<button class="btn btn-green btn-sm" onclick="reqApprove('+r.id+')"><i class="fa fa-check"></i>اعتماد التعديل</button>';
+      btns+='<button class="btn btn-danger btn-sm" onclick="reqReject('+r.id+')"><i class="fa fa-times"></i>رفض</button>';
+    }
+    return '<div class="card" style="margin-bottom:12px;border:1px solid rgba(245,158,11,.25)">'+
+      (r.wasApproved?
+        '<div style="background:rgba(245,158,11,.12);border-bottom:1px solid rgba(245,158,11,.25);padding:8px 14px;font-size:11.5px;color:var(--y1);display:flex;align-items:center;gap:8px">'+
+          '<i class="fa fa-triangle-exclamation"></i>'+
+          '<span>هذه الفاتورة كانت <strong>معتمدة سابقاً</strong>'+
+          (inv&&(inv.previousApprovedDate||inv.approvedDate)?
+            ' — تاريخ الاعتماد السابق: <strong class="mono">'+(inv.previousApprovedDate||inv.approvedDate)+'</strong>'+
+            ((inv.previousApprovedBy||inv.approvedBy)?' بواسطة <strong>'+(inv.previousApprovedBy||inv.approvedBy)+'</strong>':'')
+          :'')+
+          '</span>'+
+        '</div>':'')+
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">'+
+        '<div style="display:flex;align-items:center;gap:8px">'+
+          '<span class="mono" style="font-weight:700;color:var(--a1)">'+r.origInv+'</span>'+
+          tag('تعديل')+tag(r.st)+
+          '<span style="font-size:11px;color:var(--t3)">طلب: '+r.emp+' — '+r.d+'</span>'+
+        '</div>'+
+        '<div style="display:flex;gap:6px">'+
+          '<button class="btn btn-sec btn-sm" onclick="showInvDetail(this.dataset.no)" data-no="'+r.origInv+'"><i class="fa fa-eye"></i>معاينة الحالية</button>'+
+          btns+
+        '</div>'+
+      '</div>'+
+      (fieldChanges?'<div style="background:var(--bg2);border-radius:8px;padding:10px;margin-bottom:6px">'+fieldChanges+'</div>':'')+
+      itemsHtml+
+    '</div>';
+  }).join('');
+  // إضافة قسم الارجاع للمحتوى
+  document.getElementById('inv-detail-body').insertAdjacentHTML('beforeend', retSection);
+}
+
+
+// ══ طلباتي في تعديل فاتورة صرف ══
+function setIerReqTab(t){
+  var pendEl=document.getElementById('ier-my-pending');
+  var histEl=document.getElementById('ier-my-history');
+  var tpBtn=document.getElementById('ier-req-tab-pend');
+  var thBtn=document.getElementById('ier-req-tab-hist');
+  if(pendEl)pendEl.style.display=t==='pending'?'block':'none';
+  if(histEl)histEl.style.display=t==='history'?'block':'none';
+  if(tpBtn)tpBtn.style.fontWeight=t==='pending'?'800':'400';
+  if(thBtn)thBtn.style.fontWeight=t==='history'?'800':'400';
+  if(t==='history')renderIerMyHistory();
+  else renderIerMyPending();
+}
+
+function renderIerMyPending(){
+  var el=document.getElementById('ier-my-pending');if(!el)return;
+  var items=DB.requests.filter(function(r){
+    return r.type==='تعديل' && r.st==='معلق' && r.emp===currentUser.name;
+  });
+  var cnt=document.getElementById('ier-req-pend-cnt');
+  if(cnt){cnt.textContent=items.length;cnt.style.display=items.length?'inline-flex':'none';}
+  if(!items.length){
+    el.innerHTML='<div class="empty-state" style="padding:16px"><i class="fa fa-pen-to-square"></i><p>لا توجد طلبات تعديل معلقة</p></div>';
+    return;
+  }
+  el.innerHTML=items.map(function(r){
+    var inv=DB.invoices.find(function(i){return i.no===r.origInv;});
+    return '<div class="req-card" style="margin-bottom:8px">'+
+      '<div class="req-hd">'+
+        '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'+
+          '<span class="mono" style="font-weight:700;color:var(--a1)">'+r.origInv+'</span>'+
+          '<span style="font-size:10px;background:rgba(245,158,11,.12);color:var(--y1);border-radius:6px;padding:2px 8px;font-weight:700"><i class="fa fa-clock"></i> بانتظار الاعتماد</span>'+
+          '<span style="font-size:11px;color:var(--t3)">'+r.d+'</span>'+
+        '</div>'+
+        '<div style="display:flex;gap:5px">'+
+          '<button class="btn btn-sec btn-xs" onclick="showInvDetail(this.dataset.no)" data-no="'+r.origInv+'"><i class="fa fa-eye"></i>معاينة</button>'+
+          '<button class="btn btn-danger btn-xs" onclick="cancelMyRequest('+r.id+')"><i class="fa fa-xmark"></i>سحب</button>'+
+        '</div>'+
+      '</div>'+
+      '<div style="font-size:11px;color:var(--t3);margin-top:4px">'+
+        (r.changes&&r.changes.cont?'المقاول: <strong style="color:var(--t1)">'+r.changes.cont+'</strong> &nbsp;':'')+ 
+        (r.changes&&r.changes.wh?'المستودع: <strong style="color:var(--t1)">'+r.changes.wh+'</strong> &nbsp;':'')+
+        'المواد: <strong style="color:var(--a1)">'+(r.newItems||[]).length+' صنف</strong>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+function renderIerMyHistory(){
+  var el=document.getElementById('ier-my-history');if(!el)return;
+  var items=DB.requests.filter(function(r){
+    return r.type==='تعديل' && r.st!=='معلق' && r.emp===currentUser.name;
+  });
+  if(!items.length){
+    el.innerHTML='<div class="empty-state" style="padding:16px"><i class="fa fa-inbox"></i><p>لا توجد طلبات سابقة</p></div>';
+    return;
+  }
+  el.innerHTML=items.map(function(r){
+    var stColor=r.st==='معتمد'?'var(--g1)':'var(--r1)';
+    return '<div class="req-card" style="margin-bottom:8px;opacity:.9">'+
+      '<div class="req-hd">'+
+        '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'+
+          '<span class="mono" style="font-weight:700;color:var(--a1)">'+r.origInv+'</span>'+
+          '<span style="font-size:11px;font-weight:700;color:'+stColor+'">'+r.st+'</span>'+
+          '<span style="font-size:11px;color:var(--t3)">'+r.d+'</span>'+
+        '</div>'+
+        '<button class="btn btn-sec btn-xs" onclick="showInvDetail(this.dataset.no)" data-no="'+r.origInv+'"><i class="fa fa-eye"></i>معاينة</button>'+
+      '</div>'+
+      '<div style="font-size:11px;color:var(--t3);margin-top:4px">'+
+        'المواد: <strong>'+(r.newItems||[]).length+' صنف</strong>'+
+        (r.approvedDate?' &nbsp;·&nbsp; اعتمد: <strong style="color:'+stColor+'">'+r.approvedDate+'</strong>':'')+
+        (r.approvedBy?' بواسطة <strong>'+r.approvedBy+'</strong>':'')+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+
+// ══ فواتيري وطلباتي ══
+// ══════════════════ فواتيري وطلباتي — النظام الموحد ══════════════════
+var mwTab='current',mwArcTab='appr',mwNewTab='inv';
+var mwRetItems=[],mwEditInv=null,mwEditItems=[],mwEditDeleted=[];
+
+function mwSetTab(t){
+  mwTab=t;
+  ['current','new'].forEach(function(x){
+    var b=document.getElementById('mw-tab-'+x);
+    var s=document.getElementById('mw-sec-'+x);
+    if(b){
+      if(x===t){b.style.fontWeight='800';b.style.color='var(--a1)';}
+      else{b.style.fontWeight='';b.style.color='';}
+    }
+    if(s)s.style.display=x===t?'block':'none';
+  });
+  if(t==='current')mwRenderCurrent();
+  else if(t==='new'){mwSetNewTab(mwNewTab||'ret');mwFillSels();}
+}
+function mwSetNewTab(t){
+  if(t==='inv'){go('cart');return;}
+  // إذا اختار المستخدم "طلب ارجاع" يدوياً بدون تعديل — صفّر وضع التعديل
+  if(t==='ret'&&!window._editingRetId){
+    var btn=document.querySelector('[onclick="mwSubmitRet()"]');
+    if(btn){btn.innerHTML='<i class="fa fa-paper-plane"></i>تقديم طلب الارجاع';btn.style.background='';btn.style.color='';}
+  }
+  mwNewTab=t;
+  ['ret','can','edit'].forEach(function(x){
+    var b=document.getElementById('mw-new-'+x);
+    var f=document.getElementById('mw-form-'+x);
+    if(b)b.classList.toggle('active',x===t);
+    if(f)f.style.display=x===t?'block':'none';
+  });
+  if(t==='edit')mwRenderEditList();
+}
+function mwSetArcTab(t){
+  mwArcTab=t;
+  ['appr','rej','can','reqs'].forEach(function(x){var b=document.getElementById('mw-arc-'+x);if(b)b.classList.toggle('active',x===t);});
+  mwRenderArc();
+}
+function mwFillSels(){
+  var opts='<option value="">-- اختر --</option>'+DB.warehouses.filter(function(w){return w.active;}).map(function(w){return '<option>'+w.name+'</option>';}).join('');
+  ['mw-ret-wh','mw-can-wh'].forEach(function(id){var e=document.getElementById(id);if(e)e.innerHTML=opts;});
+}
+function mwUpdBadges(){
+  var me=currentUser?.name||'';
+  var myP=DB.invoices.filter(function(i){return i.emp===me&&i.st==='معلق';}).length+
+    DB.requests.filter(function(r){return r.emp===me&&r.st==='معلق'&&['ارجاع','الغاء','تعديل'].includes(r.type);}).length;
+  var b=document.getElementById('mw-cnt-current');
+  if(b){b.textContent=myP||'';b.style.display=myP?'inline-flex':'none';}
+  var sub=document.getElementById('mywork-sub');
+  if(sub)sub.textContent=myP?myP+' طلب بانتظار الاعتماد':'لا توجد طلبات معلقة';
+}
+function mwCard(inv,btns){
+  var sc={معتمد:'var(--g1)',معلق:'var(--y1)',مرفوض:'var(--r1)',ملغي:'var(--t3)'}[inv.st]||'var(--t1)';
+  var bc=inv.st==='معلق'?'var(--y1)':inv.st==='معتمد'?'var(--g1)':'var(--b1)';
+  var items=Array.isArray(inv.items)?inv.items:[];
+  return '<div class="card mw-card" data-no="'+inv.no+'" style="margin-bottom:8px;border-right:3px solid '+bc+';cursor:pointer">'+
+    '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:'+(items.length?'8':'0')+'px">'+
+      '<div>'+
+        '<div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:3px">'+
+          '<span class="mono" style="font-size:14px;font-weight:900;color:var(--a1)">'+inv.no+'</span>'+
+          tag(inv.type)+
+          '<span style="font-size:11px;font-weight:700;color:'+sc+'">'+inv.st+'</span>'+
+        '</div>'+
+        '<div style="display:flex;gap:10px;font-size:11px;color:var(--t3);flex-wrap:wrap">'+
+          '<span><i class="fa fa-warehouse" style="color:var(--g1)"></i> '+inv.wh+'</span>'+
+          (inv.cont&&inv.cont!='—'?'<span><i class="fa fa-hard-hat" style="color:var(--o1)"></i> '+inv.cont+'</span>':'')+
+          '<span>'+inv.d+'</span>'+
+        '</div>'+
+      '</div>'+
+      '<div style="display:flex;gap:4px;flex-wrap:wrap">'+btns+'</div>'+
+    '</div>'+
+    (items.length?
+      '<div style="display:flex;flex-wrap:wrap;gap:4px;padding:6px 8px;background:var(--bg2);border-radius:7px">'+
+        items.slice(0,4).map(function(it){return '<span style="font-size:11px;color:var(--t2)">'+it.name+' <strong style="color:var(--a1)">x'+it.qty+'</strong></span>';}).join(' · ')+
+        (items.length>4?'<span style="font-size:11px;color:var(--t3)">+'+(items.length-4)+' أخرى</span>':'')+
+      '</div>':'')
+  +'</div>';
+}
+
+function mwBindActs(container){
+  if(!container)return;
+  container.querySelectorAll('.mw-card').forEach(function(c){c.addEventListener('click',function(e){if(!e.target.closest('.mw-act'))showInvDetail(this.dataset.no);});});
+  container.querySelectorAll('.mw-act').forEach(function(btn){
+    btn.addEventListener('click',function(e){
+      e.stopPropagation();
+      var act=this.dataset.act,no=this.dataset.no;
+      if(act==='view')showInvDetail(no);
+      else if(act==='withdraw')myInvWithdraw(no);
+      else if(act==='edit'){
+        // دائماً mwLoadEdit — سواء معلقة أو معتمدة
+        mwSetTab('new');
+        setTimeout(function(){
+          mwSetNewTab('edit');
+          setTimeout(function(){mwLoadEdit(no);},100);
+        },100);
+      }
+      else if(act==='ret'){mwSetTab('new');setTimeout(function(){mwSetNewTab('ret');mwFillSels();var el=document.getElementById('mw-ret-no');if(el){el.value=no;mwFillRet();}},150);}
+      else if(act==='can'){
+        var _cinv=DB.invoices.find(function(i){return i.no===no;});
+        if(_cinv&&_cinv.st==='معلق'){
+          showConfirm('<i class="fa fa-triangle-exclamation" style="color:var(--y1)"></i> لا يمكن الإلغاء',
+            '<div style="font-size:13px;margin-bottom:10px">الفاتورة <strong style="color:var(--a1)">'+no+'</strong> لا تزال <strong>معلقة</strong> بانتظار الاعتماد.</div>'+
+            '<div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);border-radius:8px;padding:10px;font-size:12px;color:var(--y1)">'+
+              '<i class="fa fa-info-circle"></i> لا يمكن إلغاء فاتورة معلقة — يمكنك <strong>سحبها</strong> بدلاً من ذلك ولن يتأثر المخزون.</div>',
+            'سحب الفاتورة','btn-warn',function(){myInvWithdraw(no);});
+          return;
+        }
+        mwSetTab('new');setTimeout(function(){mwSetNewTab('can');mwFillSels();var el=document.getElementById('mw-can-no');if(el){el.value=no;mwFillCan();}},150);
+      }
+    });
+  });
+  container.querySelectorAll('.mw-req-cancel').forEach(function(b){b.addEventListener('click',function(e){e.stopPropagation();cancelMyRequest(parseInt(this.dataset.id));});});
+}
+function mwRenderCurrent(){
+  // العودة للأعلى دائماً
+  var c=document.getElementById('content');if(c)c.scrollTop=0;
+  mwFillSels();
+  var me=currentUser.name;
+  // فواتيري الشخصية — فقط المعلقة والمعتمدة (الحية) لا المنتهية
+  var allMine=DB.invoices.filter(function(i){return i.emp===me;});
+  // فواتيري وطلباتي: فقط المعلقة (بانتظار الاعتماد)
+  // فواتير الصرف المعلقة فقط — الارجاع والالغاء هي طلبات في DB.requests
+  var mine=allMine.filter(function(i){return i.st==='معلق'&&i.type==='صرف';});
+  var pending=mine;
+  var approved=[]; // لا تظهر المعتمدة هنا
+  // طلباتي المعلقة فقط
+  var myReqs=DB.requests.filter(function(r){return r.emp===me&&r.st==='معلق'&&['ارجاع','الغاء','تعديل'].includes(r.type);});
+
+  // ═══ إحصائيات ═══
+  var sEl=document.getElementById('mw-stats-row');
+  if(sEl)sEl.innerHTML=[
+    {l:'إجمالي فواتيري',v:allMine.length,c:'var(--a1)',i:'fa-file-invoice'},
+    {l:'فواتير معلقة',v:pending.length,c:'var(--y1)',i:'fa-hourglass-half'},
+    {l:'طلبات معلقة',v:myReqs.length,c:'var(--o1)',i:'fa-rotate-left'},
+    {l:'في الأرشيف',v:allMine.filter(function(i){return i.st!=='معلق';}).length,c:'var(--t3)',i:'fa-box-archive'}
+  ].map(function(s){
+    return '<div style="background:var(--card);border:1px solid var(--b1);border-radius:12px;padding:14px;text-align:center;cursor:default">'+
+      '<div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:4px">'+
+        '<i class="fa '+s.i+'" style="color:'+s.c+';font-size:13px"></i>'+
+      '</div>'+
+      '<div class="mono" style="font-size:24px;font-weight:900;color:'+s.c+'">'+s.v+'</div>'+
+      '<div style="font-size:10px;color:var(--t3);margin-top:3px;font-weight:600">'+s.l+'</div>'+
+    '</div>';
+  }).join('');
+
+  // ═══ بانر الاعتماد ═══
+  var banner=document.getElementById('mw-action-banner');
+  if(banner)banner.style.display=(pending.length||myReqs.length)?'flex':'none';
+
+  mwUpdBadges();
+
+  // ═══ فواتير معلقة ═══
+  var pb=document.getElementById('mw-pend-block');
+  var pl=document.getElementById('mw-pend-list');
+  var pc=document.getElementById('mw-pend-cnt');
+  if(pb)pb.style.display=pending.length?'block':'none';
+  if(pc)pc.textContent=pending.length+' فاتورة';
+  if(pl){
+    pl.innerHTML=pending.map(function(inv){
+      // المعلقة: تعديل + معاينة + سحب (قبل الاعتماد فقط)
+      return mwCard(inv,
+        '<button class="btn btn-warn btn-xs mw-act" data-act="edit" data-no="'+inv.no+'"><i class="fa fa-pen"></i>تعديل</button>'+
+        '<button class="btn btn-sec btn-xs mw-act" data-act="view" data-no="'+inv.no+'"><i class="fa fa-eye"></i></button>'+
+        '<button class="btn btn-danger btn-xs mw-act" data-act="withdraw" data-no="'+inv.no+'"><i class="fa fa-xmark"></i>سحب</button>'
+      );
+    }).join('');
+    mwBindActs(pl);
+  }
+
+  // ═══ فواتير معتمدة: لا تظهر هنا — الأرشيف فقط ═══
+  var ab=document.getElementById('mw-appr-block');
+  if(ab)ab.style.display='none';
+
+  // ═══ طلباتي المعلقة ═══
+  var rb=document.getElementById('mw-reqs-block');
+  var rl=document.getElementById('mw-reqs-list');
+  var rc=document.getElementById('mw-reqs-cnt');
+  if(rb)rb.style.display=myReqs.length?'block':'none';
+  if(rc)rc.textContent=myReqs.length+' طلب';
+  if(rl){
+    var typeColors={ارجاع:'var(--o1)',الغاء:'var(--r1)',تعديل:'var(--y1)'};
+    var typeIcons={ارجاع:'fa-rotate-left',الغاء:'fa-ban',تعديل:'fa-pen'};
+    rl.innerHTML=myReqs.map(function(r){
+      var col=typeColors[r.type]||'var(--t1)';
+      var ic=typeIcons[r.type]||'fa-file';
+      var origInv=r.origInv?DB.invoices.find(function(i){return i.no===r.origInv;}):null;
+      return '<div class="mw-req-card">'+
+        '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">'+
+          '<div style="display:flex;align-items:center;gap:10px">'+
+            '<div style="width:32px;height:32px;border-radius:9px;background:'+col+'15;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+
+              '<i class="fa '+ic+'" style="color:'+col+'"></i>'+
+            '</div>'+
+            '<div>'+
+              '<div style="display:flex;align-items:center;gap:6px">'+
+                tag(r.type)+
+                '<span class="mono" style="font-size:13px;font-weight:800;color:var(--a1)">'+r.no+'</span>'+
+                (r.origInv?'<span style="font-size:10px;color:var(--t3)">← '+r.origInv+'</span>':'')+
+              '</div>'+
+              '<div style="font-size:11px;color:var(--t3);margin-top:2px">'+
+                (r.wh?'<i class="fa fa-warehouse" style="color:var(--g1)"></i> '+r.wh+' · ':'')+
+                (r.reason||r.d||'')+
+              '</div>'+
+            '</div>'+
+          '</div>'+
+          '<div style="display:flex;gap:4px">'+
+            (r.origInv?'<button class="btn btn-sec btn-xs" onclick="showInvDetail(this.dataset.no)" data-no="'+r.origInv+'"><i class="fa fa-eye"></i></button>':'')+
+            (r.type==='ارجاع'?'<button class="btn btn-warn btn-xs mw-req-edit" data-id="'+r.id+'"><i class="fa fa-pen"></i>تعديل</button>':'')+
+            '<button class="btn btn-danger btn-xs mw-req-cancel" data-id="'+r.id+'"><i class="fa fa-xmark"></i>سحب</button>'+
+          '</div>'+
+        '</div>'+
+      '</div>';
+    }).join('');
+    rl.querySelectorAll('.mw-req-cancel').forEach(function(b){
+      b.addEventListener('click',function(e){
+        e.stopPropagation();
+        cancelMyRequest(parseInt(this.dataset.id));
+      });
+    });
+    rl.querySelectorAll('.mw-req-edit').forEach(function(b){
+      b.addEventListener('click',function(e){
+        e.stopPropagation();
+        mwEditRetRequest(parseInt(this.dataset.id));
+      });
+    });
+  }
+
+  // ═══ حالة فارغة ═══
+  var em=document.getElementById('mw-empty');
+  if(em)em.style.display=(!pending.length&&!approved.length&&!myReqs.length)?'block':'none';
+}
+
+function mwRenderArc(){
+  var mine=DB.invoices.filter(function(i){return i.emp===currentUser.name;});
+  var myR=DB.requests.filter(function(r){return r.emp===currentUser.name&&['ارجاع','الغاء','تعديل'].includes(r.type);});
+  var q=(document.getElementById('mw-arc-q')?document.getElementById('mw-arc-q').value:'').toLowerCase();
+  function sb(id,n){var e=document.getElementById(id);if(e){e.textContent=n;e.style.display=n?'inline':'none';}}
+  sb('mw-arc-cnt-appr',mine.filter(function(i){return i.st==='معتمد';}).length);
+  sb('mw-arc-cnt-rej',mine.filter(function(i){return i.st==='مرفوض';}).length);
+  sb('mw-arc-cnt-can',mine.filter(function(i){return i.st==='ملغي';}).length);
+  sb('mw-arc-cnt-reqs',myR.filter(function(r){return r.st!=='معلق';}).length);
+  sb('mw-cnt-archive',mine.filter(function(i){return i.st!=='معلق';}).length);
+  var tbody=document.getElementById('mw-arc-tbody');var emEl=document.getElementById('mw-arc-empty');
+  if(!tbody)return;
+  var rows=[];
+  if(mwArcTab==='reqs'){
+    rows=myR.filter(function(r){return r.st!=='معلق';});
+    if(q)rows=rows.filter(function(r){return (r.no+(r.origInv||'')+(r.wh||'')+(r.type||'')).toLowerCase().includes(q);});
+    rows.sort(function(a,b){return (b.d||'').localeCompare(a.d||'');});
+    if(!rows.length){tbody.innerHTML='';if(emEl)emEl.style.display='block';return;}
+    if(emEl)emEl.style.display='none';
+    var sc2={معتمد:'var(--g1)',مرفوض:'var(--r1)',ملغي:'var(--t3)'};
+    var ic2={معتمد:'fa-circle-check',مرفوض:'fa-times-circle',ملغي:'fa-ban'};
+    tbody.innerHTML=rows.map(function(r){
+      var stC=sc2[r.st]||'var(--t1)';
+      var stI=ic2[r.st]||'fa-circle';
+      return '<tr>'+
+        '<td class="mono" style="color:var(--a1);font-weight:700;font-size:12px">'+r.no+'</td>'+
+        '<td>'+tag(r.type)+'</td>'+
+        '<td class="mono" style="font-size:11px;color:var(--a1)">'+(r.origInv||'—')+'</td>'+
+        '<td style="font-size:11px;color:var(--t2)">'+(r.wh||'—')+'</td>'+
+        '<td style="font-family:monospace;font-size:10px;color:var(--t3)">'+r.d+'</td>'+
+        '<td><span style="background:'+stC+'15;color:'+stC+';border-radius:6px;padding:2px 8px;font-size:11px;font-weight:700;display:inline-flex;align-items:center;gap:4px">'+
+          '<i class="fa '+stI+'" style="font-size:9px"></i>'+r.st+'</span></td>'+
+        '<td><button class="btn btn-sec btn-xs" data-no="'+(r.origInv||r.no)+'" onclick="showInvDetail(this.dataset.no)"><i class="fa fa-eye"></i></button></td>'+
+      '</tr>';
+    }).join('');
+    // تحديث رأس الجدول لقسم الطلبات
+    var thead=tbody.closest('table')?.querySelector('thead tr');
+    if(thead)thead.innerHTML='<th>رقم الطلب</th><th>النوع</th><th>الفاتورة</th><th>المستودع</th><th>التاريخ</th><th>الحالة</th><th style="text-align:center">معاينة</th>';
+  } else {
+    var stM={appr:'معتمد',rej:'مرفوض',can:'ملغي'};
+    rows=mine.filter(function(i){return i.st===stM[mwArcTab];});
+    if(q)rows=rows.filter(function(i){return (i.no+i.cont+i.wh).toLowerCase().includes(q);});
+    rows.sort(function(a,b){return (b.d||'').localeCompare(a.d||'');});
+    if(!rows.length){tbody.innerHTML='';if(emEl)emEl.style.display='block';return;}
+    if(emEl)emEl.style.display='none';
+    tbody.innerHTML=rows.map(function(inv){
+      var b2='<button class="btn btn-sec btn-xs mw-ab" data-act="view" data-no="'+inv.no+'"><i class="fa fa-eye"></i></button>'+
+        '<button class="btn btn-primary btn-xs mw-ab" data-act="print" data-no="'+inv.no+'"><i class="fa fa-print"></i></button>';
+      if(inv.st==='معتمد'&&inv.type==='صرف')b2+='<button class="btn btn-warn btn-xs mw-ab" data-act="ret" data-no="'+inv.no+'"><i class="fa fa-rotate-left"></i>ارجاع</button><button class="btn btn-sec btn-xs mw-ab" data-act="can" data-no="'+inv.no+'" style="color:var(--r1)"><i class="fa fa-ban"></i>الغاء</button>';
+      if(inv.st==='مرفوض'&&inv.type==='صرف')b2+='<button class="btn btn-warn btn-xs mw-ab" data-act="edit" data-no="'+inv.no+'"><i class="fa fa-pen"></i>تعديل</button>';
+      return '<tr class="mw-arc-tr" data-no="'+inv.no+'" style="cursor:pointer">'+
+        '<td class="mono" style="color:var(--a1);font-weight:700">'+inv.no+'</td><td>'+tag(inv.type)+'</td>'+
+        '<td style="font-size:12px">'+inv.wh+'</td><td style="font-size:12px">'+inv.cont+'</td>'+
+        '<td style="font-family:monospace;font-size:11px;color:var(--t3)">'+inv.d+'</td>'+
+        '<td><div style="display:flex;gap:3px;flex-wrap:wrap">'+b2+'</div></td></tr>';
+    }).join('');
+    tbody.querySelectorAll('.mw-arc-tr').forEach(function(r){r.addEventListener('click',function(e){if(!e.target.closest('.mw-ab'))showInvDetail(this.dataset.no);});});
+    tbody.querySelectorAll('.mw-ab').forEach(function(b){b.addEventListener('click',function(e){
+      e.stopPropagation();var act=this.dataset.act,no=this.dataset.no;
+      if(act==='view')showInvDetail(no);
+      else if(act==='print')printInvoice(no);
+      else if(act==='ret'){mwSetTab('new');setTimeout(function(){mwSetNewTab('ret');mwFillSels();var el=document.getElementById('mw-ret-no');if(el){el.value=no;mwFillRet();}},150);}
+      else if(act==='can'){
+        var _cinv=DB.invoices.find(function(i){return i.no===no;});
+        if(_cinv&&_cinv.st==='معلق'){
+          showConfirm('<i class="fa fa-triangle-exclamation" style="color:var(--y1)"></i> لا يمكن الإلغاء',
+            '<div style="font-size:13px;margin-bottom:10px">الفاتورة <strong style="color:var(--a1)">'+no+'</strong> لا تزال <strong>معلقة</strong> بانتظار الاعتماد.</div>'+
+            '<div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);border-radius:8px;padding:10px;font-size:12px;color:var(--y1)">'+
+              '<i class="fa fa-info-circle"></i> لا يمكن إلغاء فاتورة معلقة — يمكنك <strong>سحبها</strong> بدلاً من ذلك ولن يتأثر المخزون.</div>',
+            'سحب الفاتورة','btn-warn',function(){myInvWithdraw(no);});
+          return;
+        }
+        mwSetTab('new');setTimeout(function(){mwSetNewTab('can');mwFillSels();var el=document.getElementById('mw-can-no');if(el){el.value=no;mwFillCan();}},150);
+      }
+      else if(act==='edit'){mwSetTab('new');setTimeout(function(){mwSetNewTab('edit');setTimeout(function(){mwLoadEdit(no);},100);},100);}
+    });});
+  }
+}
+function mwFillRet(){
+  var no=(document.getElementById('mw-ret-no')?document.getElementById('mw-ret-no').value:'').trim();
+  var inf=document.getElementById('mw-ret-info');
+  if(!no){if(inf)inf.style.display='none';return;}
+  var inv=DB.invoices.find(function(i){return i.no===no;});
+  if(!inv){if(inf){inf.style.display='block';inf.innerHTML='<span style="color:var(--r1)">الفاتورة غير موجودة</span>';}return;}
+  if(inf){
+    inf.style.display='block';
+    inf.style.background=inv.st==='معتمد'?'rgba(16,185,129,.06)':'rgba(245,158,11,.06)';
+    inf.style.border='1px solid '+(inv.st==='معتمد'?'rgba(16,185,129,.2)':'rgba(245,158,11,.2)');
+    inf.innerHTML='<div style="display:flex;align-items:center;gap:8px"><span class=\"mono\" style=\"font-weight:800;color:var(--a1)\">'+inv.no+'</span>'+tag(inv.type)+tag(inv.st)+'</div>'+
+      '<div style="font-size:11px;color:var(--t3);margin-top:4px"><i class=\"fa fa-warehouse\" style=\"color:var(--g1)\"></i> '+inv.wh+' · '+inv.cont+'</div>';
+  }
+  var wh=document.getElementById('mw-ret-wh');if(wh&&!wh.value)wh.value=inv.wh;
+  var ct=document.getElementById('mw-ret-cont');if(ct&&!ct.value)ct.value=inv.cont;
+}
+function mwRetAdd(){
+  var code=(document.getElementById('mw-ret-code')?document.getElementById('mw-ret-code').value:'').trim();
+  var qty=parseInt(toEnDigits(document.getElementById('mw-ret-qty')?document.getElementById('mw-ret-qty').value:'1'))||1;
+  if(!code){toast('err','مطلوب','ادخل الكود','fa-ban');return;}
+  var mat=DB.inventory.find(function(i){return i.code===code;});
+  var ex=mwRetItems.find(function(x){return x.code===code;});
+  if(ex)ex.qty+=qty;else mwRetItems.push({code:code,name:mat?mat.name:code,qty:qty});
+  var c=document.getElementById('mw-ret-code');var q=document.getElementById('mw-ret-qty');
+  if(c)c.value='';if(q)q.value='1';
+  mwRetRender();
+}
+function mwRetRender(){
+  var el=document.getElementById('mw-ret-items');if(!el)return;
+  if(!mwRetItems.length){el.innerHTML='<div style="text-align:center;padding:10px;color:var(--t3);font-size:12px">لم تُضف مواد</div>';return;}
+  el.innerHTML=mwRetItems.map(function(it,idx){
+    return '<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--bg2);border-radius:8px;margin-bottom:5px">'+
+      '<span class="mono" style="color:var(--a1);font-size:11px;min-width:80px">'+it.code+'</span>'+
+      '<span style="flex:1;font-size:12px">'+it.name+'</span>'+
+      '<input type="number" min="1" value="'+it.qty+'" style="width:60px;padding:4px;border:1px solid var(--b1);border-radius:5px;background:var(--bg1);color:var(--t1);text-align:center"'+
+        ' oninput="var v=Math.max(1,parseInt(toEnDigits(this.value))||1);mwRetItems['+idx+'].qty=v;this.value=v;"'+
+        ' onblur="var v=Math.max(1,parseInt(toEnDigits(this.value))||1);mwRetItems['+idx+'].qty=v;this.value=v;">'+
+      '<button onclick="mwRetItems.splice('+idx+',1);mwRetRender()" style="background:none;border:none;cursor:pointer;color:var(--r1);padding:0 4px"><i class="fa fa-times"></i></button>'+
+    '</div>';
+  }).join('');
+}
+function mwEditRetRequest(id){
+  // تحويل id لرقم
+  var numId=typeof id==='string'?parseInt(id):id;
+  var r=DB.requests.find(function(x){return x.id===numId;});
+  if(!r||r.type!=='ارجاع'||r.st!=='معلق'){
+    toast('err','غير ممكن','لا يمكن تعديل هذا الطلب','fa-ban');return;
+  }
+  // حفظ الـ ID فوراً قبل أي شيء
+  window._editingRetId=numId;
+  window._editingRetData=JSON.parse(JSON.stringify(r));
+
+  mwSetTab('new');
+  setTimeout(function(){
+    mwSetNewTab('ret');
+    mwFillSels();
+    setTimeout(function(){
+      var rd=window._editingRetData;
+      // رقم الفاتورة
+      var noEl=document.getElementById('mw-ret-no');
+      if(noEl){noEl.value=rd.origInv||'';mwFillRet();}
+      setTimeout(function(){
+        // المستودع
+        var whEl=document.getElementById('mw-ret-wh');
+        if(whEl)whEl.value=rd.wh||'';
+        // المقاول
+        var ctEl=document.getElementById('mw-ret-cont');
+        if(ctEl)ctEl.value=rd.cont||'';
+        // BOQ
+        var bqEl=document.getElementById('mw-ret-boq');
+        if(bqEl)bqEl.value=rd.boq||'';
+        // السبب
+        var rsEl=document.getElementById('mw-ret-reason');
+        if(rsEl)rsEl.value=rd.reason||'';
+        // المواد
+        mwRetItems=JSON.parse(JSON.stringify(rd.retItems||[]));
+        mwRetRender();
+        // تأكيد الـ ID
+        window._editingRetId=numId;
+        // تغيير زر الإرسال
+        var btn=document.querySelector('[onclick="mwSubmitRet()"]');
+        if(btn){
+          btn.innerHTML='<i class="fa fa-save"></i> حفظ التعديل على '+rd.no;
+          btn.style.background='var(--y1)';btn.style.color='#000';
+        }
+        toast('ok','تعديل الطلب '+rd.no,'عدّل البيانات ثم اضغط "حفظ التعديل"','fa-pen');
+        var c=document.getElementById('content');if(c)c.scrollTop=0;
+      },200);
+    },150);
+  },100);
+}
+
+function mwSubmitRet(){
+  var no=(document.getElementById('mw-ret-no')?document.getElementById('mw-ret-no').value:'').trim();
+  var wh=document.getElementById('mw-ret-wh')?document.getElementById('mw-ret-wh').value:'';
+  var cont=(document.getElementById('mw-ret-cont')?document.getElementById('mw-ret-cont').value:'').trim();
+  var boq=(document.getElementById('mw-ret-boq')?document.getElementById('mw-ret-boq').value:'').trim();
+  var reason=(document.getElementById('mw-ret-reason')?document.getElementById('mw-ret-reason').value:'').trim();
+  if(!no||!DB.invoices.find(function(i){return i.no===no;})){toast('err','خطأ','ادخل رقم فاتورة صحيح','fa-ban');return;}
+  if(!wh||!cont||!boq){toast('err','مطلوب','اكمل جميع الحقول المطلوبة','fa-ban');return;}
+  if(!mwRetItems.length){toast('err','لا مواد','اضف مادة للارجاع على الأقل','fa-ban');return;}
+
+  // ══ تعديل طلب موجود ══
+  if(window._editingRetId){
+    var oldReq=DB.requests.find(function(x){return x.id===window._editingRetId;});
+    if(oldReq&&oldReq.st==='معلق'){
+      // قراءة الكميات المحدّثة من الـ DOM مباشرة قبل الحفظ
+      var retEl=document.getElementById('mw-ret-items');
+      if(retEl){
+        retEl.querySelectorAll('input[type="number"]').forEach(function(inp,idx){
+          if(mwRetItems[idx])mwRetItems[idx].qty=Math.max(1,parseInt(toEnDigits(inp.value))||1);
+        });
+      }
+      // تحديث الطلب
+      oldReq.origInv=no;oldReq.wh=wh;oldReq.cont=cont;oldReq.boq=boq;
+      oldReq.reason=reason;oldReq.retItems=JSON.parse(JSON.stringify(mwRetItems));
+      oldReq.items=mwRetItems.map(function(it){return it.name+' x'+it.qty;}).join(' + ');
+      oldReq.editDate=today();oldReq.editBy=currentUser.name;
+      addLog('ارجاع','تعديل طلب ارجاع '+oldReq.no+' — الفاتورة: '+no,wh,{no:oldReq.no});
+      addNotif('ok','تعديل طلب '+oldReq.no,currentUser.name+' عدّل طلب الارجاع','fa-pen',null);
+      window._editingRetId=null;
+      // إعادة زر الإرسال لحالته الطبيعية
+      var btn=document.querySelector('[onclick="mwSubmitRet()"]');
+      if(btn){btn.innerHTML='<i class="fa fa-paper-plane"></i>تقديم طلب الارجاع';btn.style.background='';btn.style.color='';}
+      mwRetItems=[];mwRetRender();
+      ['mw-ret-no','mw-ret-cont','mw-ret-boq','mw-ret-reason'].forEach(function(id2){var e=document.getElementById(id2);if(e)e.value='';});
+      var wi=document.getElementById('mw-ret-wh');if(wi)wi.value='';
+      var ii=document.getElementById('mw-ret-info');if(ii)ii.style.display='none';
+      updateBadges();
+      try{renderApprovals();}catch(e){}
+      try{renderInventory();}catch(e){}
+      try{if(currentPage==='zones')zonesRender();}catch(e){}
+      mwSetTab('current');
+      toast('ok','✓ تم التعديل',oldReq.no+' — حُفظت التعديلات وأُرسلت للمدير','fa-save');
+      return;
+    }
+    window._editingRetId=null;
+  }
+
+  // ══ طلب ارجاع جديد ══
+  var rno=genInvNo('R');
+  DB.requests.unshift({id:Date.now(),no:rno,type:'ارجاع',origInv:no,emp:currentUser.name,
+    wh:wh,cont:cont,boq:boq,reason:reason,
+    retItems:JSON.parse(JSON.stringify(mwRetItems)),
+    items:mwRetItems.map(function(it){return it.name+' x'+it.qty;}).join(' + '),
+    d:today(),time:nowTime(),st:'معلق'});
+  addNotif('warn','طلب ارجاع '+rno,currentUser.name+' — '+no,'fa-rotate-left',null);
+  addLog('ارجاع','طلب ارجاع جديد '+rno+' — الفاتورة: '+no,wh,{no:rno});
+  mwRetItems=[];mwRetRender();
+  ['mw-ret-no','mw-ret-cont','mw-ret-boq','mw-ret-reason'].forEach(function(id2){var e=document.getElementById(id2);if(e)e.value='';});
+  var wi2=document.getElementById('mw-ret-wh');if(wi2)wi2.value='';
+  var ii2=document.getElementById('mw-ret-info');if(ii2)ii2.style.display='none';
+  updateBadges();
+  try{renderApprovals();}catch(e){}
+  mwSetTab('current');
+  toast('ok','✓ طلب الارجاع '+rno,'مُرسل للمدير للاعتماد — الكميات محجوزة','fa-rotate-left');
+}
+function mwFillCan(){
+  var no=(document.getElementById('mw-can-no')?document.getElementById('mw-can-no').value:'').trim();
+  var inf=document.getElementById('mw-can-info');
+  if(!no){if(inf)inf.style.display='none';return;}
+  var inv=DB.invoices.find(function(i){return i.no===no;});
+  if(!inv){if(inf){inf.style.display='block';inf.innerHTML='<span style="color:var(--r1)"><i class="fa fa-ban"></i> الفاتورة غير موجودة</span>';}return;}
+  if(inv.st==='ملغي'){if(inf){inf.style.display='block';inf.innerHTML='<span style="color:var(--t3)"><i class="fa fa-info-circle"></i> هذه الفاتورة ملغية بالفعل</span>';}return;}
+  // ══ منع إلغاء الفاتورة المعلقة ══
+  if(inv.st==='معلق'){
+    if(inf){
+      inf.style.display='block';
+      inf.innerHTML='<div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);border-radius:8px;padding:10px 14px">'+
+        '<div style="font-size:13px;font-weight:700;color:var(--y1);margin-bottom:4px"><i class="fa fa-triangle-exclamation"></i> لا يمكن إلغاء هذه الفاتورة</div>'+
+        '<div style="font-size:12px;color:var(--t2);line-height:1.6">الفاتورة <strong>'+inv.no+'</strong> لا تزال <strong>معلقة</strong> بانتظار الاعتماد.<br>'+
+        'لا يمكن الإلغاء قبل الاعتماد — يمكنك <strong style="color:var(--g1)">سحبها</strong> من صفحة "فواتيري وطلباتي" ولن يتأثر المخزون.</div>'+
+      '</div>';
+    }
+    // تعطيل زر الإرسال
+    var submitBtn=document.querySelector('[onclick="mwSubmitCan()"]');
+    if(submitBtn){submitBtn.disabled=true;submitBtn.style.opacity='0.4';}
+    return;
+  }
+  // تحقق من عدم وجود طلب إلغاء معلق
+  var existCancel=DB.requests.find(function(r){return r.origInv===no&&r.type==='الغاء'&&r.st==='معلق';});
+  if(inf){
+    var invItems=Array.isArray(inv.items)?inv.items:[];
+    inf.style.display='block';
+    inf.innerHTML=
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'+
+        '<strong style="color:var(--t1)">'+inv.no+'</strong>'+tag(inv.type)+tag(inv.st)+
+        (existCancel?'<span style="color:var(--y1);font-size:11px"><i class="fa fa-triangle-exclamation"></i> طلب إلغاء معلق: '+existCancel.no+'</span>':'')+
+      '</div>'+
+      '<div style="font-size:12px;color:var(--t3);margin-bottom:8px">'+
+        '<i class="fa fa-warehouse" style="color:var(--g1)"></i> مستودع الفاتورة: <strong style="color:var(--t1)">'+inv.wh+'</strong>'+
+        ' · <i class="fa fa-hard-hat" style="color:var(--o1)"></i> '+inv.cont+
+      '</div>'+
+      (invItems.length?
+        '<div style="background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:8px;font-size:11px;margin-bottom:8px">'+
+          '<div style="color:var(--r1);font-weight:700;margin-bottom:5px"><i class="fa fa-boxes-stacked"></i> المواد التي ستُلغى وتُعاد:</div>'+
+          '<div style="display:flex;flex-wrap:wrap;gap:4px">'+
+          invItems.map(function(it){return '<span style="background:rgba(239,68,68,.1);border-radius:5px;padding:2px 8px">'+it.name+' ×'+it.qty+'</span>';}).join('')+
+          '</div>'+
+        '</div>':'');
+  }
+  var wh=document.getElementById('mw-can-wh');if(wh&&!wh.value)wh.value=inv.wh;
+  var ct=document.getElementById('mw-can-cont');if(ct&&!ct.value)ct.value=inv.cont;
+  // إعادة تفعيل زر الإرسال (قد يكون معطلاً من فاتورة معلقة سابقة)
+  var submitBtn=document.querySelector('[onclick="mwSubmitCan()"]');
+  if(submitBtn){submitBtn.disabled=false;submitBtn.style.opacity='1';}
+}
+function mwSubmitCan(){
+  var no=(document.getElementById('mw-can-no')?document.getElementById('mw-can-no').value:'').trim();
+  var wh=document.getElementById('mw-can-wh')?document.getElementById('mw-can-wh').value:'';
+  var cont=(document.getElementById('mw-can-cont')?document.getElementById('mw-can-cont').value:'').trim();
+  var boq=(document.getElementById('mw-can-boq')?document.getElementById('mw-can-boq').value:'').trim();
+  var reason=(document.getElementById('mw-can-reason')?document.getElementById('mw-can-reason').value:'').trim();
+  var inv2=DB.invoices.find(function(i){return i.no===no;});
+  if(!no||!inv2){toast('err','خطأ','ادخل رقم فاتورة صحيح','fa-ban');return;}
+  // منع إلغاء الفاتورة المعلقة — يجب سحبها بدلاً من إلغائها
+  if(inv2.st==='معلق'){
+    toast('warn','غير مسموح',
+      'الفاتورة '+no+' معلقة — اذهب لـ "فواتيري وطلباتي" واضغط سحب بدلاً من الإلغاء',
+      'fa-triangle-exclamation');return;
+  }
+  if(!wh){toast('err','مطلوب','اختر المستودع الذي ستُعاد إليه المواد','fa-ban');return;}
+  if(!cont||!boq||!reason){toast('err','مطلوب','اكمل جميع الحقول','fa-ban');return;}
+  // التحقق من عدم وجود طلب إلغاء معلق لنفس الفاتورة
+  var existCancel=DB.requests.find(function(r){return r.origInv===no&&r.type==='الغاء'&&r.st==='معلق';});
+  if(existCancel){toast('warn','موجود','يوجد طلب إلغاء معلق لهذه الفاتورة بالفعل — '+existCancel.no,'fa-ban');return;}
+  var cno=genInvNo('الغاء');
+  // نحفظ المواد كـ array كاملة للمعالجة لاحقاً عند الاعتماد
+  var invItems=Array.isArray(inv2.items)?JSON.parse(JSON.stringify(inv2.items)):[];
+  DB.requests.unshift({
+    id:Date.now(),no:cno,type:'الغاء',origInv:no,emp:currentUser.name,
+    wh:wh,            // المستودع الذي ستُعاد إليه المواد
+    origWh:inv2.wh,   // المستودع الأصلي للفاتورة
+    cont:cont,boq:boq,reason:reason,
+    retItems:invItems, // المواد كـ array لمعالجتها عند الاعتماد
+    items:invItems,    // نسخة ثانية للعرض
+    itemsStr:invItems.map(function(it){return it.name+' ×'+it.qty;}).join(' + '),
+    d:today(),time:nowTime(),st:'معلق'
+  });
+  addNotif('warn','طلب الغاء '+cno,currentUser.name+' — '+no+' → الإعادة لـ '+wh,'fa-ban',null);
+  addLog('الغاء','طلب الغاء '+cno+' للفاتورة '+no+' — الإعادة لـ '+wh,wh,{no:cno,origInv:no});
+  ['mw-can-no','mw-can-cont','mw-can-boq','mw-can-reason'].forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});
+  var wi=document.getElementById('mw-can-wh');if(wi)wi.value='';
+  var ii=document.getElementById('mw-can-info');if(ii)ii.style.display='none';
+  updateBadges();mwSetTab('current');
+  toast('ok','✓ طلب الغاء '+cno,'مُرسل للاعتماد — المواد ستُعاد لـ '+wh+' بعد الموافقة','fa-ban');
+}
+function mwRenderEditList(){
+  var el=document.getElementById('mw-edit-list');if(!el)return;
+  var q=(document.getElementById('mw-edit-q')?document.getElementById('mw-edit-q').value:'').toLowerCase();
+  var mine=DB.invoices.filter(function(i){return i.emp===currentUser.name&&i.st!=='ملغي';});
+  if(q)mine=mine.filter(function(i){return i.no.toLowerCase().includes(q)||(i.cont||'').toLowerCase().includes(q);});
+  if(!mine.length){el.innerHTML='<div style="text-align:center;padding:20px;color:var(--t3)"><i class="fa fa-inbox"></i><br>لا توجد فواتير</div>';return;}
+  el.innerHTML=mine.map(function(inv){
+    var sc2={معتمد:'var(--g1)',معلق:'var(--y1)',مرفوض:'var(--r1)'}[inv.st]||'var(--t1)';
+    return '<div class="mw-edit-item" data-no="'+inv.no+'" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg2);border-radius:10px;margin-bottom:7px;cursor:pointer;border:1px solid var(--b1)">'+
+      '<div style="flex:1"><div style="display:flex;align-items:center;gap:7px;margin-bottom:3px">'+
+        '<span class="mono" style="font-weight:800;color:var(--a1)">'+inv.no+'</span>'+tag(inv.type)+
+        '<span style="font-size:11px;font-weight:700;color:'+sc2+'">'+inv.st+'</span></div>'+
+        '<div style="font-size:11px;color:var(--t3)">'+inv.wh+' · '+inv.cont+' · '+inv.d+'</div></div>'+
+      '<button class="btn btn-warn btn-xs"><i class="fa fa-pen"></i>تعديل</button></div>';
+  }).join('');
+  el.querySelectorAll('.mw-edit-item').forEach(function(item){item.addEventListener('click',function(){mwLoadEdit(this.dataset.no);});});
+}
+// ══ تعديل مباشر على فاتورة صرف معلقة (قبل الاعتماد) ══
+function mwDirectEditPending(no){
+  var inv=DB.invoices.find(function(i){return i.no===no;});
+  if(!inv||inv.st!=='معلق'){toast('err','غير ممكن','الفاتورة ليست معلقة','fa-ban');return;}
+
+  showConfirm(
+    '<i class="fa fa-pen" style="color:var(--y1)"></i> تعديل فاتورة معلقة '+no,
+    'سيتم فتح <strong>سلة الصرف</strong> محملة ببيانات الفاتورة <strong style="color:var(--a1)">'+no+'</strong> للتعديل المباشر.<br>'+
+    '<div style="margin-top:8px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:7px;padding:7px;font-size:11.5px;color:var(--y1)">'+
+      '<i class="fa fa-info-circle"></i> الفاتورة الحالية ستُحدَّث مباشرة — لا يُنشأ طلب تعديل جديد</div>',
+    'فتح للتعديل','btn-warn',function(){
+      // تحميل بيانات الفاتورة في السلة
+      cart=inv.items.map(function(it){
+        var mat=DB.inventory.find(function(m){return m.code===it.code;});
+        var avail=getAvailableStock(it.code,inv.wh);
+        return {code:it.code,name:it.name,qty:it.qty,max:avail+it.qty,wh:inv.wh,mat:mat};
+      });
+      // تحميل تفاصيل الفاتورة في حقول السلة
+      go('cart');
+      setTimeout(function(){
+        var contEl=document.getElementById('cart-contractor');
+        var boqEl=document.getElementById('cart-boq');
+        var notesEl=document.getElementById('cart-notes');
+        var whEl=document.getElementById('cart-add-wh');
+        if(contEl)contEl.value=inv.cont||'';
+        if(boqEl)boqEl.value=inv.boq||'';
+        if(notesEl)notesEl.value=inv.notes||'';
+        if(whEl)whEl.value=inv.wh||'';
+        // حفظ رقم الفاتورة الأصلي للتحديث عند الإصدار
+        window._editingPendingInvNo=no;
+        renderCart();
+        // تنبيه للمستخدم
+        var banner=document.createElement('div');
+        banner.id='pending-edit-banner';
+        banner.style.cssText='background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:9px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:var(--y1);display:flex;align-items:center;gap:8px';
+        banner.innerHTML='<i class="fa fa-pen"></i> <strong>وضع تعديل الفاتورة '+no+'</strong> — عدّل المواد والكميات ثم اضغط "إصدار الفاتورة" لحفظ التعديلات';
+        var cartContent=document.querySelector('.cart-items-wrap')||document.getElementById('cart-list');
+        if(cartContent&&cartContent.parentNode)cartContent.parentNode.insertBefore(banner,cartContent);
+        toast('ok','تعديل '+no,'عدّل المواد والكميات ثم اضغط إصدار الفاتورة','fa-pen');
+      },200);
+    });
+}
+
+function mwLoadEdit(no){
+  var inv=DB.invoices.find(function(i){return i.no===no;});if(!inv)return;
+  mwEditInv=inv;
+  mwEditItems=inv.items.map(function(it){return Object.assign({},it,{origQty:it.qty});});
+  mwEditDeleted=[];
+  document.getElementById('mw-edit-no').textContent=no;
+  // بانر حالة الفاتورة
+  var wa=document.getElementById('mw-edit-was-appr');
+  if(wa){
+    if(inv.st==='معلق'){
+      wa.style.display='block';
+      wa.style.background='rgba(16,185,129,.08)';wa.style.borderColor='rgba(16,185,129,.3)';
+      wa.innerHTML='<i class="fa fa-pen" style="color:var(--g1)"></i> <span style="color:var(--g1)">تعديل مباشر — الفاتورة <strong>'+no+'</strong> معلقة، التعديل يُطبَّق فوراً بدون موافقة المدير</span>';
+    } else if(inv.st==='معتمد'){
+      wa.style.display='block';
+      wa.style.background='rgba(245,158,11,.08)';wa.style.borderColor='rgba(245,158,11,.3)';
+      wa.innerHTML='<i class="fa fa-triangle-exclamation" style="color:var(--y1)"></i> <span style="color:var(--y1)">الفاتورة <strong>'+no+'</strong> معتمدة — سيُرسَل طلب تعديل للمدير للموافقة</span>';
+    } else {
+      wa.style.display='none';
+    }
+  }
+  var fEl=document.getElementById('mw-edit-fields');
+  if(fEl){
+    var whs=DB.warehouses.filter(function(w){return w.active;});
+    fEl.innerHTML='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'+
+      '<div class="form-group"><label class="form-label">المستودع</label><select class="form-select" id="mw-edit-wh">'+whs.map(function(w){return '<option'+(w.name===inv.wh?' selected':'')+'>'+w.name+'</option>';}).join('')+'</select></div>'+
+      '<div class="form-group"><label class="form-label">المقاول / المستلم *</label><input class="form-input" id="mw-edit-cont" value="'+(inv.cont||'')+'"></div>'+
+      '<div class="form-group"><label class="form-label">رقم BOQ *</label><input class="form-input" id="mw-edit-boq" value="'+(inv.boq||'')+'" style="font-family:monospace"></div>'+
+      '<div class="form-group"><label class="form-label">وصف البلاغ</label><input class="form-input" id="mw-edit-notes" value="'+(inv.notes||'')+'"></div></div>';
+  }
+  // تغيير نص زر الإرسال حسب الحالة
+  var submitBtn=document.getElementById('mw-edit-submit-btn');
+  if(submitBtn){
+    if(inv.st==='معلق'){
+      submitBtn.innerHTML='<i class="fa fa-save"></i> حفظ التعديل مباشرة';
+      submitBtn.style.background='var(--g1)';submitBtn.style.color='#fff';
+    } else {
+      submitBtn.innerHTML='<i class="fa fa-paper-plane"></i> إرسال طلب التعديل للاعتماد';
+      submitBtn.style.background='';submitBtn.style.color='';
+    }
+  }
+  var s1=document.getElementById('mw-edit-step1');var s2=document.getElementById('mw-edit-step2');
+  if(s1)s1.style.display='none';if(s2)s2.style.display='block';
+  mwEditRenderItems();
+  var c=document.getElementById('content');if(c)c.scrollTop=0;
+}
+function mwEditBack(){
+  var s1=document.getElementById('mw-edit-step1');var s2=document.getElementById('mw-edit-step2');
+  if(s1)s1.style.display='block';if(s2)s2.style.display='none';
+  mwRenderEditList();
+}
+function mwEditRenderItems(){
+  var el=document.getElementById('mw-edit-items');if(!el)return;
+  var cnt=document.getElementById('mw-edit-cnt');if(cnt)cnt.textContent=mwEditItems.length+' مادة';
+  if(!mwEditItems.length){el.innerHTML='<div style="text-align:center;padding:10px;color:var(--t3)">لا توجد مواد</div>';return;}
+  el.innerHTML=mwEditItems.map(function(it,idx){
+    return '<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg2);border-radius:9px;margin-bottom:5px">'+
+      '<span class="mono" style="color:var(--a1);font-size:11px;min-width:80px">'+it.code+'</span>'+
+      '<span style="flex:1;font-size:12px">'+it.name+'</span>'+
+      '<button onclick="mwEditItems['+idx+'].qty=Math.max(1,(mwEditItems['+idx+'].qty||1)-1);mwEditRenderItems()" style="width:26px;height:26px;border-radius:6px;background:var(--bg1);border:1px solid var(--b1);cursor:pointer">−</button>'+
+      '<span class="mono" style="min-width:28px;text-align:center;font-weight:700">'+(it.qty||1)+'</span>'+
+      '<button onclick="mwEditItems['+idx+'].qty=(mwEditItems['+idx+'].qty||1)+1;mwEditRenderItems()" style="width:26px;height:26px;border-radius:6px;background:var(--bg1);border:1px solid var(--b1);cursor:pointer">+</button>'+
+      '<button onclick="mwEditDeleted.push(mwEditItems.splice('+idx+',1)[0]);mwEditRenderItems()" style="background:none;border:none;cursor:pointer;color:var(--r1)"><i class="fa fa-times"></i></button>'+
+    '</div>';
+  }).join('');
+}
+function mwEditAutoFill(){
+  var code=(document.getElementById('mw-edit-add-code')?document.getElementById('mw-edit-add-code').value:'').trim();
+  var n=document.getElementById('mw-edit-add-name');if(!n)return;
+  var m=DB.inventory.find(function(i){return i.code===code;});n.value=m?m.name:'';
+}
+function mwEditAddItem(){
+  var code=(document.getElementById('mw-edit-add-code')?document.getElementById('mw-edit-add-code').value:'').trim();
+  var name=(document.getElementById('mw-edit-add-name')?document.getElementById('mw-edit-add-name').value:code).trim()||code;
+  var qty=parseInt(document.getElementById('mw-edit-add-qty')?document.getElementById('mw-edit-add-qty').value:1)||1;
+  if(!code){toast('err','مطلوب','ادخل الكود','fa-ban');return;}
+  var m=DB.inventory.find(function(i){return i.code===code;});if(m)name=m.name;
+  var ex=mwEditItems.find(function(x){return x.code===code;});
+  if(ex)ex.qty+=qty;else mwEditItems.push({code:code,name:name,qty:qty});
+  var ce=document.getElementById('mw-edit-add-code');var qe=document.getElementById('mw-edit-add-qty');var ne=document.getElementById('mw-edit-add-name');
+  if(ce)ce.value='';if(qe)qe.value='1';if(ne)ne.value='';
+  mwEditRenderItems();
+}
+function mwSubmitEdit(){
+  if(!mwEditInv){toast('err','خطأ','اختر فاتورة أولاً','fa-ban');return;}
+  if(!mwEditItems.length){toast('err','لا مواد','لابد من وجود مادة واحدة على الأقل','fa-ban');return;}
+  var inv=mwEditInv;
+  var wh=document.getElementById('mw-edit-wh')?document.getElementById('mw-edit-wh').value:inv.wh;
+  var cont=(document.getElementById('mw-edit-cont')?document.getElementById('mw-edit-cont').value:'').trim();
+  var boq=(document.getElementById('mw-edit-boq')?document.getElementById('mw-edit-boq').value:'').trim();
+  var notes=(document.getElementById('mw-edit-notes')?document.getElementById('mw-edit-notes').value:'').trim();
+  if(!cont){
+    document.getElementById('mw-edit-cont')?.classList.add('err');
+    toast('err','مطلوب','ادخل المقاول / المستلم','fa-ban');return;
+  }
+  if(!boq){
+    document.getElementById('mw-edit-boq')?.classList.add('err');
+    toast('err','مطلوب','ادخل رقم BOQ','fa-ban');return;
+  }
+
+  // ══ فاتورة معلقة: تعديل مباشر ══
+  if(inv.st==='معلق'){
+    var oldWh=inv.wh;
+    inv.items=JSON.parse(JSON.stringify(mwEditItems));
+    inv.cont=cont;inv.boq=boq;inv.notes=notes;inv.wh=wh;
+    inv.editDate=today();inv.editBy=currentUser.name;
+    // تحديث DB.approvals
+    var apr=DB.approvals.find(function(a){return a.no===inv.no;});
+    if(apr){
+      apr.items=JSON.parse(JSON.stringify(mwEditItems));
+      apr.itemsStr=mwEditItems.map(function(it){return it.name+' x'+it.qty;}).join(' + ');
+      apr.cont=cont;apr.boq=boq;apr.wh=wh;apr.notes=notes;
+    }
+    addLog('تعديل','تعديل مباشر على فاتورة معلقة '+inv.no+' — '+cont,wh,{no:inv.no});
+    addNotif('ok','✓ تعديل '+inv.no,currentUser.name+' — تم تحديث الفاتورة مباشرة','fa-pen',null);
+    mwEditInv=null;mwEditItems=[];mwEditDeleted=[];
+    // إعادة زر الإرسال
+    var btn=document.getElementById('mw-edit-submit-btn');
+    if(btn){btn.innerHTML='<i class="fa fa-paper-plane"></i>إرسال طلب التعديل للاعتماد';btn.style.background='';btn.style.color='';}
+    updateBadges();
+    try{renderApprovals();}catch(e){}
+    try{renderInventory();}catch(e){}
+    mwEditBack();mwSetTab('current');
+    toast('ok','✓ تم التعديل '+inv.no,'حُدّثت الفاتورة مباشرة — الحجز يعكس الكميات الجديدة','fa-save');
+    return;
+  }
+
+  // ══ فاتورة معتمدة: ينشئ طلب تعديل ══
+  // فحص الرصيد للكميات الزائدة
+  var stockErrors=[];
+  mwEditItems.forEach(function(it){
+    var oldIt=inv.items.find(function(o){return o.code===it.code;});
+    var oldQty=oldIt?oldIt.qty:0;
+    var diff=it.qty-oldQty;
+    if(diff>0){
+      var avail=getAvailableStock(it.code,wh);
+      if(avail<diff) stockErrors.push(it.name+': متاح '+avail+' — زيادة مطلوبة '+diff);
+    }
+  });
+  if(stockErrors.length){
+    toast('err','رصيد غير كافٍ',stockErrors.join(' | '),'fa-triangle-exclamation');return;
+  }
+  DB.requests=DB.requests.filter(function(r){return !(r.origInv===inv.no&&r.type==='تعديل'&&r.st==='معلق');});
+  DB.requests.unshift({
+    id:Date.now(),no:inv.no,type:'تعديل',emp:currentUser.name,origInv:inv.no,
+    wasApproved:true,
+    newItems:JSON.parse(JSON.stringify(mwEditItems)),
+    deletedItems:JSON.parse(JSON.stringify(mwEditDeleted)),
+    changes:{cont:cont,boq:boq,notes:notes,wh:wh},
+    oldValues:{items:JSON.parse(JSON.stringify(inv.items)),cont:inv.cont,boq:inv.boq,wh:inv.wh},
+    st:'معلق',d:today(),t:nowTime(),wh:wh
+  });
+  addNotif('warn','طلب تعديل '+inv.no,currentUser.name+' — بانتظار موافقة المدير','fa-pen',null);
+  addLog('تعديل','طلب تعديل فاتورة معتمدة '+inv.no,wh,{no:inv.no});
+  mwEditInv=null;mwEditItems=[];mwEditDeleted=[];
+  var btn2=document.getElementById('mw-edit-submit-btn');
+  if(btn2){btn2.innerHTML='<i class="fa fa-paper-plane"></i>إرسال طلب التعديل للاعتماد';btn2.style.background='';btn2.style.color='';}
+  updateBadges();
+  try{renderApprovals();}catch(e){}
+  mwEditBack();mwSetTab('current');
+  toast('ok','✓ طلب تعديل '+inv.no,'مُرسل للمدير للاعتماد','fa-paper-plane');
+}
+
+function mwScrollDown(){
+  var c=document.getElementById('content');
+  if(!c)return;
+  c.scrollBy({top:300,behavior:'smooth'});
+}
+function mwInitScroll(){
+  var c=document.getElementById('content');
+  var btn=document.getElementById('mw-scroll-btn');
+  if(!c||!btn)return;
+  c.addEventListener('scroll',function(){
+    var atBottom=c.scrollHeight-c.scrollTop-c.clientHeight<50;
+    btn.classList.toggle('show',!atBottom&&c.scrollHeight>c.clientHeight+100);
+  });
+  // إظهار الزر فوراً إذا يوجد محتوى للتمرير
+  setTimeout(function(){
+    var atBottom=c.scrollHeight-c.scrollTop-c.clientHeight<50;
+    btn.classList.toggle('show',!atBottom&&c.scrollHeight>c.clientHeight+100);
+  },300);
+}
+function renderMyWork(){
+  mwFillSels();
+  mwSetTab('current');
+  var c=document.getElementById('content');
+  if(c)c.scrollTop=0;
+}
 </script>
 </body>
 </html>
+
+  
+</div><!-- /content -->
+
+    <!-- ═══ MY WORK ═══ -->
+  <!-- FOOTER -->
+
+  <div class="copyright">
+    <span>© 2026 جميع الحقوق محفوظة</span>
+    <span style="color:var(--t4)">|</span>
+    <span>أحمد سعيد عواجي — <span style="color:var(--a1)">مدير النظام</span></span>
+    <span style="color:var(--t4)">|</span>
+    <span>دائرة شرق منطقة جازان</span>
+  </div>
+</div><!-- /main -->
+
+
+
+</div><!-- /shell -->
+
+<!-- ═══ MODALS ═══ -->
+<!-- Search Modal -->
+<div class="overlay" id="modal-search" onclick="if(event.target===this)closeModal('modal-search')">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-hd"><div class="modal-title"><i class="fa fa-magnifying-glass"></i>بحث سريع</div><button class="modal-close" onclick="closeModal('modal-search')">✕</button></div>
+    <div style="padding:14px 22px">
+      <input class="form-input" id="search-q" placeholder="ابحث عن فاتورة، مادة، موجه..." oninput="renderSearchResults(this.value)" autofocus>
+      <div id="search-results" style="margin-top:12px;max-height:300px;overflow-y:auto"></div>
+    </div>
+  </div>
+</div>
+<!-- Notifications Modal -->
+<div class="overlay" id="modal-notifs" onclick="if(event.target===this)closeModal('modal-notifs')">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-hd"><div class="modal-title"><i class="fa fa-bell"></i>الإشعارات</div><button class="modal-close" onclick="closeModal('modal-notifs')">✕</button></div>
+    <div id="notifs-list" style="overflow-y:auto;flex:1;max-height:400px"></div>
+    <div style="padding:10px 22px 16px;flex-shrink:0;border-top:1px solid var(--b1)"><button class="btn btn-sec btn-sm" style="width:100%" onclick="clearNotifs()"><i class="fa fa-check-double"></i>مسح جميع الإشعارات</button></div>
+  </div>
+</div>
+<!-- Generic Form Modal -->
+<div class="overlay" id="modal-form" onclick="if(event.target===this)closeModal('modal-form')">
+  <div class="modal" id="modal-form-inner" style="max-width:560px">
+    <div class="modal-hd"><div class="modal-title" id="modal-form-title"></div><button class="modal-close" onclick="closeModal('modal-form')">✕</button></div>
+    <div id="modal-form-body" style="overflow-y:auto;flex:1;padding:16px 22px 8px;min-height:0;display:block"></div>
+    <div id="modal-form-actions" style="display:flex;gap:8px;padding:12px 22px 18px;flex-shrink:0;border-top:1px solid var(--b1);min-height:56px"></div>
+  </div>
+</div>
+
+<!-- نافذة الفئات المخصصة -->
+<div class="overlay" id="modal-cat" onclick="if(event.target===this)closeModal('modal-cat')">
+  <div class="modal" style="max-width:500px;max-height:92vh">
+    <div class="modal-hd"><div class="modal-title" id="cat-modal-title"></div><button class="modal-close" onclick="closeModal('modal-cat')">✕</button></div>
+    <div style="overflow-y:auto;flex:1;padding:16px 20px 0">
+      <div class="form-group">
+        <label class="form-label"><i class="fa fa-tag" style="color:var(--a1)"></i> اسم الفئة <span style="color:var(--r1)">*</span></label>
+        <input class="form-input" id="cm-name" placeholder="مثال: محولات..." maxlength="30">
+      </div>
+      <div class="form-group">
+        <label class="form-label" style="margin-bottom:6px;display:block">الأيقونة</label>
+        <div id="cm-icons-wrap" style="display:flex;flex-wrap:wrap;gap:4px;background:var(--bg2);padding:8px;border-radius:10px;max-height:130px;overflow-y:auto"></div>
+        <input type="hidden" id="cm-icon" value="fa-tag">
+      </div>
+      <div class="form-group">
+        <label class="form-label" style="margin-bottom:6px;display:block">اللون</label>
+        <div id="cm-colors-wrap" style="display:flex;flex-wrap:wrap;gap:6px;background:var(--bg2);padding:8px;border-radius:10px"></div>
+        <input type="hidden" id="cm-color" value="#0ea5e9">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px">
+        <div class="form-group"><label class="form-label"><i class="fa fa-triangle-exclamation" style="color:var(--r1)"></i> حد الإشعار الحرج</label><input class="form-input" id="cm-crit" type="number" min="0" placeholder="0"></div>
+        <div class="form-group"><label class="form-label"><i class="fa fa-exclamation" style="color:var(--y1)"></i> حد الإشعار التحذيري</label><input class="form-input" id="cm-warn" type="number" min="0" placeholder="0"></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;padding:14px 20px;flex-shrink:0;border-top:1px solid var(--b1)">
+      <button class="btn btn-primary" id="cat-save-btn" onclick="catSaveModal()" style="flex:1"><i class="fa fa-save"></i>حفظ</button>
+      <button class="btn btn-sec" onclick="closeModal('modal-cat')">إلغاء</button>
+    </div>
+  </div>
+</div>
+<!-- Confirm Modal -->
+<div class="overlay" id="modal-confirm" onclick="if(event.target===this)closeModal('modal-confirm')">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-hd"><div class="modal-title" id="confirm-title"></div><button class="modal-close" onclick="closeModal('modal-confirm')">✕</button></div>
+    <div style="padding:14px 22px 20px">
+      <div id="confirm-body" style="font-size:13.5px;color:var(--t2);line-height:1.7;margin-bottom:16px"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn btn-sec" onclick="closeModal('modal-confirm')">إلغاء</button>
+        <button class="btn" id="confirm-ok-btn" onclick="confirmOK()">تأكيد</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Invoice Detail Modal -->
+<div class="overlay" id="modal-inv" onclick="if(event.target===this)closeModal('modal-inv')">
+  <div class="modal" style="max-width:680px;max-height:92vh;display:flex;flex-direction:column">
+    <div class="modal-hd" style="flex-shrink:0"><div class="modal-title" id="inv-detail-title"></div><button class="modal-close" onclick="closeModal('modal-inv')">✕</button></div>
+    <div id="inv-detail-body" style="overflow-y:auto;flex:1;padding:0"></div>
+  </div>
+</div>
+
+<div id="toasts"></div>
+
+  
