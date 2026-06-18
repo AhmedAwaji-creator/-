@@ -515,9 +515,19 @@ textarea.form-input{resize:vertical;min-height:80px}
 const SUPA_URL='https://sgrzftkjquiqbcgoksqm.supabase.co';
 const SUPA_KEY='sb_publishable_2_hE3XXitoQtJJwpSPlC7g_c_Te1LdB';
 var supa=null;
-function initSupa(){if(window.supabase&&!supa){supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);}}
+function initSupa(){
+  if(!supa&&window.supabase){
+    try{supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);console.log('✅ Supabase ready');}
+    catch(e){console.error('Supabase init error:',e);}
+  }
+  return supa;
+}
+// تهيئة فورية عند تحميل الصفحة
+window.addEventListener('load',function(){
+  setTimeout(function(){initSupa();},500);
+});
 async function syncFromSupabase(){
-  initSupa();if(!supa)return false;
+  if(!initSupa())return false;
   try{
     const[inv,invs,reqs,apprs,lg,notifs,whs,zns,cats,conts,bq]=await Promise.all([
       supa.from('inventory').select('*').order('id'),
@@ -546,10 +556,10 @@ async function syncFromSupabase(){
     return true;
   }catch(e){console.error('sync:',e);return false;}
 }
-async function sbSave(t,row,cf){initSupa();if(!supa)return;var res=await supa.from(t).upsert(row,{onConflict:cf});if(res.error)console.error(t,res.error);}
-async function sbInsert(t,row){initSupa();if(!supa)return;var res=await supa.from(t).insert(row);if(res.error)console.error(t,res.error);}
-async function sbUpdate(t,upd,col,val){initSupa();if(!supa)return;var res=await supa.from(t).update(upd).eq(col,val);if(res.error)console.error(t,res.error);}
-async function sbDelete(t,col,val){initSupa();if(!supa)return;var res=await supa.from(t).delete().eq(col,val);if(res.error)console.error(t,res.error);}
+async function sbSave(t,row,cf){if(!initSupa())return;var res=await supa.from(t).upsert(row,{onConflict:cf});if(res.error)console.error(t,res.error);}
+async function sbInsert(t,row){if(!initSupa())return;var res=await supa.from(t).insert(row);if(res.error)console.error(t,res.error);}
+async function sbUpdate(t,upd,col,val){if(!initSupa())return;var res=await supa.from(t).update(upd).eq(col,val);if(res.error)console.error(t,res.error);}
+async function sbDelete(t,col,val){if(!initSupa())return;var res=await supa.from(t).delete().eq(col,val);if(res.error)console.error(t,res.error);}
 async function sbSaveInvoice(inv){await sbSave('invoices',{no:inv.no,type:inv.type,wh:inv.wh,emp:inv.emp,cont:inv.cont||'',boq:inv.boq||'',notes:inv.notes||'',st:inv.st,items:inv.items||[],d:inv.d,approved_date:inv.approvedDate||'',approved_by:inv.approvedBy||''},'no');}
 async function sbSaveApproval(a){await sbSave('approvals',{no:a.no,emp:a.emp,wh:a.wh,cont:a.cont||'',boq:a.boq||'',items:a.items||[],st:a.st,d:a.d},'no');}
 async function sbSaveRequest(r){var row={no:r.no,type:r.type,emp:r.emp,orig_inv:r.origInv||'',wh:r.wh||'',cont:r.cont||'',boq:r.boq||'',reason:r.reason||'',st:r.st,items:r.items||[],ret_items:r.retItems||[],new_items:r.newItems||[],deleted_items:r.deletedItems||[],old_values:r.oldValues||{},changes:r.changes||{},was_approved:r.wasApproved||false,d:r.d};if(r.id&&typeof r.id==='number')row.id=r.id;await sbSave('requests',row,'id');}
@@ -7089,6 +7099,8 @@ function userResetPass(id){
 
 // ══════════════════════ SETTINGS ══════════════════════
 function renderSettings(){
+  // تأكد من وجود settings افتراضية
+  if(!DB.settings)DB.settings={autoNotif:true,supabaseSync:true,autoBackup:true,logAll:true,autoApproveFeed:false,maintenance:false};
   const s=DB.settings;
   setTimeout(renderBackups,100);
 
