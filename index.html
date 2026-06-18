@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl" style="margin:0;padding:0;height:100%;overflow:hidden">
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="version" content="v3.1-clean-2026-06-11">
@@ -518,16 +518,13 @@ var supa=null;
 function initSupa(){
   if(!supa&&window.supabase){
     try{supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);console.log('✅ Supabase ready');}
-    catch(e){console.error('Supabase init error:',e);}
+    catch(e){console.error('Supabase init:',e);}
   }
   return supa;
 }
-// تهيئة فورية عند تحميل الصفحة
-window.addEventListener('load',function(){
-  setTimeout(function(){initSupa();},500);
-});
+window.addEventListener('load',function(){setTimeout(function(){initSupa();},500);});
 async function syncFromSupabase(){
-  if(!initSupa())return false;
+  initSupa();if(!supa)return false;
   try{
     const[inv,invs,reqs,apprs,lg,notifs,whs,zns,cats,conts,bq]=await Promise.all([
       supa.from('inventory').select('*').order('id'),
@@ -589,7 +586,7 @@ function startRealtimeSync(){
 }
 </script>
 </head>
-<body style="margin:0!important;padding:0!important;overflow:hidden;width:100%;height:100%">
+<body>
 
 <!-- BG -->
 <div class="bg-fx"><div class="bg-orb"></div><div class="bg-orb"></div><div class="bg-orb"></div></div>
@@ -3064,8 +3061,8 @@ function doDirectReturn(){
 
 
 function getWhKey(wh){var w=DB.warehouses.find(function(x){return x.name===wh;});return w?w.key:null;}
-function getStock(code,wh){const i=DB.inventory.find(x=>x.code===code);if(!i)return 0;var k=getWhKey(wh);return k?(i[k]||0):0;}
-function setStock(code,wh,delta){const i=DB.inventory.find(x=>x.code===code);if(!i)return;var k=getWhKey(wh);if(k){i[k]=Math.max(0,(i[k]||0)+delta);sbUpdateStock(code,k,i[k]);}}
+function getStock(code,wh){const i=DB.inventory.find(function(x){return x.code===code;});if(!i)return 0;var k=getWhKey(wh);return k?(i[k]||0):0;}
+function setStock(code,wh,delta){const i=DB.inventory.find(function(x){return x.code===code;});if(!i)return;var k=getWhKey(wh);if(k){i[k]=Math.max(0,(i[k]||0)+delta);sbUpdateStock(code,k,i[k]);}}
 // ══════════════════════════════════════════════════════
 // نظام التنظيف التلقائي الشامل
 // الفواتير وكل ارتباطاتها: سنة من تاريخ الاعتماد/الإغلاق
@@ -3691,7 +3688,7 @@ function renderDashboard(){
     </tr>`).join('');
   // التنبيهات
   const alerts=[];
-  DB.inventory.filter(function(i){return i.manatiq<i.min;}).forEach(i=>alerts.push({t:'a-err',i:'fa-triangle-exclamation',h:i.name,b:'مستودع هيف بني مالك — '+i.manatiq+' وحدة فقط'}));
+  DB.inventory.filter(i=>i.manatiq<i.min).forEach(i=>alerts.push({t:'a-err',i:'fa-triangle-exclamation',h:i.name,b:'مستودع هيف بني مالك — '+i.manatiq+' وحدة فقط'}));
   if(DB.requests.filter(r=>r.st==='معلق').length)alerts.push({t:'a-warn',i:'fa-clock',h:DB.requests.filter(r=>r.st==='معلق').length+' طلبات ارجاع معلقة',b:'تحتاج مراجعة فورية'});
   if(DB.approvals.filter(a=>a.st==='معلق').length)alerts.push({t:'a-info',i:'fa-signature',h:DB.approvals.filter(a=>a.st==='معلق').length+' فواتير بانتظار الاعتماد',b:'راجع قسم الاعتماد'});
     var alertEl=document.getElementById('dash-alerts');
@@ -3724,7 +3721,7 @@ function renderInventory(){
   const cat=document.getElementById('inv-cat')?.value||'';
   const stk=document.getElementById('inv-stk')?.value||'';
   const whList=DB.warehouses.filter(function(w){return w.active;});
-  const items=DB.inventory.filter(function(i){
+  const items=DB.inventory.filter(i=>{
     if(q&&!i.code.toLowerCase().includes(q)&&!i.name.toLowerCase().includes(q))return false;
     if(cat&&i.cat!==cat)return false;
     const tot=whList.reduce(function(s,w){return s+(i[w.key]||0);},0);
@@ -3777,7 +3774,7 @@ function renderInventory(){
     thead.innerHTML='<th>كود المادة</th><th>اسم المادة</th><th>الفئة</th>'+whH+'<th style="text-align:center">الحالة</th><th></th>';
   }
   const tbody=document.getElementById('inv-full-tbody');if(!tbody)return;
-  tbody.innerHTML=items.map(function(i){
+  tbody.innerHTML=items.map(i=>{
     const tot=whList.reduce(function(s,w){return s+(i[w.key]||0);},0);
     const totalRes=whList.reduce(function(s,w){return s+getReservedStock(i.code,w.name);},0);
     const totalAv=Math.max(0,tot-totalRes);
@@ -3880,7 +3877,7 @@ function addInventoryItem(){
       }
       if(!name){toast('err','حقل مطلوب','ادخل اسم المادة','fa-tag');return;}
       if(!cat){toast('err','حقل مطلوب','اختر فئة المادة','fa-layer-group');return;}
-      if(DB.inventory.find(function(x){return x.code===code;})){toast('err','كود مكرر','الكود <strong>'+code+'</strong> موجود مسبقاً في النظام — اختر كوداً آخر','fa-ban');return;}
+      if(DB.inventory.find(function(it){return it.code===code;})){toast('err','كود مكرر','الكود <strong>'+code+'</strong> موجود مسبقاً في النظام — اختر كوداً آخر','fa-ban');return;}
       var newItem={code:code,name:name,desc:desc||'',cat:cat,min:0};
       DB.warehouses.filter(function(w){return w.key;}).forEach(function(w){newItem[w.key]=0;});
       DB.inventory.push(newItem);
@@ -3890,7 +3887,7 @@ function addInventoryItem(){
 }
 function editInventoryItem(code){
   if(currentUser?.role==='مشرف وردية'){toast('err','غير مصرح','ليس لديك صلاحية تعديل المواد','fa-lock');return;}
-  const item=DB.inventory.find(function(x){return x.code===code;});if(!item)return;
+  const item=DB.inventory.find(function(it){return it.code===code;});if(!item)return;
   showFormModal(`<i class="fa fa-pen" style="color:var(--y1)"></i> تعديل مادة`,`
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:8px 12px;background:rgba(0,212,255,.05);border-radius:8px;border:1px solid var(--b1)">
       <span class="mono" style="color:var(--a1);font-size:14px;font-weight:700">${item.code}</span>
@@ -3921,7 +3918,7 @@ function editInventoryItem(code){
       const cat=document.getElementById('ei-cat')?.value||item.cat;
       if(!name){toast('err','حقل مطلوب','ادخل اسم المادة','fa-tag');return;}
       if(!newCode){toast('err','حقل مطلوب','الكود لا يمكن أن يكون فارغاً','fa-barcode');return;}
-      if(newCode!==item.code&&DB.inventory.find(function(i){return i.code===newCode;})){toast('err','كود مكرر','هذا الكود مستخدم بالفعل','fa-ban');return;}
+      if(newCode!==item.code&&DB.inventory.find(function(it){return it.code===newCode;})){toast('err','كود مكرر','هذا الكود مستخدم بالفعل','fa-ban');return;}
       if(newCode!==item.code) DB.invoices.forEach(inv=>inv.items.forEach(it=>{if(it.code===item.code)it.code=newCode;}));
       item.code=newCode;item.name=name;item.desc=desc;item.cat=cat;
       fillDL();closeModal('modal-form');renderInventory();
@@ -3932,7 +3929,7 @@ function editInventoryItem(code){
       showConfirm(`<i class="fa fa-trash" style="color:var(--r1)"></i> حذف ${item.name}`,
         'هل تريد حذف <strong>'+item.name+'</strong> ('+item.code+') نهائياً من النظام؟',
         'حذف نهائي','btn-danger',()=>{
-          DB.inventory=DB.inventory.filter(function(i){return i.code!==item.code;});
+          DB.inventory=DB.inventory.filter(i=>i.code!==item.code);
           fillDL();closeModal('modal-form');renderInventory();
           toast('ok','حُذفت','تم حذف المادة '+item.name,'fa-trash');
         });
@@ -4116,7 +4113,7 @@ function cartIssue(){
     window._editingPendingInvNo=null;
     // إزالة البانر
     var banner=document.getElementById('pending-edit-banner');if(banner)banner.remove();
-    const origInv=DB.invoices.find(function(i){return i.no===origNo;});
+    const origInv=DB.invoices.find(function(it){return it.no===origNo;});
     const origAppr=DB.approvals.find(a=>a.no===origNo);
     if(origInv){
       origInv.items=items;origInv.cont=cont;origInv.boq=boq;
@@ -4124,7 +4121,7 @@ function cartIssue(){
     }
     if(origAppr){
       origAppr.items=items;
-      origAppr.itemsStr=items.map(function(i){return i.name+' x'+i.qty;}).join(' + ');
+      origAppr.itemsStr=items.map(i=>i.name+' x'+i.qty).join(' + ');
       origAppr.cont=cont;origAppr.boq=boq;origAppr.wh=wh;
     }
     addLog('تعديل','تعديل مباشر على فاتورة معلقة '+origNo+' — '+cont,wh,{no:origNo});
@@ -4169,12 +4166,12 @@ function cartIssue(){
     wh:wh,date:today(),st:invStatus
   });
 
-  const summary=items.map(function(i){return i.name+'x'+i.qty;}).join('، ');
+  const summary=items.map(i=>i.name+'x'+i.qty).join('، ');
 
   if(needsApproval){
     DB.approvals.unshift({id:Date.now(),no,emp:currentUser.name,wh,cont,
       items:items,
-      itemsStr:items.map(function(i){return i.name+' x'+i.qty;}).join(' + '),
+      itemsStr:items.map(i=>i.name+' x'+i.qty).join(' + '),
       boq:boq,notes:notes,d:today(),time:nowTime(),st:'معلق'});
     addNotif('info','فاتورة '+no+' تنتظر الاعتماد',currentUser.name+' — '+cont,'fa-signature',null);
     updateBadges();
@@ -4270,7 +4267,7 @@ function trAutoFill(){
   const nameEl=document.getElementById('tr-add-name');
   const stockEl=document.getElementById('tr-add-stock');
   const from=document.getElementById('tr-from')?.value||'اسناد';
-  const item=DB.inventory.find(function(i){return i.code===code||i.name===code;});
+  const item=DB.inventory.find(function(it){return it.code===code||it.name===code;});
   if(item){
     if(nameEl)nameEl.value=item.name;
     const avail=getAvailableStock(item.code,from);
@@ -4545,45 +4542,6 @@ function arcRestoreInvoice(no){
   },100);
 }
 
-function arcRestoreAction(no,newSt){
-  var inv=DB.invoices.find(function(i){return i.no===no;});
-  if(!inv)return;
-  closeModal('modal-form');
-  if(newSt==='معتمد'){
-    if(inv.type==='صرف')(inv.items||[]).forEach(function(it){setStock(it.code,inv.wh,-it.qty);});
-    inv.approvedDate=today();inv.approvedBy=currentUser.name;
-  } else if(newSt==='مرفوض'){
-    if(inv.type==='صرف')(inv.items||[]).forEach(function(it){setStock(it.code,inv.wh,+it.qty);});
-    inv.rejectedDate=today();inv.rejectedBy=currentUser.name;
-  }
-  inv.cancelled=false;inv.cancelledBy=null;inv.cancelDate=null;inv.cancelNote=null;
-  // تنظيف طلبات الالغاء
-  DB.requests=DB.requests.filter(function(r){
-    return !((r.origInv===no||r.no===no)&&r.type==='الغاء'&&r.st!=='معتمد');
-  });
-  // تحديث أو إعادة إنشاء سجل الاعتماد
-  var existAppr=DB.approvals.find(function(a){return a.no===no;});
-  if(existAppr){
-    existAppr.st=newSt;
-    if(newSt==='معتمد'){existAppr.approvedDate=today();existAppr.approvedBy=currentUser.name;}
-  } else if(newSt==='معلق'&&inv.type==='صرف'){
-    // أعد إنشاء سجل الاعتماد → تظهر في اعتماد فواتير الصرف
-    DB.approvals.unshift({
-      id:Date.now(),no:no,emp:inv.emp,wh:inv.wh,cont:inv.cont,
-      items:JSON.parse(JSON.stringify(inv.items||[])),
-      itemsStr:(inv.items||[]).map(function(it){return it.name+' x'+it.qty;}).join(' + '),
-      boq:inv.boq||'',notes:inv.notes||'',d:inv.d||today(),time:nowTime(),st:'معلق'
-    });
-  }
-  syncInvoiceStatus(no,newSt);
-  var msg=newSt==='معتمد'?'خُصمت المواد من '+inv.wh:newSt==='مرفوض'?'أُعيدت المواد لـ '+inv.wh:'معلقة — ستظهر في اعتماد الصرف';
-  var logType=newSt==='معتمد'?'اعتماد':newSt==='مرفوض'?'رفض':'استعادة';
-  addLog(logType,'استعادة ملغية '+no+' → '+newSt,inv.wh,{no:no});
-  addNotif(newSt==='مرفوض'?'warn':'ok','✓ '+no+' → '+newSt,msg,
-    newSt==='معتمد'?'fa-check':newSt==='مرفوض'?'fa-times':'fa-clock',inv.emp);
-  updateBadges();renderArc();
-  toast('ok','✓ '+no+' → '+newSt,msg,'fa-circle-check');
-}
 
 function arcRestoreAction(no,newSt){
   var inv=DB.invoices.find(function(i){return i.no===no;});
@@ -4677,7 +4635,7 @@ function editSearch(){
   const q=(document.getElementById('edit-q')?.value||'').trim();
   const el=document.getElementById('edit-results');if(!el)return;
   if(!q){el.innerHTML='';return;}
-  const found=DB.invoices.filter(function(i){return i.no.toUpperCase(;}.includes(q.toUpperCase())||i.emp.includes(q)||i.cont.includes(q));
+  const found=DB.invoices.filter(i=>i.no.toUpperCase().includes(q.toUpperCase())||i.emp.includes(q)||i.cont.includes(q));
   if(!found.length){el.innerHTML=`<div style="color:var(--t3);font-size:13px;padding:8px 0"><i class="fa fa-search" style="margin-left:6px"></i>لم يتم العثور على فاتورة</div>`;return;}
   el.innerHTML=found.slice(0,6).map(r=>`
     <div class="hist-item" style="margin-bottom:7px;cursor:pointer" onclick="editSelect('${r.no}')">
@@ -4688,7 +4646,7 @@ function editSearch(){
 }
 let editingItems=[];
 function editSelect(no){
-  const inv=DB.invoices.find(function(i){return i.no===no;});if(!inv)return;
+  const inv=DB.invoices.find(function(it){return it.no===no;});if(!inv)return;
   editingInv={...inv};
   editingItems=inv.items.map(it=>({...it}));
   document.getElementById('edit-form').style.display='block';
@@ -4730,7 +4688,7 @@ function editAddItem(){
   const code=(document.getElementById('edit-add-code')?.value||'').trim();
   const qty=parseInt(document.getElementById('edit-add-qty')?.value)||1;
   if(!code){toast('err','حقل مطلوب','ادخل كود المادة','fa-triangle-exclamation');return;}
-  const found=DB.inventory.find(function(i){return i.code===code||i.name.includes(code);});
+  const found=DB.inventory.find(function(it){return it.code===code||it.name.includes(code);});
   if(!found){toast('err','مادة غير موجودة','لا توجد مادة بهذا الكود','fa-triangle-exclamation');return;}
   const wh=document.getElementById('edit-wh')?.value||editingInv.wh;
   const avail=getAvailableStock(found.code,wh);
@@ -4790,7 +4748,7 @@ function cancelSearch(){
   const q=(document.getElementById('cancel-q')?.value||'').trim().toUpperCase();
   const el=document.getElementById('cancel-results');if(!el)return;
   if(!q){el.innerHTML='';return;}
-  const found=DB.invoices.filter(function(i){return i.no.includes(q;}&&i.st!=='ملغي');
+  const found=DB.invoices.filter(i=>i.no.includes(q)&&i.st!=='ملغي');
   if(!found.length){el.innerHTML=`<div style="color:var(--t3);font-size:13px;padding:8px">لا توجد فواتير قابلة للالغاء بهذا الرقم</div>`;return;}
   el.innerHTML=found.slice(0,5).map(r=>`
     <div class="hist-item" style="margin-bottom:7px">
@@ -4809,7 +4767,7 @@ function doCancel(){
   showConfirm(`<i class="fa fa-ban" style="color:var(--r1)"></i> الغاء ${cancelTarget}`,
     `سيتم الغاء الفاتورة <strong>${cancelTarget}</strong> وإعادة جميع المواد للمستودع فوراً.<br><br>السبب: ${reason}<br><br>هذا الاجراء لا يمكن التراجع عنه.`,
     'تأكيد الالغاء','btn-danger',()=>{
-      const inv=DB.invoices.find(function(i){return i.no===cancelTarget;});
+      const inv=DB.invoices.find(function(it){return it.no===cancelTarget;});
       if(inv){
         // إعادة المخزون فقط إذا كانت الفاتورة معتمدة (خُصم منها المخزون)
         if(inv.st==='معتمد'&&inv.type==='صرف'){
@@ -5078,7 +5036,7 @@ function setReqFilter(f,btn){reqFilter=f;document.querySelectorAll('#req-chips .
 // ── جلب بيانات فاتورة للارجاع ──
 function fetchReturnInv(){
   const no=(document.getElementById('ret-inv-no')?.value||'').trim();
-  const inv=DB.invoices.find(function(i){return i.no===no;});
+  const inv=DB.invoices.find(function(it){return it.no===no;});
   const el=document.getElementById('ret-inv-info');
   const previewBtn=document.getElementById('ret-preview-btn');
   if(!el)return;
@@ -5123,7 +5081,7 @@ function fetchReturnInv(){
 }
 function fetchCancelInv(){
   const no=(document.getElementById('can-inv-no')?.value||'').trim();
-  const inv=DB.invoices.find(function(i){return i.no===no;});
+  const inv=DB.invoices.find(function(it){return it.no===no;});
   const el=document.getElementById('can-inv-info');
   if(!el)return;
   if(!inv){el.style.display='none';return;}
@@ -5179,7 +5137,7 @@ function submitReturnRequest(){
   const boq=(document.getElementById('ret-boq-f')?.value||'').trim();
   const reason=(document.getElementById('ret-reason-f')?.value||'').trim();
   if(!origNo){toast('err','حقل مطلوب','ادخل رقم الفاتورة الأصلية','fa-file-invoice');return;}
-  const inv=DB.invoices.find(function(i){return i.no===origNo;});
+  const inv=DB.invoices.find(function(it){return it.no===origNo;});
   if(!inv){toast('err','فاتورة غير موجودة','لا توجد فاتورة بهذا الرقم','fa-ban');return;}
   if(!wh){toast('err','حقل مطلوب','اختر المستودع المستلم','fa-warehouse');return;}
   if(!cont){toast('err','حقل مطلوب','ادخل اسم المقاول المُسلِّم','fa-hard-hat');return;}
@@ -5257,7 +5215,7 @@ function submitCancelRequest(){
   const boq=(document.getElementById('can-boq-f')?.value||'').trim();
   const reason=(document.getElementById('can-reason-f')?.value||'').trim();
   if(!origNo){toast('err','حقل مطلوب','ادخل رقم الفاتورة','fa-file-invoice');return;}
-  const inv=DB.invoices.find(function(i){return i.no===origNo;});
+  const inv=DB.invoices.find(function(it){return it.no===origNo;});
   if(!inv){toast('err','فاتورة غير موجودة','لا توجد فاتورة بهذا الرقم','fa-ban');return;}
   if(inv.st==='ملغي'){toast('err','ملغية مسبقاً','هذه الفاتورة ملغية بالفعل','fa-ban');return;}
   if(!wh){toast('err','حقل مطلوب','اختر المستودع المستلم للمواد','fa-warehouse');return;}
@@ -6389,7 +6347,7 @@ function approveCancelRequest(r){
 function apprApprove(id){
   if(currentUser?.role==='مشرف وردية'){toast('err','غير مصرح','ليس لديك صلاحية اعتماد فواتير الصرف','fa-lock');return;}
   const a=DB.approvals.find(x=>x.id===id);if(!a)return;
-  const inv=DB.invoices.find(function(i){return i.no===a.no;});
+  const inv=DB.invoices.find(i=>i.no===a.no);
   // فحص الرصيد الفعلي (المخزون الحقيقي) قبل تأكيد الاعتماد
   var shortages=[];
   if(inv){
@@ -6458,7 +6416,7 @@ function doApprApprove(a,inv){
 }
 function apprReject(id){
   const a=DB.approvals.find(x=>x.id===id);if(!a)return;
-  const inv=DB.invoices.find(function(i){return i.no===a.no;});
+  const inv=DB.invoices.find(i=>i.no===a.no);
   const wasDeducted=inv?.st==='معتمد';
   showConfirm('<i class="fa fa-times" style="color:var(--r1)"></i> رفض '+a.no,
     'رفض فاتورة <strong>'+a.no+'</strong>؟'+(wasDeducted?' سيتم اعادة المواد للمستودع.':' (الكمية المحجوزة ستُحرر تلقائياً)'),
@@ -6701,7 +6659,7 @@ function searchInvByBOQ(){
   const el=document.getElementById('boq-inv-results');if(!el)return;
   if(!q){el.innerHTML='';return;}
   // البحث الجزئي في رقم BOQ لجميع الفواتير
-  const results=DB.invoices.filter(function(i){return i.boq&&i.boq.toLowerCase(;}.includes(q));
+  const results=DB.invoices.filter(i=>i.boq&&i.boq.toLowerCase().includes(q));
   if(!results.length){
     el.innerHTML=`<div style="color:var(--t3);font-size:12px;text-align:center;padding:14px"><i class="fa fa-search" style="color:var(--t4)"></i> لا توجد فواتير تحتوي على "<strong style="color:var(--a1)">${q}</strong>" في رقم BOQ</div>`;
     return;
@@ -7099,8 +7057,6 @@ function userResetPass(id){
 
 // ══════════════════════ SETTINGS ══════════════════════
 function renderSettings(){
-  // تأكد من وجود settings افتراضية
-  if(!DB.settings)DB.settings={autoNotif:true,supabaseSync:true,autoBackup:true,logAll:true,autoApproveFeed:false,maintenance:false};
   const s=DB.settings;
   setTimeout(renderBackups,100);
 
@@ -7179,8 +7135,8 @@ function openSearch(){openModal('modal-search');setTimeout(()=>document.getEleme
 function renderSearchResults(q){
   const el=document.getElementById('search-results');if(!el||!q)return el&&(el.innerHTML='');
   q=q.toLowerCase();
-  const invR=DB.invoices.filter(function(i){return i.no.toLowerCase(;}.includes(q)||i.cont.toLowerCase().includes(q)||i.emp.toLowerCase().includes(q)).slice(0,4);
-  const invI=DB.inventory.filter(function(i){return i.code.toLowerCase(;}.includes(q)||i.name.toLowerCase().includes(q)).slice(0,3);
+  const invR=DB.invoices.filter(i=>i.no.toLowerCase().includes(q)||i.cont.toLowerCase().includes(q)||i.emp.toLowerCase().includes(q)).slice(0,4);
+  const invI=DB.inventory.filter(i=>i.code.toLowerCase().includes(q)||i.name.toLowerCase().includes(q)).slice(0,3);
   const cts=DB.contacts.filter(c=>c.name.includes(q)||c.tel.includes(q)).slice(0,3);
   let html='';
   if(invR.length){html+=`<div style="font-size:9.5px;color:var(--t3);font-weight:700;letter-spacing:1.5px;margin:6px 0 5px">الفواتير</div>`;
@@ -7273,7 +7229,7 @@ function showUserProfile(){
       <div><span style="color:var(--t3)">الدور: </span>${tag(currentUser.role)}</div>
       <div><span style="color:var(--t3)">الحالة: </span>${tag('نشط')}</div>
       <div><span style="color:var(--t3)">الجوال: </span><span style="font-family:'JetBrains Mono',monospace">${currentUser.phone}</span></div>
-      <div><span style="color:var(--t3)">فواتيري: </span><strong>${DB.invoices.filter(function(i){return i.emp===currentUser.name;}).length}</strong></div>
+      <div><span style="color:var(--t3)">فواتيري: </span><strong>${DB.invoices.filter(i=>i.emp===currentUser.name).length}</strong></div>
     </div>`,
     [{lbl:'<i class="fa fa-file-invoice"></i> فواتيري',cls:'btn-sec',fn:()=>{closeModal('modal-form');go('myinv');}},
      {lbl:'<i class="fa fa-key"></i> تغيير كلمة المرور',cls:'btn-warn',fn:()=>{closeModal('modal-form');go('settings');setTimeout(changeMyPass,200);}},
