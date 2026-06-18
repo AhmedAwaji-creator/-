@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" style="margin:0;padding:0;height:100%;overflow:hidden">
 <head>
 <meta charset="UTF-8">
 <meta name="version" content="v3.1-clean-2026-06-11">
@@ -589,7 +589,7 @@ function startRealtimeSync(){
 }
 </script>
 </head>
-<body>
+<body style="margin:0!important;padding:0!important;overflow:hidden;width:100%;height:100%">
 
 <!-- BG -->
 <div class="bg-fx"><div class="bg-orb"></div><div class="bg-orb"></div><div class="bg-orb"></div></div>
@@ -3880,7 +3880,7 @@ function addInventoryItem(){
       }
       if(!name){toast('err','حقل مطلوب','ادخل اسم المادة','fa-tag');return;}
       if(!cat){toast('err','حقل مطلوب','اختر فئة المادة','fa-layer-group');return;}
-      if(DB.inventory.find(i=>i.code===code)){toast('err','كود مكرر','الكود <strong>'+code+'</strong> موجود مسبقاً في النظام — اختر كوداً آخر','fa-ban');return;}
+      if(DB.inventory.find(function(x){return x.code===code;})){toast('err','كود مكرر','الكود <strong>'+code+'</strong> موجود مسبقاً في النظام — اختر كوداً آخر','fa-ban');return;}
       var newItem={code:code,name:name,desc:desc||'',cat:cat,min:0};
       DB.warehouses.filter(function(w){return w.key;}).forEach(function(w){newItem[w.key]=0;});
       DB.inventory.push(newItem);
@@ -3890,7 +3890,7 @@ function addInventoryItem(){
 }
 function editInventoryItem(code){
   if(currentUser?.role==='مشرف وردية'){toast('err','غير مصرح','ليس لديك صلاحية تعديل المواد','fa-lock');return;}
-  const item=DB.inventory.find(i=>i.code===code);if(!item)return;
+  const item=DB.inventory.find(function(x){return x.code===code;});if(!item)return;
   showFormModal(`<i class="fa fa-pen" style="color:var(--y1)"></i> تعديل مادة`,`
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:8px 12px;background:rgba(0,212,255,.05);border-radius:8px;border:1px solid var(--b1)">
       <span class="mono" style="color:var(--a1);font-size:14px;font-weight:700">${item.code}</span>
