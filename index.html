@@ -510,6 +510,74 @@ textarea.form-input{resize:vertical;min-height:80px}
 .cat-color-opt{width:28px;height:28px;border-radius:50%;cursor:pointer;margin:3px;display:inline-block;border:2px solid transparent;transition:.15s}
 .cat-color-opt.sel{border-color:var(--t1);transform:scale(1.25)}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPA_URL='https://sgrzftkjquiqbcgoksqm.supabase.co';
+const SUPA_KEY='sb_publishable_2_hE3XXitoQtJJwpSPlC7g_c_Te1LdB';
+var supa=null;
+function initSupa(){if(window.supabase&&!supa){supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);}}
+async function syncFromSupabase(){
+  initSupa();if(!supa)return false;
+  try{
+    const[inv,invs,reqs,apprs,lg,notifs,whs,zns,cats,conts,bq]=await Promise.all([
+      supa.from('inventory').select('*').order('id'),
+      supa.from('invoices').select('*').order('created_at',{ascending:false}),
+      supa.from('requests').select('*').order('created_at',{ascending:false}),
+      supa.from('approvals').select('*').order('created_at',{ascending:false}),
+      supa.from('logs').select('*').order('created_at',{ascending:false}).limit(200),
+      supa.from('notifications').select('*').order('created_at',{ascending:false}).limit(100),
+      supa.from('warehouses').select('*').order('id'),
+      supa.from('zones').select('*'),
+      supa.from('categories').select('*').order('id'),
+      supa.from('contacts').select('*').order('id'),
+      supa.from('boq').select('*').order('id'),
+    ]);
+    if(inv.data)DB.inventory=inv.data.map(function(r){return{id:r.id,code:r.code,name:r.name,cat:r.cat||'',unit:r.unit||'قطعة',min:r.min||0,asnad:r.asnad||0,raiko:r.raiko||0,manatiq:r.manatiq||0};});
+    if(invs.data)DB.invoices=invs.data.map(function(r){return{no:r.no,type:r.type,wh:r.wh,emp:r.emp,cont:r.cont||'',boq:r.boq||'',notes:r.notes||'',st:r.st,items:r.items||[],d:r.d,approvedDate:r.approved_date||'',approvedBy:r.approved_by||''};});
+    if(reqs.data)DB.requests=reqs.data.map(function(r){return{id:r.id,no:r.no,type:r.type,emp:r.emp,origInv:r.orig_inv||'',wh:r.wh||'',cont:r.cont||'',boq:r.boq||'',reason:r.reason||'',st:r.st,items:r.items||[],retItems:r.ret_items||[],newItems:r.new_items||[],deletedItems:r.deleted_items||[],oldValues:r.old_values||{},changes:r.changes||{},wasApproved:r.was_approved||false,d:r.d};});
+    if(apprs.data)DB.approvals=apprs.data.map(function(r){return{id:r.id,no:r.no,emp:r.emp,wh:r.wh,cont:r.cont||'',boq:r.boq||'',items:r.items||[],st:r.st,d:r.d};});
+    if(lg.data)DB.logs=lg.data.map(function(r){return{id:r.id,type:r.type,msg:r.msg,wh:r.wh||'',user:r.user_name||'',meta:r.meta||{},d:r.d};});
+    if(notifs.data)DB.notifications=notifs.data.map(function(r){return{id:r.id,lvl:r.lvl,title:r.title,body:r.body||'',icon:r.icon||'fa-bell',targetRole:r.target_role||'',read:r.read||false,d:r.d};});
+    if(whs.data&&whs.data.length)DB.warehouses=whs.data.map(function(r){return{id:r.id,name:r.name,key:r.key,location:r.location||'',manager:r.manager||'',phone:r.phone||'',active:r.active!==false,color:r.color||'#0066ff',zone:r.zone||''};});
+    if(zns.data&&zns.data.length)DB.zones=zns.data.map(function(r){return{id:r.id,name:r.name,icon:r.icon||'fa-map',color:r.color||'#00d4ff',bg:r.bg||'rgba(0,212,255,.1)',border:r.border||'rgba(0,212,255,.3)'};});
+    if(cats.data)DB.categories=cats.data.map(function(r){return{id:r.id,name:r.name,icon:r.icon||'fa-tag',color:r.color||'#0ea5e9',criticalLimit:r.critical_limit||0,warningLimit:r.warning_limit||0,safeLimit:r.safe_limit||0};});
+    if(conts.data)DB.contacts=conts.data.map(function(r){return{id:r.id,name:r.name,tel:r.tel||'',role:r.role||'',dept:r.dept||'',av:r.av||'',color:r.color||''};});
+    if(bq.data)DB.boq=bq.data.map(function(r){return{id:r.id,no:r.no,cont:r.cont||'',items:r.items||[]};});
+    return true;
+  }catch(e){console.error('sync:',e);return false;}
+}
+async function sbSave(t,row,cf){initSupa();if(!supa)return;var res=await supa.from(t).upsert(row,{onConflict:cf});if(res.error)console.error(t,res.error);}
+async function sbInsert(t,row){initSupa();if(!supa)return;var res=await supa.from(t).insert(row);if(res.error)console.error(t,res.error);}
+async function sbUpdate(t,upd,col,val){initSupa();if(!supa)return;var res=await supa.from(t).update(upd).eq(col,val);if(res.error)console.error(t,res.error);}
+async function sbDelete(t,col,val){initSupa();if(!supa)return;var res=await supa.from(t).delete().eq(col,val);if(res.error)console.error(t,res.error);}
+async function sbSaveInvoice(inv){await sbSave('invoices',{no:inv.no,type:inv.type,wh:inv.wh,emp:inv.emp,cont:inv.cont||'',boq:inv.boq||'',notes:inv.notes||'',st:inv.st,items:inv.items||[],d:inv.d,approved_date:inv.approvedDate||'',approved_by:inv.approvedBy||''},'no');}
+async function sbSaveApproval(a){await sbSave('approvals',{no:a.no,emp:a.emp,wh:a.wh,cont:a.cont||'',boq:a.boq||'',items:a.items||[],st:a.st,d:a.d},'no');}
+async function sbSaveRequest(r){var row={no:r.no,type:r.type,emp:r.emp,orig_inv:r.origInv||'',wh:r.wh||'',cont:r.cont||'',boq:r.boq||'',reason:r.reason||'',st:r.st,items:r.items||[],ret_items:r.retItems||[],new_items:r.newItems||[],deleted_items:r.deletedItems||[],old_values:r.oldValues||{},changes:r.changes||{},was_approved:r.wasApproved||false,d:r.d};if(r.id&&typeof r.id==='number')row.id=r.id;await sbSave('requests',row,'id');}
+async function sbDeleteRequest(id){await sbDelete('requests','id',id);}
+async function sbSaveInventoryItem(item){await sbSave('inventory',{code:item.code,name:item.name,cat:item.cat||'',unit:item.unit||'قطعة',min:item.min||0,asnad:item.asnad||0,raiko:item.raiko||0,manatiq:item.manatiq||0},'code');}
+async function sbUpdateStock(code,whKey,qty){var upd={};upd[whKey]=qty;await sbUpdate('inventory',upd,'code',code);}
+async function sbSaveLog(log){await sbInsert('logs',{type:log.type,msg:log.msg,wh:log.wh||'',user_name:log.user||'',meta:log.meta||{},d:log.d});}
+async function sbSaveNotif(n){await sbInsert('notifications',{lvl:n.lvl,title:n.title,body:n.body||'',icon:n.icon||'fa-bell',target_role:n.targetRole||'',read:false,d:n.d||''});}
+async function sbSaveWarehouse(wh){await sbSave('warehouses',{name:wh.name,key:wh.key,location:wh.location||'',manager:wh.manager||'',phone:wh.phone||'',active:wh.active!==false,color:wh.color||'#0066ff',zone:wh.zone||''},'name');}
+async function sbDeleteWarehouse(name){await sbDelete('warehouses','name',name);}
+async function sbSaveCategory(cat){await sbSave('categories',{name:cat.name,icon:cat.icon||'fa-tag',color:cat.color||'#0ea5e9',critical_limit:cat.criticalLimit||0,warning_limit:cat.warningLimit||0,safe_limit:cat.safeLimit||0},'name');}
+async function sbDeleteCategory(name){await sbDelete('categories','name',name);}
+async function sbSaveContact(c){var row={name:c.name,tel:c.tel||'',role:c.role||'',dept:c.dept||'',av:c.av||'',color:c.color||''};if(c.id)row.id=c.id;await sbSave('contacts',row,'id');}
+async function sbDeleteContact(id){await sbDelete('contacts','id',id);}
+async function sbSaveZone(z){await sbSave('zones',{id:z.id,name:z.name,icon:z.icon||'fa-map',color:z.color||'#00d4ff',bg:z.bg||'',border:z.border||''},'id');}
+async function sbDeleteZone(id){await sbDelete('zones','id',id);}
+function startRealtimeSync(){
+  setInterval(async function(){
+    if(!currentUser)return;
+    var ok=await syncFromSupabase();
+    if(!ok)return;
+    try{updateBadges();}catch(e){}
+    try{if(currentPage==='approve')renderApprovals();}catch(e){}
+    try{if(currentPage==='mywork')mwRenderCurrent();}catch(e){}
+    try{if(currentPage==='inventory')renderInventory();}catch(e){}
+  },30000);
+}
+</script>
 </head>
 <body>
 
@@ -2938,6 +3006,7 @@ function addLog(type,act,wh,extra){
   const cols={صرف:'var(--g1)',تغذية:'#009245',نقل:'var(--a3)',ارجاع:'var(--o1)',الغاء:'var(--r1)',تعديل:'var(--y1)',اعتماد:'var(--g1)',رفض:'var(--r1)'};
   const icos={صرف:'fa-file-invoice',تغذية:'fa-cubes',نقل:'fa-right-left',ارجاع:'fa-rotate-left',الغاء:'fa-ban',تعديل:'fa-pen',اعتماد:'fa-signature',رفض:'fa-times'};
   DB.logs.unshift({type,act,emp:currentUser?currentUser.name:'النظام',wh:wh||'—',t:nowTime(),d:today(),c:cols[type]||'var(--t3)',i:icos[type]||'fa-circle-info',...(extra||{})});
+  sbSaveLog({type:type,msg:act,wh:wh||'',user:currentUser?.name||'',meta:extra||{},d:today()});
   if(DB.logs.length>200)DB.logs.pop();
 }
 // ══ إضافة إشعار ══
@@ -2945,6 +3014,7 @@ function addNotif(type,title,msg,icon,targetEmp){
   var id=Date.now();
   DB.notifications.unshift({id:id,type:type,title:title,msg:msg,i:icon||'fa-bell',
     read:false,time:nowTime(),d:today(),emp:targetEmp||null});
+  sbSaveNotif({lvl:type,title:title,body:msg||'',icon:icon||'fa-bell',targetRole:targetRole||'',d:today()});
   if(DB.notifications.length>100) DB.notifications.pop();
   updateBadges();
 }
@@ -2985,7 +3055,7 @@ function doDirectReturn(){
 
 function getWhKey(wh){var w=DB.warehouses.find(function(x){return x.name===wh;});return w?w.key:null;}
 function getStock(code,wh){const i=DB.inventory.find(x=>x.code===code);if(!i)return 0;var k=getWhKey(wh);return k?(i[k]||0):0;}
-function setStock(code,wh,delta){const i=DB.inventory.find(x=>x.code===code);if(!i)return;var k=getWhKey(wh);if(k)i[k]=Math.max(0,(i[k]||0)+delta);}
+function setStock(code,wh,delta){const i=DB.inventory.find(x=>x.code===code);if(!i)return;var k=getWhKey(wh);if(k){i[k]=Math.max(0,(i[k]||0)+delta);sbUpdateStock(code,k,i[k]);}}
 // ══════════════════════════════════════════════════════
 // نظام التنظيف التلقائي الشامل
 // الفواتير وكل ارتباطاتها: سنة من تاريخ الاعتماد/الإغلاق
@@ -3164,7 +3234,7 @@ function dashApprove(no,id){
     'اعتماد','btn-green',function(){
       items.forEach(function(it){if(it.code&&it.qty)setStock(it.code,wh,-it.qty);});
       if(a){a.st='معتمد';a.approvedDate=today();a.approvedBy=currentUser.name;}
-      if(inv){inv.st='معتمد';inv.approvedDate=today();inv.approvedBy=currentUser.name;}
+      if(inv){inv.st='معتمد';inv.approvedDate=today();inv.approvedBy=currentUser.name;sbSaveInvoice(inv);}
       syncInvoiceStatus(no,'معتمد');
       addLog('اعتماد','اعتماد فاتورة صرف '+no+' من لوحة التحكم',wh,{no:no});
       addNotif('ok','✓ اعتماد '+no,'تم اعتماد فاتورة الصرف وخصم المواد من '+wh,'fa-signature',a?a.emp:inv?inv.emp:'');
@@ -3462,6 +3532,14 @@ function startLoader(){
       setTimeout(()=>{loader.classList.remove('show','done');document.getElementById('shell').classList.add('show');loadUserBaskets();cleanOldInvoices();fillWhSelects();
         var startPage=currentUser?.role==='موجه بلاغات'||currentUser?.role==='مشرف وردية'?'mywork':'dashboard';
         go(startPage);autoBackup();initNotifToggle();applySidebarRole();updateBadges();renderEmpMonth();startLiveNotifs();initBrightness();tick();if(!window._clockInterval){window._clockInterval=setInterval(tick,1000);}
+        // مزامنة Supabase عند الدخول
+        initSupa();
+        syncFromSupabase().then(function(){
+          updateBadges();
+          try{renderInventory();}catch(e){}
+          try{fillDL();}catch(e){}
+        });
+        startRealtimeSync();
         // إصلاح التمرير: المحتوى يستقبل الـ scroll عند مرور الماوس فوقه
         var cnt=document.getElementById('content');
         if(cnt){
@@ -4071,6 +4149,7 @@ function cartIssue(){
   }
 
   DB.invoices.unshift({no,type:'صرف',wh,emp:currentUser.name,cont,st:invStatus,d:today(),items,notes,boq});
+  sbSaveInvoice(DB.invoices[0]);
   const itemsDetail2=items.map(function(it){return it.code+' '+it.name+' x'+it.qty;}).join(' | ');
   addLog('صرف','فاتورة '+no+' — '+cont+(boq?' — BOQ:'+boq:'')+' — '+itemsDetail2,wh,{
     no:no,type:'صرف',cont:cont,boq:boq,
@@ -8207,11 +8286,13 @@ function catSaveModal(){
     if(name!==cat.name&&DB.categories.some(function(c){return c.name===name;})){toast('warn','مكرر','الاسم موجود','fa-ban');return;}
     var oldName=cat.name;
     cat.name=name;cat.icon=icon;cat.color=color;cat.criticalLimit=crit;cat.warningLimit=warn;
+    sbSaveCategory(cat);
     if(name!==oldName)DB.inventory.forEach(function(i){if(i.cat===oldName)i.cat=name;});
     toast('ok','تم التعديل','تم تحديث فئة "'+name+'"','fa-pen');
   } else {
     if(DB.categories.some(function(c){return c.name===name;})){toast('warn','مكرر','هذه الفئة موجودة','fa-ban');return;}
     DB.categories.push({id:Date.now(),name:name,icon:icon,color:color,criticalLimit:crit,warningLimit:warn,safeLimit:warn*2});
+    sbSaveCategory(DB.categories[DB.categories.length-1]);
     toast('ok','تمت الإضافة','تمت إضافة فئة "'+name+'"','fa-layer-group');
   }
   closeModal('modal-cat');fillDL();renderCategories();
@@ -8230,6 +8311,7 @@ function deleteCategoryItem(name){
     'حذف فئة <strong>'+name+'</strong>؟',
     'حذف','btn-danger',function(){
       DB.categories=DB.categories.filter(function(c){return c.name!==name;});
+      sbDeleteCategory(name);
       renderCategories();
       toast('ok','✓ تم الحذف','تم حذف الفئة '+name,'fa-trash');
     });
@@ -10014,7 +10096,8 @@ function mwSubmitRet(){
   DB.requests.unshift({id:Date.now(),no:rno,type:'ارجاع',origInv:no,emp:currentUser.name,
     wh:wh,cont:cont,boq:boq,reason:reason,
     retItems:JSON.parse(JSON.stringify(mwRetItems)),
-    items:mwRetItems.map(function(it){return it.name+' x'+it.qty;}).join(' + '),
+    items:mwRetItems.map(function(it){return it.name+' x'+it.qty;
+  sbSaveRequest(DB.requests[0]);}).join(' + '),
     d:today(),time:nowTime(),st:'معلق'});
   addNotif('warn','طلب ارجاع '+rno,currentUser.name+' — '+no,'fa-rotate-left',null);
   addLog('ارجاع','طلب ارجاع جديد '+rno+' — الفاتورة: '+no,wh,{no:rno});
