@@ -516,15 +516,12 @@ const SUPA_URL='https://sgrzftkjquiqbcgoksqm.supabase.co';
 const SUPA_KEY='sb_publishable_2_hE3XXitoQtJJwpSPlC7g_c_Te1LdB';
 var supa=null;
 function initSupa(){
-  if(!supa&&window.supabase){
-    try{supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);console.log('✅ Supabase ready');}
-    catch(e){console.error('Supabase init:',e);}
-  }
+  if(!supa&&window.supabase){try{supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);}catch(e){}}
   return supa;
 }
-window.addEventListener('load',function(){setTimeout(function(){initSupa();},500);});
+window.addEventListener('load',function(){setTimeout(initSupa,800);});
 async function syncFromSupabase(){
-  initSupa();if(!supa)return false;
+  if(!initSupa())return false;
   try{
     const[inv,invs,reqs,apprs,lg,notifs,whs,zns,cats,conts,bq]=await Promise.all([
       supa.from('inventory').select('*').order('id'),
@@ -553,10 +550,10 @@ async function syncFromSupabase(){
     return true;
   }catch(e){console.error('sync:',e);return false;}
 }
-async function sbSave(t,row,cf){if(!initSupa())return;var res=await supa.from(t).upsert(row,{onConflict:cf});if(res.error)console.error(t,res.error);}
+async function sbSave(t,row,cf){initSupa();if(!supa)return;var res=await supa.from(t).upsert(row,{onConflict:cf});if(res.error)console.error(t,res.error);}
 async function sbInsert(t,row){if(!initSupa())return;var res=await supa.from(t).insert(row);if(res.error)console.error(t,res.error);}
-async function sbUpdate(t,upd,col,val){if(!initSupa())return;var res=await supa.from(t).update(upd).eq(col,val);if(res.error)console.error(t,res.error);}
-async function sbDelete(t,col,val){if(!initSupa())return;var res=await supa.from(t).delete().eq(col,val);if(res.error)console.error(t,res.error);}
+async function sbUpdate(t,upd,col,val){initSupa();if(!supa)return;var res=await supa.from(t).update(upd).eq(col,val);if(res.error)console.error(t,res.error);}
+async function sbDelete(t,col,val){initSupa();if(!supa)return;var res=await supa.from(t).delete().eq(col,val);if(res.error)console.error(t,res.error);}
 async function sbSaveInvoice(inv){await sbSave('invoices',{no:inv.no,type:inv.type,wh:inv.wh,emp:inv.emp,cont:inv.cont||'',boq:inv.boq||'',notes:inv.notes||'',st:inv.st,items:inv.items||[],d:inv.d,approved_date:inv.approvedDate||'',approved_by:inv.approvedBy||''},'no');}
 async function sbSaveApproval(a){await sbSave('approvals',{no:a.no,emp:a.emp,wh:a.wh,cont:a.cont||'',boq:a.boq||'',items:a.items||[],st:a.st,d:a.d},'no');}
 async function sbSaveRequest(r){var row={no:r.no,type:r.type,emp:r.emp,orig_inv:r.origInv||'',wh:r.wh||'',cont:r.cont||'',boq:r.boq||'',reason:r.reason||'',st:r.st,items:r.items||[],ret_items:r.retItems||[],new_items:r.newItems||[],deleted_items:r.deletedItems||[],old_values:r.oldValues||{},changes:r.changes||{},was_approved:r.wasApproved||false,d:r.d};if(r.id&&typeof r.id==='number')row.id=r.id;await sbSave('requests',row,'id');}
@@ -2550,10 +2547,11 @@ const DB = {
   warehouses: [],
   zones: [],
   contractors: [],
-  categories:  []
+  categories:  [],
+  settings:{autoNotif:true,supabaseSync:true,autoBackup:true,logAll:true,autoApproveFeed:false,maintenance:false}
 };
 
-let currentUser=null, cart=[], invNextNo=1, editingInv=null, confirmCB=null, arcFilter='all', reqFilter='all';
+let currentUser=null, currentPhotoData=null, cart=[], invNextNo=1, editingInv=null, confirmCB=null, arcFilter='all', reqFilter='all';
 var CAT_ICONS=['fa-bolt','fa-cable-car','fa-toggle-on','fa-gauge','fa-box','fa-lightbulb','fa-wrench','fa-gear','fa-plug','fa-shield','fa-fire','fa-droplet','fa-wind','fa-tag','fa-layer-group','fa-cube','fa-network-wired','fa-microchip','fa-transformer-bolt','fa-battery-full','fa-solar-panel','fa-tower-cell'];
 var CAT_COLORS=['#f59e0b','#3b82f6','#8b5cf6','#10b981','#ec4899','#f97316','#00d4ff','#ef4444','#14b8a6','#84cc16','#6366f1','#06b6d4','#a855f7','#22c55e'];
 
@@ -3061,8 +3059,8 @@ function doDirectReturn(){
 
 
 function getWhKey(wh){var w=DB.warehouses.find(function(x){return x.name===wh;});return w?w.key:null;}
-function getStock(code,wh){const i=DB.inventory.find(function(x){return x.code===code;});if(!i)return 0;var k=getWhKey(wh);return k?(i[k]||0):0;}
-function setStock(code,wh,delta){const i=DB.inventory.find(function(x){return x.code===code;});if(!i)return;var k=getWhKey(wh);if(k){i[k]=Math.max(0,(i[k]||0)+delta);sbUpdateStock(code,k,i[k]);}}
+function getStock(code,wh){const i=DB.inventory.find(x=>x.code===code);if(!i)return 0;var k=getWhKey(wh);return k?(i[k]||0):0;}
+function setStock(code,wh,delta){const i=DB.inventory.find(x=>x.code===code);if(!i)return;var k=getWhKey(wh);if(k){i[k]=Math.max(0,(i[k]||0)+delta);sbUpdateStock(code,k,i[k]);}}
 // ══════════════════════════════════════════════════════
 // نظام التنظيف التلقائي الشامل
 // الفواتير وكل ارتباطاتها: سنة من تاريخ الاعتماد/الإغلاق
@@ -6347,7 +6345,7 @@ function approveCancelRequest(r){
 function apprApprove(id){
   if(currentUser?.role==='مشرف وردية'){toast('err','غير مصرح','ليس لديك صلاحية اعتماد فواتير الصرف','fa-lock');return;}
   const a=DB.approvals.find(x=>x.id===id);if(!a)return;
-  const inv=DB.invoices.find(i=>i.no===a.no);
+  const inv=DB.invoices.find(function(it){return it.no===a.no;});
   // فحص الرصيد الفعلي (المخزون الحقيقي) قبل تأكيد الاعتماد
   var shortages=[];
   if(inv){
@@ -6416,7 +6414,7 @@ function doApprApprove(a,inv){
 }
 function apprReject(id){
   const a=DB.approvals.find(x=>x.id===id);if(!a)return;
-  const inv=DB.invoices.find(i=>i.no===a.no);
+  const inv=DB.invoices.find(function(it){return it.no===a.no;});
   const wasDeducted=inv?.st==='معتمد';
   showConfirm('<i class="fa fa-times" style="color:var(--r1)"></i> رفض '+a.no,
     'رفض فاتورة <strong>'+a.no+'</strong>؟'+(wasDeducted?' سيتم اعادة المواد للمستودع.':' (الكمية المحجوزة ستُحرر تلقائياً)'),
