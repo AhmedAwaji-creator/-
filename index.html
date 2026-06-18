@@ -3564,8 +3564,8 @@ function applySidebarRole(){
   const isMoj=role==='موجه بلاغات';
   const isW=role==='مشرف وردية';
   const isA=role==='مسؤول مستودعات';
-  const isAdmin=role==='مدير النظام';
-  const roleKey=isAdmin?'admin':isA?'ameen':isMoj?'moj':isW?'wardia':'admin';
+  const isAdmin=role==='مدير النظام'||role==='مسؤول مستودعات';
+  const roleKey=(role==='مدير النظام')?'admin':isA?'ameen':isMoj?'moj':isW?'wardia':'admin';
 
   // إظهار/إخفاء عناصر القائمة حسب data-roles
   document.querySelectorAll('.s-item[data-p]').forEach(function(el){
