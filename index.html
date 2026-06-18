@@ -3815,7 +3815,8 @@ function renderInventory(){
 }
 // ══════════════════════════════════════════════
 // INVENTORY ITEM MANAGEMENT — إدارة المواد
-// ═════════════════════════════════════════════        var qty=i[w.key]||0;
+// ═════════════════════════════════════════════
+        var qty=i[w.key]||0;
         var res=getReservedStock(i.code,w.name);
         var av=Math.max(0,qty-res);
         var pendRet=getPendingReturnStock(i.code,w.name);
