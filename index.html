@@ -355,7 +355,7 @@ textarea.form-input{resize:vertical;min-height:80px}
 .log-time{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t3);flex-shrink:0;text-align:left}
 
 /* Modal */
-.overlay,.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);z-index:800;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .28s}
+.overlay,.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);z-index:10001;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .28s}
 .overlay.show,.modal-overlay.show{opacity:1;pointer-events:all}
 .modal{background:var(--card2);border:1px solid var(--b2);border-radius:18px;padding:0;width:92%;max-width:520px;transform:scale(.9) translateY(20px);transition:all .28s;box-shadow:0 20px 60px rgba(0,0,0,.7);max-height:88vh;overflow:hidden;display:flex;flex-direction:column}
 .overlay.show .modal{transform:none}
@@ -557,9 +557,9 @@ async function syncFromSupabase(){
         });
       }
     }catch(e){}
-    if(invs.data)DB.invoices=invs.data.map(function(r){return{no:r.no,type:r.type,wh:r.wh,emp:r.emp,cont:r.cont||'',boq:r.boq||'',notes:r.notes||'',st:r.st,items:r.items||[],d:r.d,approvedDate:r.approved_date||'',approvedBy:r.approved_by||''};});
-    if(reqs.data)DB.requests=reqs.data.map(function(r){return{id:r.id,no:r.no,type:r.type,emp:r.emp,origInv:r.orig_inv||'',wh:r.wh||'',cont:r.cont||'',boq:r.boq||'',reason:r.reason||'',st:r.st,items:r.items||[],retItems:r.ret_items||[],newItems:r.new_items||[],deletedItems:r.deleted_items||[],oldValues:r.old_values||{},changes:r.changes||{},wasApproved:r.was_approved||false,d:r.d};});
-    if(apprs.data)DB.approvals=apprs.data.map(function(r){return{id:r.id,no:r.no,emp:r.emp,wh:r.wh,cont:r.cont||'',boq:r.boq||'',items:r.items||[],st:r.st,d:r.d};});
+    if(invs.data&&!isDirty('invoices'))DB.invoices=invs.data.map(function(r){return{no:r.no,type:r.type,wh:r.wh,emp:r.emp,cont:r.cont||'',boq:r.boq||'',notes:r.notes||'',st:r.st,items:r.items||[],d:r.d,approvedDate:r.approved_date||'',approvedBy:r.approved_by||''};});
+    if(reqs.data&&!isDirty('requests'))DB.requests=reqs.data.map(function(r){return{id:r.id,no:r.no,type:r.type,emp:r.emp,origInv:r.orig_inv||'',wh:r.wh||'',cont:r.cont||'',boq:r.boq||'',reason:r.reason||'',st:r.st,items:r.items||[],retItems:r.ret_items||[],newItems:r.new_items||[],deletedItems:r.deleted_items||[],oldValues:r.old_values||{},changes:r.changes||{},wasApproved:r.was_approved||false,d:r.d};});
+    if(apprs.data&&!isDirty('approvals'))DB.approvals=apprs.data.map(function(r){return{id:r.id,no:r.no,emp:r.emp,wh:r.wh,cont:r.cont||'',boq:r.boq||'',items:r.items||[],st:r.st,d:r.d};});
     if(lg.data)DB.logs=lg.data.map(function(r){return{id:r.id,type:r.type||'',act:r.msg||'',msg:r.msg||'',wh:r.wh||'',emp:r.user_name||'',user:r.user_name||'',meta:r.meta||{},d:r.d||'',t:r.meta?.t||'',c:r.meta?.c||'var(--t3)',i:r.meta?.i||'fa-circle-info'};});
     if(notifs.data)DB.notifications=notifs.data.map(function(r){return{
       id:r.id,
@@ -598,9 +598,10 @@ async function syncFromSupabase(){
 async function sbSave(t,row,cf){
   if(!initSupa()||!supa)return;
   _savingLock=(_savingLock||0)+1;
+  markDirty(t);
   try{
     var res=await supa.from(t).upsert(row,{onConflict:cf});
-    if(res.error)console.error(t,res.error);
+    if(res.error){console.error(t,res.error);clearDirty(t);}
   }finally{
     _savingLock=Math.max(0,(_savingLock||1)-1);
   }
@@ -618,9 +619,10 @@ async function sbInsert(t,row){
 async function sbUpdate(t,upd,col,val){
   if(!initSupa()||!supa)return;
   _savingLock=(_savingLock||0)+1;
+  markDirty(t);
   try{
     var res=await supa.from(t).update(upd).eq(col,val);
-    if(res.error)console.error(t,res.error);
+    if(res.error){console.error(t,res.error);clearDirty(t);}
   }finally{
     _savingLock=Math.max(0,(_savingLock||1)-1);
   }
@@ -895,7 +897,7 @@ function startRealtimeSync(){
           else if(p==='warehouses-pg'){try{renderWarehouses();renderZonesManage();}catch(e){}}
         }catch(e){}
       });
-      },300); // debounce 300ms
+      },3000); // debounce 3000ms - وقت كافٍ لاكتمال الحفظ
     });
   });
 
@@ -2942,8 +2944,12 @@ const DB = {
 };
 
 let currentUser=null, currentPhotoData=null, cart=[], invNextNo=1, editingInv=null, confirmCB=null, arcFilter='all', reqFilter='all';
-var _savingLock=0; // counter: عدد عمليات الحفظ الجارية // منع Realtime من التدخل أثناء الحفظ
-var _rtDebounce=null; // debounce للـ Realtime
+var _savingLock=0;
+var _rtDebounce=null;
+var _dirtyTables={};
+function markDirty(t){_dirtyTables[t]=Date.now()+8000;}
+function isDirty(t){return(_dirtyTables[t]||0)>Date.now();}
+function clearDirty(t){delete _dirtyTables[t];}
 var CAT_ICONS=['fa-bolt','fa-cable-car','fa-toggle-on','fa-gauge','fa-box','fa-lightbulb','fa-wrench','fa-gear','fa-plug','fa-shield','fa-fire','fa-droplet','fa-wind','fa-tag','fa-layer-group','fa-cube','fa-network-wired','fa-microchip','fa-transformer-bolt','fa-battery-full','fa-solar-panel','fa-tower-cell'];
 var CAT_COLORS=['#f59e0b','#3b82f6','#8b5cf6','#10b981','#ec4899','#f97316','#00d4ff','#ef4444','#14b8a6','#84cc16','#6366f1','#06b6d4','#a855f7','#22c55e'];
 
@@ -11695,7 +11701,7 @@ function renderMyWork(){
   </div>
 </div>
 <!-- Confirm Modal -->
-<div class="overlay" id="modal-compare" onclick="if(event.target===this)closeModal('modal-compare')" style="z-index:10000">
+<div class="overlay" id="modal-compare" onclick="if(event.target===this)closeModal('modal-compare')" style="z-index:9000">
   <div class="modal" style="max-width:960px;width:95vw;max-height:90vh;display:flex;flex-direction:column">
     <div class="modal-hd" style="flex-shrink:0">
       <div class="modal-title" id="compare-title"></div>
