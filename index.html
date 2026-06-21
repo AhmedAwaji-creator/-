@@ -3946,13 +3946,28 @@ function doLogin(){
   // جلب المستخدمين من Supabase أولاً ثم التحقق
   var _runLogin=function(){
     if(initSupa()){
-      supa.from('users').select('*').then(function(res){
-        if(res.data&&res.data.length){
-          DB.users=res.data.map(function(r){return{id:r.id,phone:r.phone,pass:r.pass,name:r.name,role:r.role,photo:r.photo||'',av:r.av||'',color:r.color||'',dept:r.dept||'',active:r.active!==false};});
-        }
-        doCheck();
-      }).catch(function(){doCheck();});
-    }else{setTimeout(doCheck,300);}
+      // محاولة جلب المستخدمين مع retry
+      var _attempt=0;
+      var _fetchUsers=function(){
+        _attempt++;
+        supa.from('users').select('*').then(function(res){
+          if(res.error){
+            console.warn('users fetch error:',res.error.message);
+            if(_attempt<3){setTimeout(_fetchUsers,1000*_attempt);return;}
+            doCheck();return;
+          }
+          if(res.data&&res.data.length){
+            DB.users=res.data.map(function(r){return{id:r.id,phone:r.phone,pass:r.pass,name:r.name,role:r.role,photo:r.photo||'',av:r.av||'',color:r.color||'',dept:r.dept||'',active:r.active!==false};});
+          }
+          doCheck();
+        }).catch(function(e){
+          console.warn('users fetch catch:',e);
+          if(_attempt<3){setTimeout(_fetchUsers,1000*_attempt);return;}
+          doCheck();
+        });
+      };
+      _fetchUsers();
+    }else{setTimeout(_runLogin,500);}
   };
   var doCheck=function(){
     const user=DB.users.find(u=>u.phone===phone&&u.pass===pass&&u.active);
@@ -6380,7 +6395,8 @@ function reqApprove(id){
   // ══ اعتماد طلب التعديل ══
   if(r.type==='تعديل'){
     var inv=DB.invoices.find(function(i){return i.no===r.origInv;});
-    var newWh=r.changes.wh||inv?.wh||'—';
+    var changes=r.changes||{};
+    var newWh=changes.wh||inv?.wh||r.wh||'—';
     // المقارنة تظهر في showCompare
     var beforeHtml='<div style="background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);border-radius:9px;padding:10px 12px;flex:1">'+
       '<div style="font-size:10px;font-weight:700;color:var(--r1);margin-bottom:6px">قبل التعديل</div>'+
@@ -6401,10 +6417,10 @@ function reqApprove(id){
     '</div>';
     var compareHtml='<div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap">'+beforeHtml+afterHtml+'</div>';
     // بناء الفاتورة قبل وبعد التعديل
-    var editBefore=Object.assign({},inv);
-    var editAfter=Object.assign({},inv,{
-      items:r.newItems&&r.newItems.length?r.newItems:inv.items,
-      wh:r.changes&&r.changes.wh?r.changes.wh:inv.wh,
+    var editBefore=Object.assign({},inv||{no:r.origInv,items:[],wh:r.wh||'—',emp:r.emp,cont:r.cont||'—',d:r.d});
+    var editAfter=Object.assign({},inv||{no:r.origInv,items:[],wh:newWh,emp:r.emp,cont:r.cont||'—',d:r.d},{
+      items:r.newItems&&r.newItems.length?r.newItems:(inv?inv.items:[]),
+      wh:changes.wh||(inv?inv.wh:newWh),
       cont:r.changes&&r.changes.cont?r.changes.cont:inv.cont,
       boq:r.changes&&r.changes.boq?r.changes.boq:inv.boq,
       notes:r.changes&&r.changes.notes?r.changes.notes:inv.notes,
@@ -6447,9 +6463,9 @@ function reqApprove(id){
         }
         if(inv){
           if(inv.approvedDate){ inv.previousApprovedDate=inv.approvedDate; inv.previousApprovedBy=inv.approvedBy; }
-          var oldWh=inv.wh;
+          var oldWh=inv?inv.wh:r.wh;
           // إعادة المخزون القديم ثم خصم الجديد
-          (inv.items||[]).forEach(function(it){setStock(it.code,oldWh,+it.qty);});
+          (inv?inv.items||[]:r.oldValues?.items||[]).forEach(function(it){setStock(it.code,oldWh,+it.qty);});
           (r.newItems||[]).forEach(function(it){setStock(it.code,newWh,-it.qty);});
           (r.deletedItems||[]).forEach(function(it){setStock(it.code,oldWh,+it.origQty||+it.qty);});
           syncInvoiceStatus(r.origInv,'معتمد',{
